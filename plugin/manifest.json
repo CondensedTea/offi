@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+
+  "name": "Offi",
+  "description": "Find logs for ETF2L officials",
+  "version": "1.0",
+
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": ["https://etf2l.org/matches/*"],
+      "js": ["dist/index.js"]
+    }
+  ],
+
+  "permissions": [
+    "activeTab",
+    "declarativeContent"
+  ]
+}
