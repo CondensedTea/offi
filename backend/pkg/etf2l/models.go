@@ -1,8 +1,8 @@
 package etf2l
 
 type Meta struct {
-	PreviousPageUrl string `json:"previous_page_url"`
-	NextPageUrl     string `json:"next_page_url"`
+	PreviousPageUrl string `json:"previous_page_url,omitempty"`
+	NextPageUrl     string `json:"next_page_url,omitempty"`
 	Page            int    `json:"page"`
 	TotalPages      int    `json:"total_pages"`
 	EntriesPerPage  int    `json:"entries_per_page"`
@@ -38,8 +38,8 @@ type Result struct {
 	Round      string   `json:"round"`
 	R1         int      `json:"r1"`
 	Maps       []string `json:"maps"`
-	Clan2      Clan     `json:"clan2"`
 	Clan1      Clan     `json:"clan1"`
+	Clan2      Clan     `json:"clan2"`
 	Week       int      `json:"week"`
 	DefaultWin int      `json:"defaultwin"` // bool
 	Time       int      `json:"time"`

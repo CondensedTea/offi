@@ -6,13 +6,13 @@ import (
 	"net/http"
 )
 
-func (s ETF2L) GetMatches(competitionId, lastParsedMatch int) ([]Result, error) {
+func (s ETF2L) GetMatches(competitionId int, lastParsedMatch *int) ([]Result, error) {
 	isLastPage := false
 	matches := make([]Result, 0)
 
 	url := etf2lApiURL + fmt.Sprintf("competition/%d/results.json", competitionId)
 
-	for isLastPage {
+	for !isLastPage {
 		cr, err := s.getCompetitionResults(url)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get results for competition %d: %v", competitionId, err)
@@ -25,7 +25,7 @@ func (s ETF2L) GetMatches(competitionId, lastParsedMatch int) ([]Result, error) 
 		}
 
 		for _, result := range cr.Results {
-			if result.Id == lastParsedMatch {
+			if lastParsedMatch != nil && result.Id == *lastParsedMatch {
 				return matches, nil
 			}
 			matches = append(matches, result)
