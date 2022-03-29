@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: .
+    environment:
+      - "REDIS_URL=redis://cache:6379/1"
+    ports:
+      - 8085:8080
+  cache:
+    image: redis:6-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1
+    volumes:
+      - cache:/data
+
+volumes:
+  cache:
+    driver: local

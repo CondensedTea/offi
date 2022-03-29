@@ -1,3 +1,6 @@
 ### Offi - plugin and api-server
 
-This project collects matchpage data from etf2l website via API and scrapping, and serves it with plugin.
+Pairs etf2l match pages and logs.tf logs.
+
+Backend in Go with Fiber framework, data stored in Redis,
+fronted in typescript.

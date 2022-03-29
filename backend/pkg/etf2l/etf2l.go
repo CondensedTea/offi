@@ -5,14 +5,16 @@ import (
 	"time"
 )
 
-const etf2lApiURL = "https://api.etf2l.org/"
-
-type ETF2L struct {
-	httpClient *http.Client
+type Getter interface {
+	Get(url string) (*http.Response, error)
 }
 
-func New() (*ETF2L, error) {
+type ETF2L struct {
+	httpClient Getter
+}
+
+func New() *ETF2L {
 	return &ETF2L{
 		httpClient: &http.Client{Timeout: 5 * time.Minute},
-	}, nil
+	}
 }
