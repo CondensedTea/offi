@@ -29,8 +29,8 @@ func New() *Client {
 	}
 }
 
-func (l Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, error) {
-	resp, err := l.getLogsWithPlayers(players)
+func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, error) {
+	resp, err := c.getLogsWithPlayers(players)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
@@ -64,11 +64,11 @@ func filterLogs(maps []string, playedAt time.Time, logs []Log) []Log {
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func (l Client) getLogsWithPlayers(players []string) (*Response, error) {
+func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
 	query := "player=" + strings.Join(players, ",")
 
 	u := fmt.Sprintf("https://logs.tf/api/v1/log?%s", query)
-	resp, err := l.httpClient.Get(u)
+	resp, err := c.httpClient.Get(u)
 	if err != nil {
 		return nil, err
 	}

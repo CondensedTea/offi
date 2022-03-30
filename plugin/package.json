@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "parcel build index.ts --no-source-maps"
+    "build": "parcel build index.ts --no-source-maps",
+    "dev-build": "parcel build --no-minify index.ts --no-source-maps",
+    "lint": "eslint *.ts"
   },
   "dependencies": {
-    "parcel-bundler": "^1.12.5"
+    "parcel-bundler": "^1.12.5",
+    "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.12.1",
-    "@typescript-eslint/parser": "^5.12.1",
-    "eslint": "^8.10.0",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "eslint": "^8.12.0",
+    "eslint-config-google": "^0.14.0",
     "typescript": "^4.5.5"
   }
 }

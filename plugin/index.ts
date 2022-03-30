@@ -1,76 +1,67 @@
-const matchRe = RegExp('https://etf2l.org/matches/(\\d+)/')
-const api_url = "http://localhost:8080/etf2l_match_page/"
+import 'regenerator-runtime/runtime';
+
+const matchRe = RegExp('https://etf2l.org/matches/(\\d+)/');
+const apiUrl = 'https://stg.lemontea.dev/offi/match/';
 
 class Log {
-    id: number
-    match_map: string
-    uploaded_at: Date
-    constructor(data: Object) {
-        this.id = data["id"]
-        this.match_map = data["match_map"]
-        this.uploaded_at = new Date(data["uploaded_at"] * 1000)
-    }
+  id: number;
+  map: string;
+  played_at: Date;
+  constructor(data: Object) {
+    this.id = data['id'];
+    this.map = data['map'];
+    this.played_at = new Date(data['played_at']);
+  }
 }
 
 function getMatchID(): number {
-    let url = document.URL;
+  const match = document.URL.match(matchRe);
 
-    let match = url.match(matchRe);
-
-    if (match === null || match.length < 1) {
-        return;
-    }
-    return parseInt(match[0])
+  if (match === null || match.length < 1) {
+    throw new Error('could not find match ID');
+  }
+  return parseInt(match[1]);
 }
 
-function getLogsFromAPI(match_id: number): Array<Log> {
-    const apiResponse = {
-        "logs": [
-            {
-                "id": 3137135,
-                "match_map": "cp_sunshine",
-                "uploaded_at": 	1645608660,
-            },
-            {
-                "id": 3137108,
-                "match_map": "cp_granary_pro_rc8",
-                "uploaded_at": 	1645606860,
-            },
-        ]
-    }
+async function getLogsFromAPI(matchId: number) {
+  const res = await fetch(apiUrl + matchId.toString());
+  const apiResponse = await res.json();
+  const logs: Log[] = [];
 
-    let logs: Array<Log> = []
-
-    for (let logData of apiResponse.logs) {
-        const l = new Log(logData)
-        logs.push(l)
-    }
-    return logs
+  for (const logData of apiResponse['logs']) {
+    const l = new Log(logData);
+    logs.push(l);
+  }
+  return logs;
 }
 
-function addLogLinks() {
-    const match_id = getMatchID()
-    const logs = getLogsFromAPI(match_id)
+async function addLogLinks(): Promise<void> {
+  const matchId = getMatchID();
+  const logs = await getLogsFromAPI(matchId);
 
-    let LogList = document.createElement("ul");
+  const LogList = document.createElement('ul');
 
-    for (const log of logs) {
-        let logItem = document.createElement("li");
-        logItem.innerHTML =`<a href="https://logs.tf/${log.id}"> ${log.match_map} | ${log.uploaded_at.toLocaleString()} </a>`;
+  for (const log of logs) {
+    const logItem = document.createElement('li');
+    logItem.innerHTML =`<a href="https://logs.tf/${log.id}"> #${log.id} </a> | ${log.map} | ${log.played_at.toLocaleString()}`;
+    LogList.appendChild(logItem);
+  }
+  const LogHeader = document.createElement('div');
+  LogHeader.className = 'offi';
 
-        LogList.appendChild(logItem);
-    }
-    let LogHeader = document.createElement("div");
-    LogHeader.className = "offi"
+  if (logs.length === 1) {
+    LogHeader.innerHTML = `<h2>1 Log</h2>`;
+  } else {
     LogHeader.innerHTML = `<h2>${logs.length} Logs</h2>`;
+  }
+  LogHeader.append(LogList);
 
-    LogHeader.append(LogList)
-
-    let playersSection = document.getElementsByClassName("fix match-players");
-    if (playersSection === null || playersSection.length < 1) {
-        return;
-    }
-    playersSection[0].after(LogHeader)
+  const playersSection = document.getElementsByClassName('fix match-players');
+  if (playersSection === null || playersSection.length < 1) {
+    return;
+  }
+  playersSection[0].after(LogHeader);
+  return;
 }
 
-addLogLinks()
+addLogLinks();

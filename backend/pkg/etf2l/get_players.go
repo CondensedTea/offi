@@ -10,7 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var ErrMatchIsNotComplete = errors.New("match is not completed")
+var ErrMatchIsNotCompleted = errors.New("match is not completed")
 
 type Match struct {
 	Players  []string
@@ -18,10 +18,10 @@ type Match struct {
 	PlayedAt time.Time
 }
 
-func (client ETF2L) ParseMatchPage(matchId int) (*Match, error) {
+func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 	url := fmt.Sprintf("https://etf2l.org/matches/%d/", matchId)
 
-	matchPage, err := client.getHtml(url)
+	matchPage, err := c.getHtml(url)
 	if err != nil {
 		return nil, err
 	}
@@ -59,14 +59,17 @@ func (client ETF2L) ParseMatchPage(matchId int) (*Match, error) {
 		})
 	})
 
-	matchDate := doc.Find("span.date").Get(5).FirstChild.Data
-	if matchDate == "" {
-		return nil, ErrMatchIsNotComplete
-	}
+	// <time class="brief">
+	//    <span> YYYY-MM-DD </span>
+	//    <span> hh:mm </span>
+	// </time>
+	// Result: "YYYY-MM-DD hh:mm"
+	matchDateNode := doc.Find("time.brief").Get(6)
+	matchDate := matchDateNode.FirstChild.FirstChild.Data + " " + matchDateNode.LastChild.FirstChild.Data
 
-	playedAt, err := time.Parse("2 Jan 2006", matchDate)
+	playedAt, err := parseMatchDate(matchDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse date: %v", err)
+		return nil, err
 	}
 
 	return &Match{
@@ -76,8 +79,8 @@ func (client ETF2L) ParseMatchPage(matchId int) (*Match, error) {
 	}, nil
 }
 
-func (client ETF2L) ResolvePlayerSteamID(playerID string) (string, error) {
-	playerPage, err := client.getHtml(playerID)
+func (c Client) ResolvePlayerSteamID(playerID string) (string, error) {
+	playerPage, err := c.getHtml(playerID)
 	if err != nil {
 		return "", err
 	}
@@ -95,8 +98,8 @@ func (client ETF2L) ResolvePlayerSteamID(playerID string) (string, error) {
 	return steamID, nil
 }
 
-func (client ETF2L) getHtml(url string) (io.ReadCloser, error) {
-	resp, err := client.httpClient.Get(url)
+func (c Client) getHtml(url string) (io.ReadCloser, error) {
+	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -104,4 +107,18 @@ func (client ETF2L) getHtml(url string) (io.ReadCloser, error) {
 		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
 	}
 	return resp.Body, nil
+}
+
+func parseMatchDate(matchDate string) (time.Time, error) {
+	if matchDate == "" {
+		return time.Time{}, ErrMatchIsNotCompleted
+	}
+	if matchDate == "Yesterday" {
+		return time.Now().Add(-24 * time.Hour), nil
+	}
+	playedAt, err := time.Parse("2 Jan 2006 15:04", matchDate)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse date: %v", err)
+	}
+	return playedAt, nil
 }

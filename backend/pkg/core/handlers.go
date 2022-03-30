@@ -18,5 +18,5 @@ func (c Core) handleGetMatch(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get logs: %v", err))
 	}
-	return ctx.JSON(logs)
+	return ctx.JSON(fiber.Map{"logs": logs})
 }

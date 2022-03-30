@@ -10,5 +10,5 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 	}
 	ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 
-	return ctx.Status(code).JSON(err.Error())
+	return ctx.Status(code).JSON(fiber.Map{"error": err.Error()})
 }

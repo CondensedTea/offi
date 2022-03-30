@@ -9,12 +9,12 @@ type Getter interface {
 	Get(url string) (*http.Response, error)
 }
 
-type ETF2L struct {
+type Client struct {
 	httpClient Getter
 }
 
-func New() *ETF2L {
-	return &ETF2L{
+func New() *Client {
+	return &Client{
 		httpClient: &http.Client{Timeout: 5 * time.Minute},
 	}
 }

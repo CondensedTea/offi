@@ -6,16 +6,17 @@ import (
 	"offi/pkg/logstf"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 type Core struct {
 	cache  cache.Cache
-	etf2l  *etf2l.ETF2L
+	etf2l  *etf2l.Client
 	logsTf *logstf.Client
 }
 
-func CreateApp(cache cache.Cache, etf2l *etf2l.ETF2L, logsTf *logstf.Client) *fiber.App {
+func CreateApp(cache cache.Cache, etf2l *etf2l.Client, logsTf *logstf.Client) *fiber.App {
 	c := &Core{
 		cache:  cache,
 		etf2l:  etf2l,
@@ -26,6 +27,11 @@ func CreateApp(cache cache.Cache, etf2l *etf2l.ETF2L, logsTf *logstf.Client) *fi
 	})
 
 	app.Use(logger.New())
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://etf2l.org",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	app.Get("/match/:matchId", c.handleGetMatch)
 
