@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/go-redis/redis"
@@ -9,6 +10,7 @@ import (
 const (
 	matchKey  = "matches"
 	playerKey = "players"
+	logsKey   = "logs"
 )
 
 type Redis struct {
@@ -25,21 +27,17 @@ func New(url string) (*Redis, error) {
 	return &Redis{client: client}, nil
 }
 
-func (r Redis) GetMatch(matchId int) (Match, error) {
-	var match Match
+func (r Redis) GetLogs(matchId int) (LogSet, error) {
+	var logSet LogSet
 
-	if err := r.client.HGet(matchKey, strconv.Itoa(matchId)).Scan(&match); err != nil {
-		return Match{}, err
+	if err := r.client.HGet(matchKey, strconv.Itoa(matchId)).Scan(&logSet); err != nil {
+		return LogSet{}, err
 	}
-	return match, nil
+	return logSet, nil
 }
 
-func (r Redis) SetMatch(matchId int, match *Match) error {
-	return r.client.HSet(matchKey, strconv.Itoa(matchId), match).Err()
-}
-
-func (r Redis) FlushMatch(matchId int) error {
-	return r.client.HDel(matchKey, strconv.Itoa(matchId)).Err()
+func (r Redis) SetLogs(matchId int, logSet *LogSet) error {
+	return r.client.HSet(matchKey, strconv.Itoa(matchId), logSet).Err()
 }
 
 func (r Redis) GetPlayer(playerID string) (string, error) {
@@ -48,4 +46,43 @@ func (r Redis) GetPlayer(playerID string) (string, error) {
 
 func (r Redis) SetPlayer(playerID, steamID string) error {
 	return r.client.HSet(playerKey, playerID, steamID).Err()
+}
+
+func (r Redis) GetMatch(logId int) (MatchPage, error) {
+	var mp MatchPage
+	if err := r.client.HGet(logsKey, strconv.Itoa(logId)).Scan(&mp); err != nil {
+		return MatchPage{}, err
+	}
+	return mp, nil
+}
+
+func (r Redis) SetMatch(logIds []int, matchPage *MatchPage) error {
+	var err error
+
+	for _, id := range logIds {
+		if err = r.client.HSet(logsKey, strconv.Itoa(id), matchPage).Err(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r Redis) GetAllKeys(hashKey string) ([]string, error) {
+	var keys []string
+
+	switch hashKey {
+	case logsKey, playerKey, matchKey:
+		break
+	default:
+		return nil, fmt.Errorf("unknown hash key: %s", hashKey)
+	}
+
+	res, err := r.client.HGetAll(hashKey).Result()
+	if err != nil {
+		return nil, err
+	}
+	for key := range res {
+		keys = append(keys, key)
+	}
+	return keys, nil
 }

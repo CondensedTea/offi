@@ -5,6 +5,7 @@ import (
 	"offi/pkg/cache"
 	"offi/pkg/core"
 	"offi/pkg/etf2l"
+	"offi/pkg/handler"
 	"offi/pkg/logstf"
 	"os"
 )
@@ -18,8 +19,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	c := core.New(cacheClient, etf2lClient, logsTf)
 
-	app := core.CreateApp(cacheClient, etf2lClient, logsTf)
+	app := handler.CreateApp(c)
 
 	if err = app.Listen(":8080"); err != nil {
 		log.Fatal(err)

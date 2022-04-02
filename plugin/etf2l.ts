@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 
 const matchRe = RegExp('https://etf2l.org/matches/(\\d+)/');
-const apiUrl = 'https://stg.lemontea.dev/offi/match/';
+const apiUrl = 'http://localhost:8080/match/';
 
 class Log {
   id: number;
@@ -23,14 +23,19 @@ function getMatchID(): number {
   return parseInt(match[1]);
 }
 
-async function getLogsFromAPI(matchId: number) {
+async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   const res = await fetch(apiUrl + matchId.toString());
+
+  if (!res.ok) {
+    throw new Error('offi api returned error: ' + res.statusText);
+  }
+
   const apiResponse = await res.json();
   const logs: Log[] = [];
 
   for (const logData of apiResponse['logs']) {
     const l = new Log(logData);
-    logs.push(l);
+    logs.unshift(l);
   }
   return logs;
 }
@@ -43,7 +48,7 @@ async function addLogLinks(): Promise<void> {
 
   for (const log of logs) {
     const logItem = document.createElement('li');
-    logItem.innerHTML =`<a href="https://logs.tf/${log.id}"> #${log.id} </a> | ${log.map} | ${log.played_at.toLocaleString()}`;
+    logItem.innerHTML =`<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
     LogList.appendChild(logItem);
   }
   const LogHeader = document.createElement('div');

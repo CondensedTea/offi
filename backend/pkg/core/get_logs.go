@@ -9,18 +9,19 @@ import (
 )
 
 func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
-	match, err := c.cache.GetMatch(matchId)
+	logSet, err := c.cache.GetLogs(matchId)
 	switch {
 	case err == redis.Nil:
 		return c.saveNewMatch(matchId)
 	case err != nil:
 		return nil, fmt.Errorf("failed to get match from cache: %v", err)
 	}
-	return match.Logs, nil
+	return logSet.Logs, nil
 }
 
 func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 	cacheLogs := make([]cache.Log, 0)
+	logIDs := make([]int, 0)
 
 	match, err := c.etf2l.ParseMatchPage(matchId)
 	if err != nil {
@@ -32,15 +33,15 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		steamIDs []string
 	)
 
-	for _, playerID := range match.Players {
-		steamID, err = c.cache.GetPlayer(playerID)
+	for _, playerURL := range match.Players {
+		steamID, err = c.cache.GetPlayer(playerURL)
 		if err == redis.Nil {
-			steamID, err = c.etf2l.ResolvePlayerSteamID(playerID)
+			steamID, err = c.etf2l.ResolvePlayerSteamID(playerURL)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get player page from etf2l: %v\n", err)
+				return nil, fmt.Errorf("failed to get player page from etf2l: %v", err)
 			}
-			if err = c.cache.SetPlayer(playerID, steamID); err != nil {
-				return nil, fmt.Errorf("failed to set player in cache: %v\n", err)
+			if err = c.cache.SetPlayer(playerURL, steamID); err != nil {
+				return nil, fmt.Errorf("failed to save player in cache: %v", err)
 			}
 		}
 		if err != nil {
@@ -51,7 +52,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		}
 	}
 
-	logsMetadata, err := c.logsTf.SearchLogs(steamIDs, match.Maps, match.PlayedAt)
+	logsMetadata, err := c.logsTf.SearchLogs(steamIDs, match.Maps)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}
@@ -61,10 +62,18 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 			Map:      log.Map,
 			PlayedAt: time.Unix(int64(log.Date), 0),
 		}
+		logIDs = append(logIDs, log.Id)
 		cacheLogs = append(cacheLogs, cacheLog)
 	}
-	if err = c.cache.SetMatch(matchId, &cache.Match{Logs: cacheLogs}); err != nil {
+	if err = c.cache.SetLogs(matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
 		return nil, fmt.Errorf("failed to set match in cache: %v", err)
+	}
+	if err = c.cache.SetMatch(logIDs, &cache.MatchPage{
+		Id:          match.ID,
+		Competition: match.Competition,
+		Stage:       match.Stage,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to set logs in cache: %v", err)
 	}
 	return cacheLogs, nil
 }

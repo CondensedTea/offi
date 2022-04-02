@@ -2,21 +2,22 @@
   "manifest_version": 3,
 
   "name": "Offi",
-  "description": "Find logs for ETF2L officials",
+  "description": "Link between logs.tf and ETF2L match pages",
   "version": "0.1",
 
   "content_scripts": [
     {
       "run_at": "document_end",
       "matches": ["https://etf2l.org/matches/*"],
-      "js": ["dist/index.js"]
+      "js": ["dist/etf2l.js"]
+    },
+    {
+      "run_at": "document_end",
+      "matches": ["https://logs.tf/*"],
+      "js": ["dist/logstf.js"]
     }
   ],
-  "host_permissions": [
-    "https://stg.lemontea.dev/offi/match/*"
-  ],
   "permissions": [
-    "activeTab",
     "declarativeContent"
   ]
 }

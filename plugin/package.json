@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "parcel build index.ts --no-source-maps",
-    "dev-build": "parcel build --no-minify index.ts --no-source-maps",
+    "build": "parcel build *.ts --no-source-maps",
+    "dev-build": "parcel build --no-minify *.ts --no-source-maps",
     "lint": "eslint *.ts"
   },
   "dependencies": {

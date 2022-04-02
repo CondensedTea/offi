@@ -11,10 +11,6 @@ import (
 
 const timeout = 5 * time.Minute
 
-// Due to the fact log's playedAt filed points to gameserver time,
-// and it can be non-UTC timezone, hours difference must be applied
-const hourShift = 36
-
 type Getter interface {
 	Get(string) (*http.Response, error)
 }
@@ -29,17 +25,17 @@ func New() *Client {
 	}
 }
 
-func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, error) {
+func (c Client) SearchLogs(players, maps []string) ([]Log, error) {
 	resp, err := c.getLogsWithPlayers(players)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
-	logs := filterLogs(maps, playedAt, resp.Logs)
+	logs := filterLogs(maps, resp.Logs)
 
 	return logs, nil
 }
 
-func filterLogs(maps []string, playedAt time.Time, logs []Log) []Log {
+func filterLogs(maps []string, logs []Log) []Log {
 	mapsWhitelist := make(map[string]struct{})
 
 	validLogs := make([]Log, 0)
@@ -48,16 +44,9 @@ func filterLogs(maps []string, playedAt time.Time, logs []Log) []Log {
 		mapsWhitelist[m] = struct{}{}
 	}
 
-	dayBeforePlayed := playedAt.Add(-hourShift * time.Hour)
-	dayAfterPlayed := playedAt.Add(hourShift * time.Hour)
-
 	for _, log := range logs {
 		if _, ok := mapsWhitelist[log.Map]; ok {
-			logPlayedAt := time.Unix(int64(log.Date), 0)
-
-			if logPlayedAt.After(dayBeforePlayed) && logPlayedAt.Before(dayAfterPlayed) {
-				validLogs = append(validLogs, log)
-			}
+			validLogs = append(validLogs, log)
 		}
 	}
 	return validLogs

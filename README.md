@@ -1,6 +1,21 @@
-### Offi - plugin and api-server
+## Offi - plugin and api-server
 
 Pairs etf2l match pages and logs.tf logs.
 
-Backend in Go with Fiber framework, data stored in Redis,
-fronted in typescript.
+Build with:
+- Go with fiber framework
+- Redis
+- Typescript
+
+## How to run
+### Backend:
+```shell
+cd backend/
+docker-compose --build -d up
+```
+### Plugin:
+```shell
+cd plugin/
+npm run dev-build
+```
+import plugin directory in your browser.
