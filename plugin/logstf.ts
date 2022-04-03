@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 
 const matchRe = RegExp('https://logs.tf/(\\d+)');
-const apiUrl = 'http://localhost:8080/log/';
+const apiUrl = 'https://offi.lemontea.dev/log/';
 
 class Match {
   id: number;

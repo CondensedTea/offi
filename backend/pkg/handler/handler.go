@@ -13,6 +13,7 @@ import (
 func CreateApp(c *core.Core) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: errorHandler,
+		GETOnly:      true,
 	})
 
 	app.Use(logger.New())

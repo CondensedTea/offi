@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 
 const matchRe = RegExp('https://etf2l.org/matches/(\\d+)/');
-const apiUrl = 'http://localhost:8080/match/';
+const apiUrl = 'https://offi.lemontea.dev/match/';
 
 class Log {
   id: number;
