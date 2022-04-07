@@ -11,6 +11,7 @@ type LogSet struct {
 
 type Log struct {
 	ID          int       `json:"id" redis:"id"`
+	Title       string    `json:"title"`
 	Map         string    `json:"map" redis:"map"`
 	PlayedAt    time.Time `json:"played_at" redis:"played_at"`
 	IsSecondary bool      `json:"is_secondary" redis:"is_secondary"`

@@ -42,6 +42,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 	for _, log := range matchLogs {
 		cacheLog := cache.Log{
 			ID:       log.Id,
+			Title:    log.Title,
 			Map:      log.Map,
 			PlayedAt: time.Unix(int64(log.Date), 0),
 		}
@@ -51,6 +52,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 	for _, log := range secondaryLogs {
 		cacheLog := cache.Log{
 			ID:          log.Id,
+			Title:       log.Title,
 			Map:         log.Map,
 			PlayedAt:    time.Unix(int64(log.Date), 0),
 			IsSecondary: true,

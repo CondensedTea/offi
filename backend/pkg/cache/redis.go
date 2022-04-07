@@ -40,6 +40,17 @@ func (r Redis) SetLogs(matchId int, logSet *LogSet) error {
 	return r.client.HSet(matchKey, strconv.Itoa(matchId), logSet).Err()
 }
 
+func (r Redis) DeleteLogs(matchId int) (*LogSet, error) {
+	logSet, err := r.GetLogs(matchId)
+	if err != nil {
+		return nil, err
+	}
+	if err = r.client.HDel(matchKey, strconv.Itoa(matchId)).Err(); err != nil {
+		return nil, err
+	}
+	return &logSet, nil
+}
+
 func (r Redis) GetPlayer(playerID string) (string, error) {
 	return r.client.HGet(playerKey, playerID).Result()
 }

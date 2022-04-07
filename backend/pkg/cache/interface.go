@@ -3,6 +3,7 @@ package cache
 type Cache interface {
 	GetLogs(matchId int) (LogSet, error)
 	SetLogs(matchId int, match *LogSet) error
+	DeleteLogs(matchId int) (*LogSet, error)
 
 	GetPlayer(playerID string) (string, error)
 	SetPlayer(playerID, steamID string) error

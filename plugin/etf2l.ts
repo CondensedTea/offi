@@ -5,11 +5,13 @@ const apiUrl = 'https://offi.lemontea.dev/match/';
 
 class Log {
   id: number;
+  title: string;
   map: string;
   played_at: Date;
   is_secondary: boolean;
   constructor(data: Object) {
     this.id = data['id'];
+    this.title = data['title'];
     this.map = data['map'];
     this.played_at = new Date(data['played_at']);
     this.is_secondary = data['is_secondary'];
@@ -75,10 +77,13 @@ async function addLogLinks(): Promise<void> {
 
   for (const log of logs) {
     const logItem = document.createElement('li');
-    logItem.innerHTML =`<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
     if (log.is_secondary) {
+      logItem.innerHTML =`
+        <a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.title != '' ? log.title : log.map} | ${log.played_at.toLocaleString()}`;
       OtherLogList.appendChild(logItem);
     } else {
+      logItem.innerHTML =`
+        <a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
       PrimaryLogList.appendChild(logItem);
     }
   }
