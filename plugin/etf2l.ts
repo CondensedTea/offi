@@ -7,10 +7,12 @@ class Log {
   id: number;
   map: string;
   played_at: Date;
+  is_secondary: boolean;
   constructor(data: Object) {
     this.id = data['id'];
     this.map = data['map'];
     this.played_at = new Date(data['played_at']);
+    this.is_secondary = data['is_secondary'];
   }
 }
 
@@ -40,33 +42,49 @@ async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   return logs;
 }
 
-async function addLogLinks(): Promise<void> {
-  const matchId = getMatchID();
-  const logs = await getLogsFromAPI(matchId);
-
-  const LogList = document.createElement('ul');
-
-  for (const log of logs) {
-    const logItem = document.createElement('li');
-    logItem.innerHTML =`<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
-    LogList.appendChild(logItem);
-  }
+function createLogHeader(logList: Node, isPrimary: boolean) {
   const LogHeader = document.createElement('div');
   LogHeader.className = 'offi';
+  let text = '';
 
-  if (logs.length === 1) {
-    LogHeader.innerHTML = `<h2>1 Log</h2>`;
-  } else {
-    LogHeader.innerHTML = `<h2>${logs.length} Logs</h2>`;
+  if (!isPrimary) {
+    text = 'Other ';
   }
-  LogHeader.append(LogList);
+  if (logList.childNodes.length === 1) {
+    text += '1 log';
+  } else {
+    text += `${logList.childNodes.length} logs`;
+  }
+  LogHeader.innerHTML = `<h2>${text}</h2>`;
+
+  LogHeader.append(logList);
 
   const playersSection = document.getElementsByClassName('fix match-players');
   if (playersSection === null || playersSection.length < 1) {
     return;
   }
   playersSection[0].after(LogHeader);
-  return;
+}
+
+async function addLogLinks(): Promise<void> {
+  const matchId = getMatchID();
+  const logs = await getLogsFromAPI(matchId);
+
+  const PrimaryLogList = document.createElement('ul');
+  const OtherLogList = document.createElement('ul');
+
+  for (const log of logs) {
+    const logItem = document.createElement('li');
+    logItem.innerHTML =`<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
+    if (log.is_secondary) {
+      OtherLogList.appendChild(logItem);
+    } else {
+      PrimaryLogList.appendChild(logItem);
+    }
+  }
+
+  createLogHeader(OtherLogList, false);
+  createLogHeader(PrimaryLogList, true);
 }
 
 addLogLinks();

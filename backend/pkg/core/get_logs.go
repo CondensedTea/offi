@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"offi/pkg/cache"
+	"offi/pkg/etf2l"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -20,7 +21,6 @@ func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 }
 
 func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
-	cacheLogs := make([]cache.Log, 0)
 	logIDs := make([]int, 0)
 
 	match, err := c.etf2l.ParseMatchPage(matchId)
@@ -28,13 +28,54 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		return nil, fmt.Errorf("failed to get players for etf2l match: %v", err)
 	}
 
-	var (
-		steamID  string
-		steamIDs []string
-	)
+	steamIDs, err := c.GetSteamIDs(match)
+	if err != nil {
+		return nil, err
+	}
+
+	var cacheLogs []cache.Log
+
+	matchLogs, secondaryLogs, err := c.logsTf.SearchLogs(steamIDs, match.Maps, match.PlayedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search logs: %v", err)
+	}
+	for _, log := range matchLogs {
+		cacheLog := cache.Log{
+			ID:       log.Id,
+			Map:      log.Map,
+			PlayedAt: time.Unix(int64(log.Date), 0),
+		}
+		logIDs = append(logIDs, log.Id)
+		cacheLogs = append(cacheLogs, cacheLog)
+	}
+	for _, log := range secondaryLogs {
+		cacheLog := cache.Log{
+			ID:          log.Id,
+			Map:         log.Map,
+			PlayedAt:    time.Unix(int64(log.Date), 0),
+			IsSecondary: true,
+		}
+		logIDs = append(logIDs, log.Id)
+		cacheLogs = append(cacheLogs, cacheLog)
+	}
+	if err = c.cache.SetLogs(matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
+		return nil, fmt.Errorf("failed to set match in cache: %v", err)
+	}
+	if err = c.cache.SetMatch(logIDs, &cache.MatchPage{
+		Id:          match.ID,
+		Competition: match.Competition,
+		Stage:       match.Stage,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to set logs in cache: %v", err)
+	}
+	return cacheLogs, nil
+}
+
+func (c Core) GetSteamIDs(match *etf2l.Match) ([]string, error) {
+	var steamIDs []string
 
 	for _, playerURL := range match.Players {
-		steamID, err = c.cache.GetPlayer(playerURL)
+		steamID, err := c.cache.GetPlayer(playerURL)
 		if err == redis.Nil {
 			steamID, err = c.etf2l.ResolvePlayerSteamID(playerURL)
 			if err != nil {
@@ -51,29 +92,5 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 			steamIDs = append(steamIDs, steamID)
 		}
 	}
-
-	logsMetadata, err := c.logsTf.SearchLogs(steamIDs, match.Maps)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search logs: %v", err)
-	}
-	for _, log := range logsMetadata {
-		cacheLog := cache.Log{
-			ID:       log.Id,
-			Map:      log.Map,
-			PlayedAt: time.Unix(int64(log.Date), 0),
-		}
-		logIDs = append(logIDs, log.Id)
-		cacheLogs = append(cacheLogs, cacheLog)
-	}
-	if err = c.cache.SetLogs(matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
-		return nil, fmt.Errorf("failed to set match in cache: %v", err)
-	}
-	if err = c.cache.SetMatch(logIDs, &cache.MatchPage{
-		Id:          match.ID,
-		Competition: match.Competition,
-		Stage:       match.Stage,
-	}); err != nil {
-		return nil, fmt.Errorf("failed to set logs in cache: %v", err)
-	}
-	return cacheLogs, nil
+	return steamIDs, nil
 }

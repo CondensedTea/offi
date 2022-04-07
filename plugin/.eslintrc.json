@@ -15,6 +15,7 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "require-jsdoc" : 0
+        "require-jsdoc" : 0,
+        "max-len": ["error", {"code": 140}]
     }
 }

@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const timeout = 5 * time.Minute
+const (
+	timeout           = 5 * time.Minute
+	matchPlayedOffset = 3 * 24 * time.Hour
+)
 
 type Getter interface {
 	Get(string) (*http.Response, error)
@@ -25,31 +28,42 @@ func New() *Client {
 	}
 }
 
-func (c Client) SearchLogs(players, maps []string) ([]Log, error) {
+func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	resp, err := c.getLogsWithPlayers(players)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
+		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
-	logs := filterLogs(maps, resp.Logs)
+	matchLogs, secondaryLogs := filterLogs(maps, resp.Logs, playedAt)
 
-	return logs, nil
+	return matchLogs, secondaryLogs, nil
 }
 
-func filterLogs(maps []string, logs []Log) []Log {
+func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combinedLogs []Log) {
 	mapsWhitelist := make(map[string]struct{})
-
-	validLogs := make([]Log, 0)
 
 	for _, m := range maps {
 		mapsWhitelist[m] = struct{}{}
 	}
 
 	for _, log := range logs {
+
+		matchPlayedAtMinusOffset := playedAt.Add(-matchPlayedOffset)
+		matchPlayedAtPlusOffset := playedAt.Add(matchPlayedOffset)
+
+		logPlayedAt := time.Unix(int64(log.Date), 0)
+
+		if logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
+			fmt.Printf("match log #%d didnt didnt match based on time limits", log.Id)
+			continue
+		}
+
 		if _, ok := mapsWhitelist[log.Map]; ok {
-			validLogs = append(validLogs, log)
+			matchLogs = append(matchLogs, log)
+		} else {
+			combinedLogs = append(combinedLogs, log)
 		}
 	}
-	return validLogs
+	return matchLogs, combinedLogs
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
