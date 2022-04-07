@@ -11,11 +11,11 @@ Build with:
 ### Backend:
 ```shell
 cd backend/
-docker-compose --build -d up
+docker-compose up -d --build
 ```
 ### Plugin:
 ```shell
 cd plugin/
-npm run dev-build
+npm run build
 ```
 import plugin directory in your browser.
