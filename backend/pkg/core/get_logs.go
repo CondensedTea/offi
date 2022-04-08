@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
-	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -40,23 +39,12 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}
 	for _, log := range matchLogs {
-		cacheLog := cache.Log{
-			ID:       log.Id,
-			Title:    log.Title,
-			Map:      log.Map,
-			PlayedAt: time.Unix(int64(log.Date), 0),
-		}
+		cacheLog := log.ToCache(false)
 		logIDs = append(logIDs, log.Id)
 		cacheLogs = append(cacheLogs, cacheLog)
 	}
 	for _, log := range secondaryLogs {
-		cacheLog := cache.Log{
-			ID:          log.Id,
-			Title:       log.Title,
-			Map:         log.Map,
-			PlayedAt:    time.Unix(int64(log.Date), 0),
-			IsSecondary: true,
-		}
+		cacheLog := log.ToCache(true)
 		logIDs = append(logIDs, log.Id)
 		cacheLogs = append(cacheLogs, cacheLog)
 	}

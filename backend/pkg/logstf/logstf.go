@@ -2,17 +2,22 @@ package logstf
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	timeout           = 5 * time.Minute
 	matchPlayedOffset = 3 * 24 * time.Hour
 )
+
+var ErrTooManyPlayers = errors.New("could not process match with more than 18 players due logs.tf limitations")
 
 type Getter interface {
 	Get(string) (*http.Response, error)
@@ -29,6 +34,10 @@ func New() *Client {
 }
 
 func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+	if len(players) > 18 {
+		return nil, nil, ErrTooManyPlayers
+	}
+
 	resp, err := c.getLogsWithPlayers(players)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
@@ -53,7 +62,7 @@ func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combi
 		logPlayedAt := time.Unix(int64(log.Date), 0)
 
 		if logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
-			fmt.Printf("match log #%d didnt didnt match based on time limits", log.Id)
+			logrus.Infof("match log #%d didnt didnt match based on time limits", log.Id)
 			continue
 		}
 
@@ -86,4 +95,23 @@ func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
 		return nil, err
 	}
 	return &r, nil
+}
+
+func (c Client) GetLog(id int) (Log, error) {
+	u := fmt.Sprintf("https://logs.tf/api/v1/log/%d", id)
+	resp, err := c.httpClient.Get(u)
+	if err != nil {
+		return Log{}, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		return Log{}, fmt.Errorf("api returned bad staus: %d; %s", resp.StatusCode, string(b))
+	}
+	defer resp.Body.Close()
+
+	var r FullLog
+	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return Log{}, err
+	}
+	return r.Info, nil
 }

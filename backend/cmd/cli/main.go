@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"offi/pkg/cache"
 	"offi/pkg/core"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
+	"github.com/sirupsen/logrus"
 )
 
 var CLI struct {
@@ -20,6 +20,11 @@ var CLI struct {
 	PlayerQuery struct {
 		ID int `arg:"" name:"match_id"`
 	} `cmd:"" help:"builds logs.tf API URL for given match"`
+	LinkLog struct {
+		Secondary bool `help:"mark log as secondary"`
+		MatchID   int  `arg:"" name:"match_id"`
+		LogID     int  `arg:"" name:"log_id"`
+	} `cmd:"" help:"links log to match"`
 }
 
 func main() {
@@ -51,7 +56,22 @@ func main() {
 			log.Fatal(err)
 		}
 		query := "player=" + strings.Join(steamIds, ",")
-		fmt.Printf("https://logs.tf/api/v1/log?%s\n", query)
+		logrus.Infof("https://logs.tf/api/v1/log?%s", query)
+	case "link-log <match_id> <log_id>":
+		l, err := logsTf.GetLog(CLI.LinkLog.LogID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cacheLog := l.ToCache(CLI.LinkLog.Secondary)
+
+		logSet, err := cacheClient.GetLogs(CLI.LinkLog.MatchID)
+		if err != nil {
+			log.Fatal(err)
+		}
+		(&logSet).Logs = append(logSet.Logs, cacheLog)
+		if err = cacheClient.SetLogs(CLI.LinkLog.MatchID, &logSet); err != nil {
+			log.Fatal(err)
+		}
 	default:
 		panic(ctx.Command())
 	}
