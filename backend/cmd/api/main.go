@@ -8,9 +8,15 @@ import (
 	"offi/pkg/handler"
 	"offi/pkg/logstf"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	if _, ok := os.LookupEnv("DEBUG"); ok {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+
 	logsTf := logstf.New()
 	etf2lClient := etf2l.New()
 

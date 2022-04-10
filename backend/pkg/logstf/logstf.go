@@ -62,7 +62,7 @@ func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combi
 		logPlayedAt := time.Unix(int64(log.Date), 0)
 
 		if logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
-			logrus.Infof("match log #%d didnt didnt match based on time limits", log.Id)
+			logrus.Debugf("match log #%d didnt match based on time limits", log.Id)
 			continue
 		}
 

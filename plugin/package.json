@@ -1,13 +1,23 @@
 {
   "name": "offi",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "0.1.3",
   "scripts": {
-    "build": "parcel build *.ts --no-minify --no-source-maps",
+    "build": "parcel build --no-source-maps --target default",
     "lint": "eslint *.ts"
   },
+  "targets": {
+    "default": {
+      "source": [
+        "etf2l.ts",
+        "logstf.ts"
+      ],
+      "sourceMap": {
+        "inlineSources": true
+      }
+    }
+  },
   "dependencies": {
-    "parcel-bundler": "^1.12.5",
+    "parcel": "^2.0.0",
     "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {

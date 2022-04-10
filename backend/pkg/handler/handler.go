@@ -63,7 +63,7 @@ func CreateApp(c *core.Core) *fiber.App {
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to get keys: %v", err))
 		}
-		return ctx.JSON(fiber.Map{"keys": keys})
+		return ctx.JSON(fiber.Map{"keys": keys, "count": len(keys)})
 	})
 
 	return app
