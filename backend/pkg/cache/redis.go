@@ -1,8 +1,10 @@
 package cache
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -12,6 +14,10 @@ const (
 	playerKey = "players"
 	logsKey   = "logs"
 )
+
+const errorMatchExpire = 3 * time.Hour
+
+var ErrCached = errors.New("cached error, retry later")
 
 type Redis struct {
 	client *redis.Client
@@ -38,6 +44,23 @@ func (r Redis) GetLogs(matchId int) (LogSet, error) {
 
 func (r Redis) SetLogs(matchId int, logSet *LogSet) error {
 	return r.client.HSet(matchKey, strconv.Itoa(matchId), logSet).Err()
+}
+
+func (r Redis) SetLogError(matchId int, err error) error {
+	match := fmt.Sprintf("match-%d", matchId)
+	return r.client.Set(match, err.Error(), errorMatchExpire).Err()
+}
+
+func (r Redis) CheckLogError(matchId int) error {
+	match := fmt.Sprintf("match-%d", matchId)
+	val, err := r.client.Get(match).Result()
+	if err == redis.Nil {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf("%w: %v", ErrCached, val)
 }
 
 func (r Redis) DeleteLogs(matchId int) (*LogSet, error) {

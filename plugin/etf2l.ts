@@ -70,7 +70,14 @@ function createLogHeader(logList: Node, isPrimary: boolean) {
 
 async function addLogLinks(): Promise<void> {
   const matchId = getMatchID();
-  const logs = await getLogsFromAPI(matchId);
+  let logs;
+
+  try {
+    logs = await getLogsFromAPI(matchId);
+  } catch (e) {
+    console.log('could not get logs: ' + e.toString());
+    return;
+  }
 
   const PrimaryLogList = document.createElement('ul');
   const OtherLogList = document.createElement('ul');

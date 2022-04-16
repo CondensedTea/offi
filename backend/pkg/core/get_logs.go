@@ -6,13 +6,24 @@ import (
 	"offi/pkg/etf2l"
 
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 )
 
 func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 	logSet, err := c.cache.GetLogs(matchId)
 	switch {
 	case err == redis.Nil:
-		return c.saveNewMatch(matchId)
+		if saveErr := c.cache.CheckLogError(matchId); saveErr != nil {
+			return nil, saveErr
+		}
+		logs, saveErr := c.saveNewMatch(matchId)
+		if saveErr != nil {
+			if cacheErr := c.cache.SetLogError(matchId, saveErr); cacheErr != nil {
+				logrus.Errorf("failed to cache log error: %v", cacheErr)
+			}
+			return nil, saveErr
+		}
+		return logs, nil
 	case err != nil:
 		return nil, fmt.Errorf("failed to get match from cache: %v", err)
 	}

@@ -37,7 +37,14 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
 
 async function addMatchLink(): Promise<void> {
   const matchId = getLogID();
-  const match = await getMatchFromAPI(matchId);
+  let match;
+
+  try {
+    match = await getMatchFromAPI(matchId);
+  } catch (e) {
+    console.log('could not get match: ' + e.toString());
+    return;
+  }
 
   const matchBlock = document.createElement('h3');
 
