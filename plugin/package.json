@@ -1,6 +1,6 @@
 {
   "name": "offi",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "build": "parcel build --no-source-maps --target default",
     "lint": "eslint *.ts"
