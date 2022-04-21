@@ -1,8 +1,8 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Offi",
   "description": "Link between logs.tf and ETF2L match pages",
-  "version": "0.1.5",
+  "version": "1.0.0",
   "content_scripts": [
     {
       "run_at": "document_end",

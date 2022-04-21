@@ -37,7 +37,7 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
 
 async function addMatchLink(): Promise<void> {
   const matchId = getLogID();
-  let match;
+  let match: Match;
 
   try {
     match = await getMatchFromAPI(matchId);
@@ -46,14 +46,17 @@ async function addMatchLink(): Promise<void> {
     return;
   }
 
-  const matchBlock = document.createElement('h3');
+  const competitionBlock = document.createElement('h3');
+  competitionBlock.innerHTML =
+    `<a href="https://etf2l.org/matches/${match.id}">${match.competition}</a>`;
 
-  matchBlock.innerHTML =
-    `<a href="https://etf2l.org/matches/${match.id}"> ${match.competition} | ${match.stage} </a>`;
+  const matchBlock = document.createElement('h3');
+  matchBlock.innerText = match.stage;
 
   const logDateElem = document.getElementById('log-date');
 
   logDateElem.after(matchBlock);
+  logDateElem.after(competitionBlock);
 }
 
 addMatchLink();
