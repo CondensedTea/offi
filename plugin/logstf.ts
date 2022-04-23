@@ -3,15 +3,14 @@ import 'regenerator-runtime/runtime';
 const matchRe = RegExp('https://logs.tf/(\\d+)');
 const apiUrl = 'https://offi.lemontea.dev/log/';
 
-class Match {
+type Match = {
   id: number;
   competition: string;
   stage: string;
-  constructor(data: Object) {
-    this.id = data['match_id'];
-    this.competition = data['competition'];
-    this.stage = data['stage'];
-  }
+}
+
+type ApiMatchResponse = {
+  match: Match;
 }
 
 function getLogID(): number {
@@ -30,9 +29,9 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
     throw new Error('offi api returned error: ' + res.statusText);
   }
 
-  const apiResponse = await res.json();
+  const apiResponse = await res.json() as ApiMatchResponse;
 
-  return new Match(apiResponse['match']);
+  return apiResponse.match;
 }
 
 async function addMatchLink(): Promise<void> {
@@ -42,7 +41,7 @@ async function addMatchLink(): Promise<void> {
   try {
     match = await getMatchFromAPI(matchId);
   } catch (e) {
-    console.log('could not get match: ' + e.toString());
+    console.error('could not get match: ' + e.toString());
     return;
   }
 
