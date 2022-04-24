@@ -2,7 +2,6 @@ package logstf
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,8 +15,6 @@ const (
 	timeout           = 5 * time.Minute
 	matchPlayedOffset = 3 * 24 * time.Hour
 )
-
-var ErrTooManyPlayers = errors.New("could not process match with more than 18 players due logs.tf limitations")
 
 type Getter interface {
 	Get(string) (*http.Response, error)
@@ -34,9 +31,10 @@ func New() *Client {
 }
 
 func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
-	if len(players) > 18 {
-		return nil, nil, ErrTooManyPlayers
-	}
+	started := time.Now()
+	defer func() {
+		logsTfSearchTime.WithLabelValues().Observe(time.Since(started).Seconds())
+	}()
 
 	resp, err := c.getLogsWithPlayers(players)
 	if err != nil {

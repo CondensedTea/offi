@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
@@ -8,6 +9,10 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
+
+var ErrTooManyPlayers = errors.New("could not process match with more than 18 players due logs.tf limitations")
+
+const maxPlayers = 18
 
 func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 	logSet, err := c.cache.GetLogs(matchId)
@@ -92,6 +97,10 @@ func (c Core) GetSteamIDs(match *etf2l.Match) ([]string, error) {
 		if steamID != "" {
 			steamIDs = append(steamIDs, steamID)
 		}
+	}
+
+	if len(steamIDs) > maxPlayers {
+		return nil, ErrTooManyPlayers
 	}
 	return steamIDs, nil
 }

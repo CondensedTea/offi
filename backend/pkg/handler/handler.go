@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"offi/pkg/core"
 
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/go-redis/redis"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
+
+const appName = "offi-backend"
 
 func CreateApp(c *core.Core) *fiber.App {
 	app := fiber.New(fiber.Config{
@@ -16,6 +19,10 @@ func CreateApp(c *core.Core) *fiber.App {
 		GETOnly:      true,
 	})
 
+	prometheus := fiberprometheus.New(appName)
+	prometheus.RegisterAt(app, "/metrics")
+
+	app.Use(prometheus.Middleware)
 	app.Use(logger.New())
 
 	app.Use(cors.New(cors.Config{
