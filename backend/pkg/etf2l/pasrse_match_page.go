@@ -81,8 +81,7 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		}
 	})
 
-	scheduledBlockText := goquery.NewDocumentFromNode(doc.Find("h4.c").Get(2)).Text()
-	matchDate, err := parseMatchDate(scheduledBlockText)
+	matchDate, err := parseMatchDate(doc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse match date: %v", err)
 	}
@@ -97,8 +96,11 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 	}, nil
 }
 
-func parseMatchDate(textBlock string) (time.Time, error) {
-	match := reSubmittedDateTime.FindStringSubmatch(textBlock)
+func parseMatchDate(doc *goquery.Document) (time.Time, error) {
+	if len(doc.Nodes) < 3 {
+		return time.Time{}, fmt.Errorf("not enough nodes: %d", len(doc.Nodes))
+	}
+	match := reSubmittedDateTime.FindStringSubmatch(goquery.NewDocumentFromNode(doc.Get(2)).Text())
 	if len(match) < 1 {
 		return time.Time{}, fmt.Errorf("could not find correct date")
 	}
