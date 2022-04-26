@@ -10,6 +10,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nleeper/goment"
+	"golang.org/x/net/html"
 )
 
 var timeNow = func() time.Time {
@@ -81,7 +82,12 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		}
 	})
 
-	matchDate, err := parseMatchDate(doc)
+	if len(doc.Nodes) < 3 {
+		return nil, fmt.Errorf("too little nodes found in doc")
+	}
+	node := doc.Find("h4.c").Get(2)
+
+	matchDate, err := parseMatchDate(node)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse match date: %v", err)
 	}
@@ -96,11 +102,8 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 	}, nil
 }
 
-func parseMatchDate(doc *goquery.Document) (time.Time, error) {
-	if len(doc.Nodes) < 3 {
-		return time.Time{}, fmt.Errorf("not enough nodes: %d", len(doc.Nodes))
-	}
-	match := reSubmittedDateTime.FindStringSubmatch(goquery.NewDocumentFromNode(doc.Get(2)).Text())
+func parseMatchDate(node *html.Node) (time.Time, error) {
+	match := reSubmittedDateTime.FindStringSubmatch(goquery.NewDocumentFromNode(node).Text())
 	if len(match) < 1 {
 		return time.Time{}, fmt.Errorf("could not find correct date")
 	}
