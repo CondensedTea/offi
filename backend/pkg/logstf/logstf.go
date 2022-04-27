@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -53,21 +51,15 @@ func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combi
 	}
 
 	for _, log := range logs {
-
 		matchPlayedAtMinusOffset := playedAt.Add(-matchPlayedOffset)
 		matchPlayedAtPlusOffset := playedAt.Add(matchPlayedOffset)
-
 		logPlayedAt := time.Unix(int64(log.Date), 0)
 
-		if logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
-			logrus.Debugf("match log #%d didnt match based on time limits", log.Id)
-			continue
-		}
-
-		if _, ok := mapsWhitelist[log.Map]; ok {
-			matchLogs = append(matchLogs, log)
-		} else {
+		_, ok := mapsWhitelist[log.Map]
+		if !ok || logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
 			combinedLogs = append(combinedLogs, log)
+		} else {
+			matchLogs = append(matchLogs, log)
 		}
 	}
 	return matchLogs, combinedLogs

@@ -82,12 +82,12 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		}
 	})
 
-	if len(doc.Nodes) < 3 {
+	timestamps := doc.Find("h4.c")
+	if len(timestamps.Nodes) < 3 {
 		return nil, fmt.Errorf("too little nodes found in doc")
 	}
-	node := doc.Find("h4.c").Get(2)
-
-	matchDate, err := parseMatchDate(node)
+	matchDateNode := timestamps.Get(2)
+	matchDate, err := parseMatchDate(matchDateNode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse match date: %v", err)
 	}
