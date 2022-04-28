@@ -92,6 +92,10 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		return nil, fmt.Errorf("failed to parse match date: %v", err)
 	}
 
+	if len(playerURLs) == 0 {
+		return nil, fmt.Errorf("match has zero players")
+	}
+
 	return &Match{
 		Players:     playerURLs,
 		Maps:        matchMaps,
