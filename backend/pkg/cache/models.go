@@ -6,7 +6,7 @@ import (
 )
 
 type LogSet struct {
-	Logs []Log `json:"logs" redis:"logs"`
+	Logs []Log `json:"logs"`
 }
 
 type Log struct {

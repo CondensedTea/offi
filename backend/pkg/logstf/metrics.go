@@ -10,8 +10,6 @@ var logsTfSearchTime = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Help:        "Response time of logs.tf API methods",
 	ConstLabels: make(prometheus.Labels),
 	Buckets: []float64{
-		0.01, // 10ms
-		0.05,
 		0.1, // 100 ms
 		0.2,
 		0.5,

@@ -1,21 +1,6 @@
-## Offi - plugin and api-server
+## Offi - browser plugin and backend server
 
-Pairs etf2l match pages and logs.tf logs.
+Extension for [ETF2L](https://etf2l.org) with Qol features:
+- links to logs.tf logs on matchapages and vise versa
 
-Build with:
-- Go with fiber framework
-- Redis
-- Typescript
-
-## How to run
-### Backend:
-```shell
-cd backend/
-docker-compose up -d --build
-```
-### Plugin:
-```shell
-cd plugin/
-npm run build
-```
-import plugin directory in your browser.
+Check `backend/` and `plugin/` for more info.

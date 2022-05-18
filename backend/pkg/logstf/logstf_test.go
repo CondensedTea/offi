@@ -56,21 +56,62 @@ func Test_filterLogs(t *testing.T) {
 			args: args{
 				maps: []string{"cp_process_final", "cp_gullywash_final1"},
 				logs: []Log{
-					{Id: 1, Map: "cp_process_final", Date: 1650744000},
-					{Id: 2, Map: "cp_gullywash_final1", Date: 1650400200},
-				},
-				playedAt: time.Date(2022, time.April, 24, 1, 0, 0, 0, time.UTC),
+					{Id: 1, Map: "cp_process_final", Date: 1650659400},
+					{Id: 2, Map: "cp_gullywash_final1", Date: 1647376200}, //  1650054600
+				}, playedAt: time.Unix(1650409200, 0),
 			},
 			wantMatchLogs: []Log{
-				{Id: 1, Map: "cp_process_final", Date: 1650744000},
+				{Id: 1, Map: "cp_process_final", Date: 1650659400},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotMatchLogs, gotCombinedLogs := filterLogs(tt.args.maps, tt.args.logs, tt.args.playedAt)
-			assert.Equal(t, gotMatchLogs, tt.wantMatchLogs)
-			assert.Equal(t, gotCombinedLogs, tt.wantCombinedLogs)
+			assert.Equal(t, tt.wantMatchLogs, gotMatchLogs, "primary logs doesnt match")
+			assert.Equal(t, tt.wantCombinedLogs, gotCombinedLogs, "secondary logs doesnt match")
+		})
+	}
+}
+
+func Test_mapIsValid(t *testing.T) {
+	type args struct {
+		maps   []string
+		logMap string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "complete map match",
+			args: args{
+				maps:   []string{"cp_badlands", "cp_process_final1"},
+				logMap: "cp_badlands",
+			},
+			want: true,
+		},
+		{
+			name: "wrong version but still match",
+			args: args{
+				maps:   []string{"cp_badlands", "cp_process_final2"},
+				logMap: "cp_process_rc3",
+			},
+			want: true,
+		},
+		{
+			name: "no match",
+			args: args{
+				maps:   []string{"cp_badlands", "cp_process_final2"},
+				logMap: "combined log bad + proc",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, mapIsNotValid(tt.args.maps, tt.args.logMap), "mapIsNotValid(%v, %v)", tt.args.maps, tt.args.logMap)
 		})
 	}
 }

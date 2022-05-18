@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 const appName = "offi-backend"
@@ -24,6 +25,8 @@ func CreateApp(c *core.Core) *fiber.App {
 
 	app.Use(prometheus.Middleware)
 	app.Use(logger.New())
+
+	storage := session.New()
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "https://etf2l.org, https://logs.tf",
@@ -42,7 +45,21 @@ func CreateApp(c *core.Core) *fiber.App {
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get logs: %v", err))
 		}
-		return ctx.JSON(fiber.Map{"logs": logs})
+
+		sess, err := storage.Get(ctx)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get session: %v", err))
+		}
+
+		if err = sess.Save(); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to save session: %v", err))
+		}
+
+		views, err := c.CountViews("match", matchId, sess.Fresh())
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get view count for match: %v", err))
+		}
+		return ctx.JSON(fiber.Map{"logs": logs, "views": views})
 	})
 
 	app.Get("/log/:logId", func(ctx *fiber.Ctx) error {
@@ -60,7 +77,19 @@ func CreateApp(c *core.Core) *fiber.App {
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get match: %v", err))
 		}
-		return ctx.JSON(fiber.Map{"match": match})
+
+		sess, err := storage.Get(ctx)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get session: %v", err))
+		}
+		if err = sess.Save(); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to save session: %v", err))
+		}
+		views, err := c.CountViews("logs", logId, sess.Fresh())
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to update view count for log: %v", err))
+		}
+		return ctx.JSON(fiber.Map{"match": match, "views": views})
 	})
 
 	app.Get("/debug/keys/:hashKey", func(ctx *fiber.Ctx) error {

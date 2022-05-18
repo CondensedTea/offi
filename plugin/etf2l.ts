@@ -3,6 +3,8 @@ import "regenerator-runtime/runtime";
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
 const apiUrl = "https://offi.lemontea.dev/match/";
 
+const NoLogsError = new Error("api didnt found logs for this match");
+
 class Log {
   id: number;
   title: string;
@@ -40,6 +42,10 @@ async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   }
 
   const { logs } = (await res.json()) as ApiLogResponse;
+  if (logs === null) {
+    throw NoLogsError;
+  }
+
   const parsedLogs: Log[] = [];
 
   for (const rawLog of logs) {
@@ -80,6 +86,9 @@ async function addLogLinks(): Promise<void> {
   try {
     logs = await getLogsFromAPI(matchId);
   } catch (e) {
+    if (e === NoLogsError) {
+      return;
+    }
     console.error("could not get logs: " + e.toString());
     return;
   }

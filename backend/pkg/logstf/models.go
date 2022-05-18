@@ -13,7 +13,7 @@ type Log struct {
 	Id      int    `json:"id"`
 	Title   string `json:"title"`
 	Map     string `json:"map"`
-	Date    int    `json:"date"`
+	Date    int64  `json:"date"`
 	Views   int    `json:"views"`
 	Players int    `json:"players"`
 }

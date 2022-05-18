@@ -77,6 +77,19 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 	return cacheLogs, nil
 }
 
+func (c Core) CountViews(object string, id int, freshSession bool) (int64, error) {
+	if freshSession {
+		return c.cache.IncrementViews(object, id)
+	}
+	count, err := c.cache.GetViews(object, id)
+	if err == redis.Nil {
+		return c.cache.IncrementViews(object, id)
+	} else if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (c Core) GetSteamIDs(match *etf2l.Match) ([]string, error) {
 	var steamIDs []string
 

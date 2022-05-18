@@ -16,4 +16,7 @@ type Cache interface {
 	SetMatch(logIds []int, matchPage *MatchPage) error
 
 	GetAllKeys(hashKey string) ([]string, error)
+
+	IncrementViews(object string, id int) (int64, error)
+	GetViews(object string, id int) (int64, error)
 }

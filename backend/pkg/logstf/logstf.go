@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -43,26 +45,23 @@ func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, [
 	return matchLogs, secondaryLogs, nil
 }
 
-func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combinedLogs []Log) {
-	mapsWhitelist := make(map[string]struct{})
-
-	for _, m := range maps {
-		mapsWhitelist[m] = struct{}{}
+func (c Client) GetLog(id int) (Log, error) {
+	u := fmt.Sprintf("https://logs.tf/api/v1/log/%d", id)
+	resp, err := c.httpClient.Get(u)
+	if err != nil {
+		return Log{}, err
 	}
-
-	for _, log := range logs {
-		matchPlayedAtMinusOffset := playedAt.Add(-matchPlayedOffset)
-		matchPlayedAtPlusOffset := playedAt.Add(matchPlayedOffset)
-		logPlayedAt := time.Unix(int64(log.Date), 0)
-
-		_, ok := mapsWhitelist[log.Map]
-		if !ok || logPlayedAt.Before(matchPlayedAtMinusOffset) || logPlayedAt.After(matchPlayedAtPlusOffset) {
-			combinedLogs = append(combinedLogs, log)
-		} else {
-			matchLogs = append(matchLogs, log)
-		}
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		return Log{}, fmt.Errorf("api returned bad staus: %d; %s", resp.StatusCode, string(b))
 	}
-	return matchLogs, combinedLogs
+	defer resp.Body.Close()
+
+	var r FullLog
+	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return Log{}, err
+	}
+	return r.Info, nil
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
@@ -87,21 +86,64 @@ func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
 	return &r, nil
 }
 
-func (c Client) GetLog(id int) (Log, error) {
-	u := fmt.Sprintf("https://logs.tf/api/v1/log/%d", id)
-	resp, err := c.httpClient.Get(u)
-	if err != nil {
-		return Log{}, err
+func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combinedLogs []Log) {
+	for _, log := range logs {
+		primary, valid := matchIsPrimary(playedAt, log.Date, log.Map, maps)
+		if !valid {
+			continue
+		}
+		if !primary {
+			combinedLogs = append(combinedLogs, log)
+		} else {
+			matchLogs = append(matchLogs, log)
+		}
 	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := io.ReadAll(resp.Body)
-		return Log{}, fmt.Errorf("api returned bad staus: %d; %s", resp.StatusCode, string(b))
-	}
-	defer resp.Body.Close()
+	return matchLogs, combinedLogs
+}
 
-	var r FullLog
-	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return Log{}, err
+func matchIsPrimary(matchDate time.Time, logDate int64, logMap string, maps []string) (primary, valid bool) {
+	matchDateMinusOffset := matchDate.Add(-matchPlayedOffset)
+	matchDatePlusOffset := matchDate.Add(matchPlayedOffset)
+	logPlayedAt := time.Unix(logDate, 0)
+
+	if logPlayedAt.Before(matchDateMinusOffset) || logPlayedAt.After(matchDatePlusOffset) {
+		return false, false
 	}
-	return r.Info, nil
+
+	if mapIsNotValid(maps, logMap) {
+		return false, true
+	}
+	return true, true
+}
+
+func mapIsNotValid(maps []string, logMap string) bool {
+	mapsWhitelist := make(map[string]struct{})
+
+	for _, m := range maps {
+		genericMap := getGenericMapName(m)
+		if genericMap == "" {
+			logrus.Errorf("etf2l returned map without pattern [gamemode]_[mapname]: %s", m)
+			return true
+		}
+		mapsWhitelist[genericMap] = struct{}{}
+	}
+
+	genericLogMap := getGenericMapName(logMap)
+	if genericLogMap == "" {
+		return true
+	}
+	if _, ok := mapsWhitelist[genericLogMap]; ok {
+		return false
+	}
+	return true
+}
+
+func getGenericMapName(mapName string) string {
+	const genericMapItemLength = 2
+
+	logMapParts := strings.Split(mapName, "_")
+	if len(logMapParts) < 2 {
+		return ""
+	}
+	return strings.Join(logMapParts[:genericMapItemLength], "_")
 }
