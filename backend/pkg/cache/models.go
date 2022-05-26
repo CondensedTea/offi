@@ -17,7 +17,7 @@ type Log struct {
 	IsSecondary bool      `json:"is_secondary" redis:"is_secondary"`
 }
 
-func (ls *LogSet) MarshalBinary() ([]byte, error) {
+func (ls LogSet) MarshalBinary() ([]byte, error) {
 	return json.Marshal(ls)
 }
 
@@ -37,4 +37,20 @@ func (m MatchPage) MarshalBinary() ([]byte, error) {
 
 func (m *MatchPage) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, &m)
+}
+
+type Entry struct {
+	ID      int
+	Skill   string
+	URL     string
+	Classes []string
+	Empty   bool
+}
+
+func (e Entry) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(e)
+}
+
+func (e *Entry) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, &e)
 }

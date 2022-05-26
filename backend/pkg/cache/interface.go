@@ -19,4 +19,7 @@ type Cache interface {
 
 	IncrementViews(object string, id int) (int64, error)
 	GetViews(object string, id int) (int64, error)
+
+	SaveRecruitmentPosts(postType string, entries []Entry) error
+	GetRecruitmentPost(postType, id string) (*Entry, error)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var ErrTooManyPlayers = errors.New("could not process match with more than 18 players due logs.tf limitations")
+var ErrTooManyPlayers = errors.New("too many players, 18 or less allowed")
 
 const maxPlayers = 18
 
@@ -18,8 +18,8 @@ func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 	logSet, err := c.cache.GetLogs(matchId)
 	switch {
 	case err == redis.Nil:
-		if saveErr := c.cache.CheckLogError(matchId); saveErr != nil {
-			return nil, saveErr
+		if storedErr := c.cache.CheckLogError(matchId); storedErr != nil {
+			return nil, storedErr
 		}
 		logs, saveErr := c.saveNewMatch(matchId)
 		if saveErr != nil {

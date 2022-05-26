@@ -25,11 +25,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c := core.New(cacheClient, etf2lClient, logsTf)
+	c, err := core.New(cacheClient, etf2lClient, logsTf)
+	if err != nil {
+		logrus.Fatalf("failed to init core: %v", err)
+	}
 
-	app := handler.CreateApp(c)
+	if err = c.StartScheduler(); err != nil {
+		logrus.Fatalf("failed to start scheduler: %v", err)
+	}
 
-	if err = app.Listen(":8080"); err != nil {
-		log.Fatal(err)
+	if err = handler.New(c).Run(); err != nil {
+		logrus.Fatalf("failed to run handler: %v", err)
 	}
 }
