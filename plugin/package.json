@@ -2,14 +2,16 @@
   "name": "offi",
   "version": "1.0.0",
   "scripts": {
-    "build": "parcel build --target default",
+    "build": "parcel build --target default --no-optimize",
     "lint": "eslint *.ts"
   },
   "targets": {
     "default": {
       "source": [
-        "etf2l.ts",
-        "logstf.ts"
+        "etf2l_match_page.ts",
+        "etf2l_player_page.ts",
+        "logstf.ts",
+        "utils.ts"
       ],
       "sourceMap": {
         "inlineSources": true
@@ -17,7 +19,7 @@
     }
   },
   "dependencies": {
-    "parcel": "^2.0.0",
+    "parcel": "^2.6.0",
     "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {

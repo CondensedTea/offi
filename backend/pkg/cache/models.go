@@ -40,11 +40,12 @@ func (m *MatchPage) UnmarshalBinary(data []byte) error {
 }
 
 type Entry struct {
-	ID      int
-	Skill   string
-	URL     string
-	Classes []string
-	Empty   bool
+	ID       int      `json:"id"`
+	Skill    string   `json:"skill"`
+	URL      string   `json:"url"`
+	Classes  []string `json:"classes"`
+	GameMode string   `json:"game_mode"`
+	Empty    bool     `json:"empty"`
 }
 
 func (e Entry) MarshalBinary() (data []byte, err error) {

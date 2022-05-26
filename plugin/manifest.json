@@ -10,7 +10,19 @@
         "https://etf2l.org/matches/*"
       ],
       "js": [
-        "dist/etf2l.js"
+        "dist/etf2l_match_page.js"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://etf2l.org/forum/user/*"
+      ],
+      "js": [
+        "dist/etf2l_player_page.js"
+      ],
+      "css": [
+        "styles.css"
       ]
     },
     {
@@ -22,5 +34,8 @@
         "dist/logstf.js"
       ]
     }
-  ]
+  ],
+  "web_accessible_resources": [
+    "styles.css"
+]
 }

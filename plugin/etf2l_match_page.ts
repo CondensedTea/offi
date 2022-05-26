@@ -1,7 +1,8 @@
 import "regenerator-runtime/runtime";
+import {apiUrl} from "./utils";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
-const apiUrl = "https://offi.lemontea.dev/match/";
+const url = apiUrl + "match/";
 
 const NoLogsError = new Error("api didnt found logs for this match");
 
@@ -35,7 +36,7 @@ function getMatchID(): number {
 }
 
 async function getLogsFromAPI(matchId: number): Promise<Log[]> {
-  const res = await fetch(apiUrl + matchId.toString());
+  const res = await fetch(url + matchId.toString());
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);

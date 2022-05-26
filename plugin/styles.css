@@ -1,0 +1,7 @@
+.invert-img {
+    filter: invert(1);
+}
+
+.recruitment-status {
+    padding-left: .5em;
+}

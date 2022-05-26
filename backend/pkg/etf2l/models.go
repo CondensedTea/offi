@@ -46,10 +46,11 @@ type Entry struct {
 
 func (e Entry) ToCache() cache.Entry {
 	return cache.Entry{
-		ID:      e.Id,
-		Skill:   e.Skill,
-		URL:     e.Urls.Recruitment,
-		Classes: e.Classes,
+		ID:       e.Id,
+		Skill:    e.Skill,
+		URL:      e.Urls.Recruitment,
+		GameMode: e.Type,
+		Classes:  e.Classes,
 	}
 }
 
