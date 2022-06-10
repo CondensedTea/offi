@@ -28,6 +28,18 @@
     {
       "run_at": "document_end",
       "matches": [
+        "https://etf2l.org/teams/*"
+      ],
+      "js": [
+        "dist/etf2l_team_page.js"
+      ],
+      "css": [
+        "styles.css"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
         "https://logs.tf/*"
       ],
       "js": [

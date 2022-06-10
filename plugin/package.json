@@ -10,6 +10,7 @@
       "source": [
         "etf2l_match_page.ts",
         "etf2l_player_page.ts",
+        "etf2l_team_page.ts",
         "logstf.ts",
         "utils.ts"
       ],

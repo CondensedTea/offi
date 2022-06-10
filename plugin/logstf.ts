@@ -1,7 +1,7 @@
 import "regenerator-runtime/runtime";
+import {apiUrl} from "./utils";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
-const apiUrl = "https://offi.lemontea.dev/log/";
 
 type Match = {
   id: number;
@@ -23,7 +23,7 @@ function getLogID(): number {
 }
 
 async function getMatchFromAPI(matchId: number): Promise<Match> {
-  const res = await fetch(apiUrl + matchId.toString());
+  const res = await fetch(apiUrl + "/log/" + matchId.toString());
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);
