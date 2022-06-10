@@ -1,7 +1,5 @@
 import {apiUrl} from "./utils";
 
-const url = apiUrl + "player/";
-
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
 const NoRecruitmentInfo = new Error("this user doesn't have recruitment post");
 
@@ -28,7 +26,10 @@ function getPlayerID(): number {
 }
 
 async function getPlayerStatusFromAPI(playerId: number): Promise<PlayerStatus> {
-  const res = await fetch(url + playerId.toString());
+  const getPlayerURL = new URL(apiUrl + "player/" + playerId.toString());
+  getPlayerURL.searchParams.append("version", chrome.runtime.getManifest().version);
+
+  const res = await fetch(getPlayerURL.toString());
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);

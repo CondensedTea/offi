@@ -1,7 +1,5 @@
 import {apiUrl} from "./utils";
 
-const url = apiUrl + "team/";
-
 const playerRe = RegExp("https://etf2l.org/teams/(\\d+)/");
 const NoRecruitmentInfo = new Error("this team doesn't have recruitment post");
 
@@ -27,8 +25,11 @@ function getTeamID(): number {
   return parseInt(match[1]);
 }
 
-async function getTeamStatusFromAPI(playerId: number): Promise<TeamStatus> {
-  const res = await fetch(url + playerId.toString());
+async function getTeamStatusFromAPI(teamId: number): Promise<TeamStatus> {
+  const getTeamURL = new URL(apiUrl + "team/" + teamId.toString());
+  getTeamURL.searchParams.append("version", chrome.runtime.getManifest().version);
+
+  const res = await fetch(getTeamURL.toString());
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);
@@ -68,7 +69,7 @@ async function addTeamStatus() {
   const node = document.createElement("tr");
   node.innerHTML = `
         <td>LFP</td>
-        <td><a href='https://etf2l.org/recruitment/${teamStatus.id}/'>${classesString}</a></td>`;
+        <td><a href=${teamStatus.url}>${classesString}</a></td>`;
   document.querySelector(".teaminfo > tbody").appendChild(node);
 }
 
