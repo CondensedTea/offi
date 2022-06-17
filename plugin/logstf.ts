@@ -23,7 +23,10 @@ function getLogID(): number {
 }
 
 async function getMatchFromAPI(matchId: number): Promise<Match> {
-  const res = await fetch(apiUrl + "/log/" + matchId.toString());
+  const logURL = new URL(apiUrl + "log/" + matchId.toString());
+  logURL.searchParams.append("version", chrome.runtime.getManifest().version);
+
+  const res = await fetch(logURL.toString());
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);
