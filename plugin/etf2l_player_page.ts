@@ -1,7 +1,6 @@
 import {apiUrl} from "./utils";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
-const NoRecruitmentInfo = new Error("this user doesn't have recruitment post");
 
 class PlayerStatus {
   id: number;
@@ -12,8 +11,18 @@ class PlayerStatus {
   empty: boolean;
 }
 
+class PlayerInfo {
+  id: number;
+  bans: {
+      start: number,
+      end: number,
+      reason: string
+  }[];
+}
+
 type ApiPlayerResponse = {
   status: PlayerStatus;
+  player: PlayerInfo;
 };
 
 function getPlayerID(): number {
@@ -25,7 +34,7 @@ function getPlayerID(): number {
   return parseInt(match[1]);
 }
 
-async function getPlayerStatusFromAPI(playerId: number): Promise<PlayerStatus> {
+async function getPlayerStatusFromAPI(playerId: number): Promise<ApiPlayerResponse> {
   const getPlayerURL = new URL(apiUrl + "player/" + playerId.toString());
   getPlayerURL.searchParams.append("version", chrome.runtime.getManifest().version);
 
@@ -35,33 +44,14 @@ async function getPlayerStatusFromAPI(playerId: number): Promise<PlayerStatus> {
     throw new Error("offi api returned error: " + res.statusText);
   }
 
-  const playerStatus = (await res.json()) as ApiPlayerResponse;
-  if (playerStatus.status === null || playerStatus.status.empty) {
-    throw NoRecruitmentInfo;
-  }
-
-  return playerStatus.status;
+  return (await res.json()) as ApiPlayerResponse;
 }
 
-async function addPlayerStatus() {
-  const playerId = getPlayerID();
-
-  let playerStatus: PlayerStatus;
-
-  try {
-    playerStatus = await getPlayerStatusFromAPI(playerId);
-  } catch (e) {
-    if (e === NoRecruitmentInfo) {
-      return;
-    } else {
-      console.error("failed to get player status: ", e.toString());
-    }
-  }
-
+async function addPlayerStatus(status: PlayerStatus) {
   const node = document.createElement("a");
-  node.setAttribute("href", playerStatus.url);
+  node.setAttribute("href", status.url);
   node.className = "recruitment-status";
-  node.innerText = `LFT ${playerStatus.skill} ${playerStatus.game_mode}`;
+  node.innerText = `LFT ${status.skill} ${status.game_mode}`;
 
   document
       .querySelector("#rs-discuss")
@@ -76,10 +66,49 @@ async function addPlayerStatus() {
       .querySelectorAll("td")[1]
       .querySelectorAll("img")
       .forEach((imgNode) => {
-        if (playerStatus.classes.includes(imgNode.title)) {
+        if (status.classes.includes(imgNode.title)) {
           imgNode.className = "invert-img";
         }
       });
 }
 
-addPlayerStatus();
+async function addPlayersBans(playerInfo: PlayerInfo) {
+  const container = document.createElement("div");
+  container.className = "player-bans";
+
+  const header = document.createElement("h2");
+  header.innerText = "Bans";
+
+  const banList = document.createElement("ul");
+  playerInfo.bans.forEach((ban) => {
+    const banStart = new Date(ban.start * 1000);
+    const banEnd = new Date(ban.end * 1000);
+    banList.appendChild(document.createElement("li")).innerHTML = `<b>${ban.reason}</b>: ${banStart.toLocaleDateString()} to ${banEnd.toLocaleDateString()}`;
+  });
+  container.appendChild(header);
+  container.appendChild(banList);
+
+  document.getElementById("rs-discuss").appendChild(container);
+}
+
+async function updatePlayerPage() {
+  const playerId = getPlayerID();
+
+  let player: ApiPlayerResponse;
+
+  try {
+    player = await getPlayerStatusFromAPI(playerId);
+  } catch (e) {
+    console.error("failed to get player status: ", e.toString());
+  }
+
+  if (player.status != null && !player.status.empty) {
+    await addPlayerStatus(player.status);
+  }
+
+  if (player.player != null) {
+    await addPlayersBans(player.player);
+  }
+}
+
+updatePlayerPage();
