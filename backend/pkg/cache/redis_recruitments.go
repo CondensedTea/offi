@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const postExpiration = 2 * 24 * time.Hour
+const postExpiration = 4 * time.Hour
 
 func (r Redis) SaveRecruitmentPosts(postType string, entries []Entry) error {
 	for _, entry := range entries {
