@@ -1,9 +1,7 @@
 package etf2l
 
 import (
-	"encoding/json"
 	"offi/pkg/cache"
-	"time"
 )
 
 type Page struct {
@@ -65,27 +63,9 @@ type RecruitmentResponse struct {
 }
 
 type Ban struct {
-	Start  time.Time `json:"start"`
-	End    time.Time `json:"end"`
-	Reason string    `json:"reason"`
-}
-
-func (b *Ban) UnmarshalJSON(data []byte) error {
-	type rawBan struct {
-		Start  int
-		End    int
-		Reason string
-	}
-
-	var banData rawBan
-	if err := json.Unmarshal(data, &banData); err != nil {
-		return err
-	}
-
-	b.Start = time.Unix(int64(banData.Start), 0)
-	b.End = time.Unix(int64(banData.End), 0)
-	b.Reason = banData.Reason
-	return nil
+	Start  int    `json:"start"`
+	End    int    `json:"end"`
+	Reason string `json:"reason"`
 }
 
 type Player struct {
