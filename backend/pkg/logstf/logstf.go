@@ -45,25 +45,6 @@ func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, [
 	return matchLogs, secondaryLogs, nil
 }
 
-func (c Client) GetLog(id int) (Log, error) {
-	u := fmt.Sprintf("https://logs.tf/api/v1/log/%d", id)
-	resp, err := c.httpClient.Get(u)
-	if err != nil {
-		return Log{}, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := io.ReadAll(resp.Body)
-		return Log{}, fmt.Errorf("api returned bad staus: %d; %s", resp.StatusCode, string(b))
-	}
-	defer resp.Body.Close()
-
-	var r FullLog
-	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return Log{}, err
-	}
-	return r.Info, nil
-}
-
 // getLogsWithPlayers gets logs with given players from logs.tf API
 func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
 	query := "player=" + strings.Join(players, ",")

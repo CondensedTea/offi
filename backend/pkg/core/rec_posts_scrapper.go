@@ -16,7 +16,7 @@ func (c Core) loadTeamsRecruitmentPosts() {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
 	}
-	cacheEntries := lo.Map[etf2l.Entry, cache.Entry](entries, func(entry etf2l.Entry, i int) cache.Entry {
+	cacheEntries := lo.Map[etf2l.Recruitment, cache.Entry](entries, func(entry etf2l.Recruitment, i int) cache.Entry {
 		return entry.ToCache()
 	})
 
@@ -34,7 +34,7 @@ func (c Core) loadPlayersRecruitmentPosts() {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
 	}
-	cacheEntries := lo.Map[etf2l.Entry, cache.Entry](entries, func(entry etf2l.Entry, i int) cache.Entry {
+	cacheEntries := lo.Map[etf2l.Recruitment, cache.Entry](entries, func(entry etf2l.Recruitment, i int) cache.Entry {
 		return entry.ToCache()
 	})
 

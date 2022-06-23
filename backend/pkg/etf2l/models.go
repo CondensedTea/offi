@@ -1,6 +1,10 @@
 package etf2l
 
-import "offi/pkg/cache"
+import (
+	"encoding/json"
+	"offi/pkg/cache"
+	"time"
+)
 
 type Page struct {
 	EntriesPerPage  int    `json:"entries_per_page"`
@@ -33,7 +37,7 @@ type Comments struct {
 	Last  int `json:"last"`
 }
 
-type Entry struct {
+type Recruitment struct {
 	Classes  []string `json:"classes"`
 	Comments Comments `json:"comments"`
 	Id       int      `json:"id"`
@@ -44,18 +48,52 @@ type Entry struct {
 	Urls     URLs     `json:"urls"`
 }
 
-func (e Entry) ToCache() cache.Entry {
+func (r Recruitment) ToCache() cache.Entry {
 	return cache.Entry{
-		ID:       e.Id,
-		Skill:    e.Skill,
-		URL:      e.Urls.Recruitment,
-		GameMode: e.Type,
-		Classes:  e.Classes,
+		ID:       r.Id,
+		Skill:    r.Skill,
+		URL:      r.Urls.Recruitment,
+		GameMode: r.Type,
+		Classes:  r.Classes,
 	}
 }
 
 type RecruitmentResponse struct {
-	Page        Page    `json:"page"`
-	Recruitment []Entry `json:"recruitment"`
-	Status      Status  `json:"status"`
+	Page         Page          `json:"page"`
+	Recruitments []Recruitment `json:"recruitment"`
+	Status       Status        `json:"status"`
+}
+
+type Ban struct {
+	Start  time.Time
+	End    time.Time
+	Reason string
+}
+
+func (b *Ban) UnmarshalJSON(data []byte) error {
+	type rawBan struct {
+		Start  int `json:"start"`
+		End    int `json:"end"`
+		Reason string
+	}
+
+	var banData rawBan
+	if err := json.Unmarshal(data, &banData); err != nil {
+		return err
+	}
+
+	b.Start = time.Unix(int64(banData.Start), 0)
+	b.End = time.Unix(int64(banData.End), 0)
+	b.Reason = banData.Reason
+	return nil
+}
+
+type Player struct {
+	ID   int
+	Bans []Ban
+}
+
+type PlayerResponse struct {
+	Player Player `json:"player"`
+	Status Status `json:"status"`
 }

@@ -33,6 +33,7 @@ func New(c *core.Core) *Handler {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 	}))
+	app.Use(clientVersionMiddleware)
 
 	handler := &Handler{
 		app:          app,

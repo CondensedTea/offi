@@ -13,9 +13,9 @@ const (
 	TeamPost   = "team"
 )
 
-func (c Client) LoadRecruitmentPosts(postType postType) ([]Entry, error) {
+func (c Client) LoadRecruitmentPosts(postType postType) ([]Recruitment, error) {
 	var (
-		entries []Entry
+		entries []Recruitment
 		url     string
 	)
 
@@ -50,7 +50,7 @@ func (c Client) LoadRecruitmentPosts(postType postType) ([]Entry, error) {
 		} else {
 			url = response.Page.NextPageUrl
 		}
-		entries = append(entries, response.Recruitment...)
+		entries = append(entries, response.Recruitments...)
 	}
 	return entries, nil
 }
