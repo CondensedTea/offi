@@ -65,15 +65,15 @@ type RecruitmentResponse struct {
 }
 
 type Ban struct {
-	Start  time.Time
-	End    time.Time
-	Reason string
+	Start  time.Time `json:"start"`
+	End    time.Time `json:"end"`
+	Reason string    `json:"reason"`
 }
 
 func (b *Ban) UnmarshalJSON(data []byte) error {
 	type rawBan struct {
-		Start  int `json:"start"`
-		End    int `json:"end"`
+		Start  int
+		End    int
 		Reason string
 	}
 
@@ -89,8 +89,8 @@ func (b *Ban) UnmarshalJSON(data []byte) error {
 }
 
 type Player struct {
-	ID   int
-	Bans []Ban
+	ID   int   `json:"id"`
+	Bans []Ban `json:"bans"`
 }
 
 type PlayerResponse struct {
