@@ -48,6 +48,10 @@ async function getPlayerStatusFromAPI(playerId: number): Promise<ApiPlayerRespon
 }
 
 async function addPlayerStatus(status: PlayerStatus) {
+  if (status.empty) {
+    return;
+  }
+
   const node = document.createElement("a");
   node.setAttribute("href", status.url);
   node.className = "recruitment-status";
@@ -73,6 +77,10 @@ async function addPlayerStatus(status: PlayerStatus) {
 }
 
 async function addPlayersBans(playerInfo: PlayerInfo) {
+  if (playerInfo.bans == null || playerInfo.bans.length === 0) {
+    return;
+  }
+
   const container = document.createElement("div");
   container.className = "player-bans";
 
@@ -102,7 +110,7 @@ async function updatePlayerPage() {
     console.error("failed to get player status: ", e.toString());
   }
 
-  if (player.status != null && !player.status.empty) {
+  if (player.status != null) {
     await addPlayerStatus(player.status);
   }
 
