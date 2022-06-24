@@ -16,6 +16,6 @@ func init() {
 }
 
 func clientVersionMiddleware(ctx *fiber.Ctx) error {
-	clientVersionCounter.WithLabelValues(ctx.Params("version")).Inc()
+	clientVersionCounter.WithLabelValues(ctx.Query("version")).Inc()
 	return ctx.Next()
 }
