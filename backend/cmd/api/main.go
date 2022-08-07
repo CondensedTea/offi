@@ -25,10 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c, err := core.New(cacheClient, etf2lClient, logsTf)
-	if err != nil {
-		logrus.Fatalf("failed to init core: %v", err)
-	}
+	c := core.New(cacheClient, etf2lClient, logsTf)
 
 	if err = c.StartScheduler(); err != nil {
 		logrus.Fatalf("failed to start scheduler: %v", err)

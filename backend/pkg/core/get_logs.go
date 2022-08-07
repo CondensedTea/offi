@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"offi/pkg/cache"
-	"offi/pkg/etf2l"
 
 	"github.com/go-redis/redis"
+	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,13 +18,17 @@ func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 	logSet, err := c.cache.GetLogs(matchId)
 	switch {
 	case err == redis.Nil:
-		if storedErr := c.cache.CheckLogError(matchId); storedErr != nil {
-			return nil, storedErr
+		if c.enableErrorCaching {
+			if storedErr := c.cache.CheckLogError(matchId); storedErr != nil {
+				return nil, storedErr
+			}
 		}
 		logs, saveErr := c.saveNewMatch(matchId)
 		if saveErr != nil {
-			if cacheErr := c.cache.SetLogError(matchId, saveErr); cacheErr != nil {
-				logrus.Errorf("failed to cache log error: %v", cacheErr)
+			if c.enableErrorCaching {
+				if cacheErr := c.cache.SetLogError(matchId, saveErr); cacheErr != nil {
+					logrus.Errorf("failed to cache log error: %v", cacheErr)
+				}
 			}
 			return nil, saveErr
 		}
@@ -43,10 +47,18 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		return nil, fmt.Errorf("failed to get players for etf2l match: %v", err)
 	}
 
-	steamIDs, err := c.GetSteamIDs(match)
+	if len(match.Players) > maxPlayers {
+		return nil, ErrTooManyPlayers
+	}
+
+	players, err := c.GetPlayers(match.Players)
 	if err != nil {
 		return nil, err
 	}
+
+	steamIDs := lo.Map(players, func(player cache.Player, _ int) string {
+		return player.SteamID
+	})
 
 	var cacheLogs []cache.Log
 
@@ -82,38 +94,11 @@ func (c Core) CountViews(object string, id int, freshSession bool) (int64, error
 		return c.cache.IncrementViews(object, id)
 	}
 	count, err := c.cache.GetViews(object, id)
-	if err == redis.Nil {
+	switch {
+	case err == redis.Nil:
 		return c.cache.IncrementViews(object, id)
-	} else if err != nil {
+	case err != nil:
 		return 0, err
 	}
 	return count, nil
-}
-
-func (c Core) GetSteamIDs(match *etf2l.Match) ([]string, error) {
-	var steamIDs []string
-
-	for _, playerURL := range match.Players {
-		steamID, err := c.cache.GetPlayer(playerURL)
-		if err == redis.Nil {
-			steamID, err = c.etf2l.ResolvePlayerSteamID(playerURL)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get player page from etf2l: %v", err)
-			}
-			if err = c.cache.SetPlayer(playerURL, steamID); err != nil {
-				return nil, fmt.Errorf("failed to save player in cache: %v", err)
-			}
-		}
-		if err != nil {
-			return nil, fmt.Errorf("failed to get player from cache: %v\n", err)
-		}
-		if steamID != "" {
-			steamIDs = append(steamIDs, steamID)
-		}
-	}
-
-	if len(steamIDs) > maxPlayers {
-		return nil, ErrTooManyPlayers
-	}
-	return steamIDs, nil
 }

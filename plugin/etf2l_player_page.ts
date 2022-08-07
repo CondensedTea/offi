@@ -1,29 +1,7 @@
 import {apiUrl} from "./utils";
+import {PlayersResponse, Recruitment, Ban} from "./types";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
-
-class PlayerStatus {
-  id: number;
-  skill: string;
-  url: string;
-  game_mode: string;
-  classes: string[];
-  empty: boolean;
-}
-
-class PlayerInfo {
-  id: number;
-  bans: {
-      start: number,
-      end: number,
-      reason: string
-  }[];
-}
-
-type ApiPlayerResponse = {
-  status: PlayerStatus;
-  player: PlayerInfo;
-};
 
 function getPlayerID(): number {
   const match = document.URL.match(playerRe);
@@ -34,8 +12,9 @@ function getPlayerID(): number {
   return parseInt(match[1]);
 }
 
-async function getPlayerStatusFromAPI(playerId: number): Promise<ApiPlayerResponse> {
-  const getPlayerURL = new URL(apiUrl + "player/" + playerId.toString());
+async function getPlayerStatusFromAPI(playerId: number): Promise<PlayersResponse> {
+  const getPlayerURL = new URL(apiUrl + "players");
+  getPlayerURL.searchParams.append("id", playerId.toString());
   getPlayerURL.searchParams.append("version", chrome.runtime.getManifest().version);
 
   const res = await fetch(getPlayerURL.toString());
@@ -44,18 +23,18 @@ async function getPlayerStatusFromAPI(playerId: number): Promise<ApiPlayerRespon
     throw new Error("offi api returned error: " + res.statusText);
   }
 
-  return (await res.json()) as ApiPlayerResponse;
+  return (await res.json()) as PlayersResponse;
 }
 
-async function addPlayerStatus(status: PlayerStatus) {
-  if (status.empty) {
+async function addPlayerStatus(recruitment: Recruitment) {
+  if (recruitment.empty) {
     return;
   }
 
   const node = document.createElement("a");
-  node.setAttribute("href", status.url);
+  node.setAttribute("href", recruitment.url);
   node.className = "recruitment-status";
-  node.innerText = `LFT ${status.skill} ${status.game_mode}`;
+  node.innerText = `LFT ${recruitment.skill} ${recruitment.game_mode}`;
 
   document
       .querySelector("#rs-discuss")
@@ -70,17 +49,13 @@ async function addPlayerStatus(status: PlayerStatus) {
       .querySelectorAll("td")[1]
       .querySelectorAll("img")
       .forEach((imgNode) => {
-        if (status.classes.includes(imgNode.title)) {
+        if (recruitment.classes.includes(imgNode.title)) {
           imgNode.className = "invert-img";
         }
       });
 }
 
-async function addPlayersBans(playerInfo: PlayerInfo) {
-  if (playerInfo.bans == null || playerInfo.bans.length === 0) {
-    return;
-  }
-
+async function addPlayersBans(bans: Ban[]) {
   const container = document.createElement("div");
   container.className = "player-bans";
 
@@ -88,7 +63,7 @@ async function addPlayersBans(playerInfo: PlayerInfo) {
   header.innerText = "Bans";
 
   const banList = document.createElement("ul");
-  playerInfo.bans.forEach((ban) => {
+  bans.forEach((ban) => {
     const banStart = new Date(ban.start * 1000);
     const banEnd = new Date(ban.end * 1000);
     banList.appendChild(document.createElement("li")).innerHTML = `<b>${ban.reason}</b>: ${banStart.toLocaleDateString()} to ${banEnd.toLocaleDateString()}`;
@@ -102,20 +77,27 @@ async function addPlayersBans(playerInfo: PlayerInfo) {
 async function updatePlayerPage() {
   const playerId = getPlayerID();
 
-  let player: ApiPlayerResponse;
+  let response: PlayersResponse;
 
   try {
-    player = await getPlayerStatusFromAPI(playerId);
+    response = await getPlayerStatusFromAPI(playerId);
   } catch (e) {
     console.error("failed to get player status: ", e.toString());
   }
 
-  if (player.status != null) {
-    await addPlayerStatus(player.status);
+  if (response.players.length != 1) {
+    console.error("api returned more than 1 player");
+    return;
   }
 
-  if (player.player != null) {
-    await addPlayersBans(player.player);
+  const player = response.players[0];
+
+  if (player.recruitment != null) {
+    await addPlayerStatus(player.recruitment);
+  }
+
+  if (player.bans.length > 1) {
+    await addPlayersBans(player.bans);
   }
 }
 

@@ -9,37 +9,43 @@ import (
 )
 
 func (c Core) loadTeamsRecruitmentPosts() {
-	logrus.Info("loading recruitment posts for teams")
-
 	entries, err := c.etf2l.LoadRecruitmentPosts(etf2l.TeamPost)
 	if err != nil {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
 	}
-	cacheEntries := lo.Map[etf2l.Recruitment, cache.Entry](entries, func(entry etf2l.Recruitment, i int) cache.Entry {
-		return entry.ToCache()
+	lo.ForEach[etf2l.Recruitment](entries, func(entry etf2l.Recruitment, i int) {
+		team := cache.Team{
+			ID:          entry.Id,
+			Recruitment: entry.ToCache(),
+		}
+		if err = c.cache.SetTeam(entry.Id, team); err != nil {
+			logrus.Errorf("failed to save recruitment team posts: %v", err)
+		}
 	})
-
-	if err = c.cache.SaveRecruitmentPosts("team", cacheEntries); err != nil {
-		logrus.Errorf("failed to save recruitment team posts: %v", err)
-		return
-	}
+	logrus.Info("loaded recruitment posts for teams")
 }
 
 func (c Core) loadPlayersRecruitmentPosts() {
-	logrus.Info("loading recruitment posts for players")
-
 	entries, err := c.etf2l.LoadRecruitmentPosts(etf2l.PlayerPost)
 	if err != nil {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
 	}
-	cacheEntries := lo.Map[etf2l.Recruitment, cache.Entry](entries, func(entry etf2l.Recruitment, i int) cache.Entry {
-		return entry.ToCache()
-	})
 
-	if err = c.cache.SaveRecruitmentPosts(etf2l.PlayerPost, cacheEntries); err != nil {
-		logrus.Errorf("failed to save recruitment team posts: %v", err)
-		return
-	}
+	var player etf2l.Player
+	lo.ForEach[etf2l.Recruitment](entries, func(entry etf2l.Recruitment, i int) {
+		player, err = c.etf2l.GetPlayer(entry.Id)
+		if err != nil {
+			logrus.Errorf("failed to get player from cache: %v", err)
+			return
+		}
+
+		cachePlayer := player.ToCache()
+		cachePlayer.Recruitment = entry.ToCache()
+		if err = c.cache.SetPlayer(entry.Id, cachePlayer); err != nil {
+			logrus.Errorf("failed to save recruitment team posts: %v", err)
+		}
+	})
+	logrus.Info("loaded recruitment posts for players")
 }

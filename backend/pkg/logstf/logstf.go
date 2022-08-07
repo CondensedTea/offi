@@ -1,13 +1,13 @@
 package logstf
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/carlmjohnson/requests"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +33,7 @@ func New() *Client {
 func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	started := time.Now()
 	defer func() {
-		logsTfSearchTime.WithLabelValues().Observe(time.Since(started).Seconds())
+		logsTfSearchTime.Observe(time.Since(started).Seconds())
 	}()
 
 	resp, err := c.getLogsWithPlayers(players)
@@ -50,18 +50,17 @@ func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
 	query := "player=" + strings.Join(players, ",")
 
 	u := fmt.Sprintf("https://logs.tf/api/v1/log?%s", query)
-	resp, err := c.httpClient.Get(u)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		b, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("api returned bad staus: %d; %s", resp.StatusCode, string(b))
-	}
-	defer resp.Body.Close()
-	var r Response
 
-	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	var r Response
+	err := requests.
+		URL(u).
+		ToJSON(&r).
+		CheckStatus(http.StatusOK).
+		Fetch(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &r, nil
@@ -73,10 +72,10 @@ func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combi
 		if !valid {
 			continue
 		}
-		if !primary {
-			combinedLogs = append(combinedLogs, log)
-		} else {
+		if primary {
 			matchLogs = append(matchLogs, log)
+		} else {
+			combinedLogs = append(combinedLogs, log)
 		}
 	}
 	return matchLogs, combinedLogs

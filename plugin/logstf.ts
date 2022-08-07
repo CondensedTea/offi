@@ -1,17 +1,8 @@
 import "regenerator-runtime/runtime";
 import {apiUrl} from "./utils";
+import {MatchResponse, Match, Player, PlayersResponse} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
-
-type Match = {
-  id: number;
-  competition: string;
-  stage: string;
-}
-
-type ApiMatchResponse = {
-  match: Match;
-}
 
 function getLogID(): number {
   const match = document.URL.match(matchRe);
@@ -32,9 +23,26 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
     throw new Error("offi api returned error: " + res.statusText);
   }
 
-  const apiResponse = await res.json() as ApiMatchResponse;
+  const apiResponse = await res.json() as MatchResponse;
 
   return apiResponse.match;
+}
+
+async function getPlayers(ids: string[]): Promise<Player[]> {
+  const playersURL = new URL(apiUrl + "players");
+
+  const idsString = ids.join(",");
+
+  playersURL.searchParams.append("id", idsString);
+  playersURL.searchParams.append("version", chrome.runtime.getManifest().version);
+
+  const res = await fetch(playersURL.toString());
+  if (!res.ok) {
+    throw new Error("offi api returned error: " + res.statusText);
+  }
+
+  const response = await res.json() as PlayersResponse;
+  return response.players;
 }
 
 async function addMatchLink(): Promise<void> {
@@ -61,4 +69,22 @@ async function addMatchLink(): Promise<void> {
   logDateElem.after(competitionBlock);
 }
 
+async function replacePlayerNames() {
+  const playerNodes = document.querySelectorAll("[id^=player_]");
+
+  const playerIDs = Array.from(playerNodes).map((node) => {
+    return node.id.replace("player_", "");
+  });
+
+  const players = await getPlayers(playerIDs);
+
+  players.forEach((player) => {
+    const query = `#player_${player.steam_id} td.log-player-name div.dropdown a.dropdown-toggle`;
+
+    const playerNode = document.querySelector(query);
+    playerNode.innerHTML = player.name;
+  });
+}
+
 addMatchLink();
+replacePlayerNames();

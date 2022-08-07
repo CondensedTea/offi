@@ -5,7 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-var logsTfSearchTime = promauto.NewHistogramVec(prometheus.HistogramOpts{
+var logsTfSearchTime = promauto.NewHistogram(prometheus.HistogramOpts{
 	Name:        "logstf_search_duration_seconds",
 	Help:        "Response time of logs.tf API methods",
 	ConstLabels: make(prometheus.Labels),
@@ -19,6 +19,4 @@ var logsTfSearchTime = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		15.0,
 		30.0,
 	},
-},
-	[]string{},
-)
+})
