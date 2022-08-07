@@ -1,4 +1,4 @@
-import {apiUrl} from "./utils";
+import {api, apiUrl} from "./utils";
 import {TeamResponse, Team} from "./types";
 
 const playerRe = RegExp("https://etf2l.org/teams/(\\d+)/");
@@ -15,9 +15,11 @@ function getTeamID(): number {
 
 async function getTeamStatusFromAPI(teamId: number): Promise<Team> {
   const getTeamURL = new URL(apiUrl + "team/" + teamId.toString());
-  getTeamURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  getTeamURL.searchParams.append("version", api().runtime.getManifest().version);
 
   const res = await fetch(getTeamURL.toString());
+
+  console.log(res);
 
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);

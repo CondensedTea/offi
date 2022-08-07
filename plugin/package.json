@@ -2,26 +2,16 @@
   "name": "offi",
   "version": "2.0.4",
   "scripts": {
-    "build": "parcel build --target default --no-optimize",
+    "build_ff": "parcel build manifests/firefox/manifest.json --dist-dir build/firefox --no-optimize --config @parcel/config-webextension",
+    "build_c": "parcel build manifests/chrome/manifest.json --dist-dir build/chrome --no-optimize --config @parcel/config-webextension",
     "lint": "eslint *.ts"
   },
-  "targets": {
-    "default": {
-      "source": [
-        "etf2l_match_page.ts",
-        "etf2l_player_page.ts",
-        "etf2l_team_page.ts",
-        "logstf.ts",
-        "utils.ts"
-      ],
-      "sourceMap": {
-        "inlineSources": true
-      }
-    }
-  },
   "dependencies": {
-    "@types/chrome": "^0.0.190",
-    "parcel": "^2.6.0",
+    "@parcel/config-webextension": "^2.6.2",
+    "@parcel/core": "^2.6.2",
+    "@types/chrome": "^0.0.193",
+    "@types/firefox-webext-browser": "^94.0.1",
+    "parcel": "^2.7.0",
     "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {

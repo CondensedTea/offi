@@ -1,5 +1,5 @@
 import "regenerator-runtime/runtime";
-import {apiUrl} from "./utils";
+import {api, apiUrl} from "./utils";
 import {MatchResponse, Match, Player, PlayersResponse} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
@@ -15,7 +15,7 @@ function getLogID(): number {
 
 async function getMatchFromAPI(matchId: number): Promise<Match> {
   const logURL = new URL(apiUrl + "log/" + matchId.toString());
-  logURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  logURL.searchParams.append("version", api().runtime.getManifest().version);
 
   const res = await fetch(logURL.toString());
 
@@ -34,7 +34,7 @@ async function getPlayers(ids: string[]): Promise<Player[]> {
   const idsString = ids.join(",");
 
   playersURL.searchParams.append("id", idsString);
-  playersURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  playersURL.searchParams.append("version", browser.runtime.getManifest().version);
 
   const res = await fetch(playersURL.toString());
   if (!res.ok) {

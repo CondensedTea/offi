@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Offi",
+  "description": "etf2l.org QoL extension",
+  "version": "2.0.4",
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://etf2l.org/matches/*"
+      ],
+      "js": [
+        "../../etf2l_match_page.ts"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://etf2l.org/forum/user/*"
+      ],
+      "js": [
+        "../../etf2l_player_page.ts"
+      ],
+      "css": [
+        "../../styles.css"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://etf2l.org/teams/*"
+      ],
+      "js": [
+        "../../etf2l_team_page.ts"
+      ],
+      "css": [
+        "../../styles.css"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://logs.tf/*"
+      ],
+      "js": [
+        "../../logstf.ts"
+      ]
+    }
+  ],
+  "web_accessible_resources": [{
+      "resources": ["../../styles.css"],
+      "matches": ["https://etf2l.org/*", "https://logs.tf/*"]
+    }]
+}

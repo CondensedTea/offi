@@ -1,5 +1,4 @@
-import "regenerator-runtime/runtime";
-import {apiUrl} from "./utils";
+import {apiUrl, api} from "./utils";
 import {Log, LogResponse} from "./types";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
@@ -17,7 +16,7 @@ function getMatchID(): number {
 
 async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   const getMatchURL = new URL(apiUrl + "match/" + matchId.toString());
-  getMatchURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  getMatchURL.searchParams.append("version", api().runtime.getManifest().version);
 
   const res = await fetch(getMatchURL.toString());
 

@@ -30,9 +30,7 @@ func New(c *core.Core) *Handler {
 
 	app.Use(prometheus.Middleware)
 	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-	}))
+	app.Use(cors.New(cors.Config{}))
 	app.Use(clientVersionMiddleware)
 
 	handler := &Handler{

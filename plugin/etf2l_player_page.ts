@@ -1,4 +1,4 @@
-import {apiUrl} from "./utils";
+import {apiUrl, api} from "./utils";
 import {PlayersResponse, Recruitment, Ban} from "./types";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
@@ -15,7 +15,7 @@ function getPlayerID(): number {
 async function getPlayerStatusFromAPI(playerId: number): Promise<PlayersResponse> {
   const getPlayerURL = new URL(apiUrl + "players");
   getPlayerURL.searchParams.append("id", playerId.toString());
-  getPlayerURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  getPlayerURL.searchParams.append("version", api().runtime.getManifest().version);
 
   const res = await fetch(getPlayerURL.toString());
 
