@@ -1,4 +1,4 @@
-import {apiUrl, api} from "./utils";
+import {apiUrl, api, type} from "./utils";
 import {Log, LogResponse} from "./types";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
@@ -16,7 +16,8 @@ function getMatchID(): number {
 
 async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   const getMatchURL = new URL(apiUrl + "match/" + matchId.toString());
-  getMatchURL.searchParams.append("version", api().runtime.getManifest().version);
+  getMatchURL.searchParams.append("version", api.runtime.getManifest().version);
+  getMatchURL.searchParams.append("browser", type);
 
   const res = await fetch(getMatchURL.toString());
 
@@ -94,4 +95,8 @@ async function addLogLinks(): Promise<void> {
   createLogHeader(PrimaryLogList, true);
 }
 
-addLogLinks();
+api.storage.sync.get((fields) => {
+  if (fields.etf2l_show_logs === true) {
+    addLogLinks();
+  }
+});

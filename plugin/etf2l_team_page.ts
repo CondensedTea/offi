@@ -1,4 +1,4 @@
-import {api, apiUrl} from "./utils";
+import {api, apiUrl, type} from "./utils";
 import {TeamResponse, Team} from "./types";
 
 const playerRe = RegExp("https://etf2l.org/teams/(\\d+)/");
@@ -15,12 +15,10 @@ function getTeamID(): number {
 
 async function getTeamStatusFromAPI(teamId: number): Promise<Team> {
   const getTeamURL = new URL(apiUrl + "team/" + teamId.toString());
-  getTeamURL.searchParams.append("version", api().runtime.getManifest().version);
+  getTeamURL.searchParams.append("version", api.runtime.getManifest().version);
+  getTeamURL.searchParams.append("browser", type);
 
   const res = await fetch(getTeamURL.toString());
-
-  console.log(res);
-
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);
   }
@@ -63,4 +61,8 @@ async function addTeamStatus() {
   document.querySelector(".teaminfo > tbody").appendChild(node);
 }
 
-addTeamStatus();
+api.storage.sync.get((fields) => {
+  if (fields.etf2l_show_lfp === true) {
+    addTeamStatus();
+  }
+});

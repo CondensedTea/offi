@@ -50,10 +50,19 @@
       ]
     }
   ],
+  "options_ui": {
+    "page": "../../options.html",
+    "open_in_tab": true
+  },
   "permissions": [
-    "activeTab",
-    "*://localhost/*",
-    "https://offi.lemontea.dev/*"
+    "storage",
+    "http://localhost/*",
+    "*://offi.lemontea.dev/*"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "offi@example2.com"
+    }
+  },
   "web_accessible_resources": ["../../styles.css"]
 }

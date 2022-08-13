@@ -1,5 +1,5 @@
 import "regenerator-runtime/runtime";
-import {api, apiUrl} from "./utils";
+import {api, apiUrl, type} from "./utils";
 import {MatchResponse, Match, Player, PlayersResponse} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
@@ -15,7 +15,8 @@ function getLogID(): number {
 
 async function getMatchFromAPI(matchId: number): Promise<Match> {
   const logURL = new URL(apiUrl + "log/" + matchId.toString());
-  logURL.searchParams.append("version", api().runtime.getManifest().version);
+  logURL.searchParams.append("version", api.runtime.getManifest().version);
+  logURL.searchParams.append("browser", type);
 
   const res = await fetch(logURL.toString());
 
@@ -34,7 +35,8 @@ async function getPlayers(ids: string[]): Promise<Player[]> {
   const idsString = ids.join(",");
 
   playersURL.searchParams.append("id", idsString);
-  playersURL.searchParams.append("version", browser.runtime.getManifest().version);
+  playersURL.searchParams.append("version", api.runtime.getManifest().version);
+  playersURL.searchParams.append("browser", type);
 
   const res = await fetch(playersURL.toString());
   if (!res.ok) {
@@ -46,7 +48,14 @@ async function getPlayers(ids: string[]): Promise<Player[]> {
 }
 
 async function addMatchLink(): Promise<void> {
-  const matchId = getLogID();
+  let matchId: number;
+
+  try {
+    matchId = getLogID();
+  } catch (e) {
+    return;
+  }
+
   let match: Match;
 
   try {
@@ -70,6 +79,11 @@ async function addMatchLink(): Promise<void> {
 }
 
 async function replacePlayerNames() {
+  const match = document.URL.match(matchRe);
+  if (match === null) {
+    return;
+  }
+
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
   const playerIDs = Array.from(playerNodes).map((node) => {
@@ -86,5 +100,12 @@ async function replacePlayerNames() {
   });
 }
 
-addMatchLink();
-replacePlayerNames();
+api.storage.sync.get((fields: Options) => {
+  if (fields.logstf_link_matchpage === true) {
+    addMatchLink();
+  }
+  if (fields.logstf_replace_names === true) {
+    replacePlayerNames();
+  }
+});
+

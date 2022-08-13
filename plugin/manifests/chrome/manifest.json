@@ -50,5 +50,12 @@
   "web_accessible_resources": [{
       "resources": ["../../styles.css"],
       "matches": ["https://etf2l.org/*", "https://logs.tf/*"]
-    }]
+    }],
+  "permissions": [
+    "storage"
+  ],
+  "options_ui": {
+    "page": "../../options.html",
+    "open_in_tab": true
+  }
 }

@@ -1,4 +1,4 @@
-import {apiUrl, api} from "./utils";
+import {apiUrl, api, type} from "./utils";
 import {PlayersResponse, Recruitment, Ban} from "./types";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
@@ -15,7 +15,8 @@ function getPlayerID(): number {
 async function getPlayerStatusFromAPI(playerId: number): Promise<PlayersResponse> {
   const getPlayerURL = new URL(apiUrl + "players");
   getPlayerURL.searchParams.append("id", playerId.toString());
-  getPlayerURL.searchParams.append("version", api().runtime.getManifest().version);
+  getPlayerURL.searchParams.append("version", api.runtime.getManifest().version);
+  getPlayerURL.searchParams.append("browser", type);
 
   const res = await fetch(getPlayerURL.toString());
 
@@ -74,7 +75,11 @@ async function addPlayersBans(bans: Ban[]) {
   document.getElementById("rs-discuss").appendChild(container);
 }
 
-async function updatePlayerPage() {
+async function updatePlayerPage(options: Options) {
+  if (options.etf2l_show_bans === false && options.etf2l_show_lft === false) {
+    return;
+  }
+
   const playerId = getPlayerID();
 
   let response: PlayersResponse;
@@ -92,13 +97,16 @@ async function updatePlayerPage() {
 
   const player = response.players[0];
 
-  if (player.recruitment != null) {
+  if (options.etf2l_show_lft && player.recruitment != null) {
     await addPlayerStatus(player.recruitment);
   }
 
-  if (player.bans.length > 1) {
+  if (options.etf2l_show_bans && player.bans.length > 1) {
     await addPlayersBans(player.bans);
   }
 }
 
-updatePlayerPage();
+api.storage.sync.get((fields) => {
+  updatePlayerPage(fields);
+});
+
