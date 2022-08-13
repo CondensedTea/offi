@@ -19,7 +19,7 @@ var timeNow = func() time.Time {
 var reSubmittedDateTime = regexp.MustCompile(`Results submitted: (\d{1,2} \w+? \d{4}|Yesterday|Today), (\d{2}):(\d{2})`)
 
 type Match struct {
-	Players  []string
+	Players  []int
 	Maps     []string
 	PlayedAt time.Time
 
@@ -44,8 +44,8 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 	}
 
 	var (
-		playerURLs []string
-		matchMaps  []string
+		playerIDs []int
+		matchMaps []string
 	)
 
 	if post := doc.Find("div.post").Find("p").Text(); post == "Invalid Match ID specified." {
@@ -57,7 +57,8 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		Find("span.winr, span.looser").
 		Each(func(i int, selection *goquery.Selection) {
 			playerURL, _ := selection.Find("a").Attr("href")
-			playerURLs = append(playerURLs, playerURL)
+			playerIDInt, _ := strconv.Atoi(playerURL[len("https://etf2l.org/forum/user/"):])
+			playerIDs = append(playerIDs, playerIDInt)
 		})
 
 	doc.Find("div.maps").Each(func(i int, selection *goquery.Selection) {
@@ -91,12 +92,12 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		return nil, fmt.Errorf("failed to parse match date: %v", err)
 	}
 
-	if len(playerURLs) == 0 {
+	if len(playerIDs) == 0 {
 		return nil, fmt.Errorf("match has zero players")
 	}
 
 	return &Match{
-		Players:     playerURLs,
+		Players:     playerIDs,
 		Maps:        matchMaps,
 		PlayedAt:    matchDate,
 		ID:          matchId,

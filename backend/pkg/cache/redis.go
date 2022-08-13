@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	matchKey  = "matches"
-	playerKey = "players"
-	logsKey   = "logs"
+	matchKey = "matches"
+	logsKey  = "logs"
 )
 
 const errorMatchExpire = 3 * time.Hour
@@ -36,7 +35,7 @@ func (r Redis) GetAllKeys(hashKey string) ([]string, error) {
 	var keys []string
 
 	switch hashKey {
-	case logsKey, playerKey, matchKey:
+	case logsKey, matchKey:
 		break
 	default:
 		return nil, fmt.Errorf("unknown hash key: %s", hashKey)

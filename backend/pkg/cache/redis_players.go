@@ -1,9 +1,22 @@
 package cache
 
-func (r Redis) GetPlayer(playerID string) (string, error) {
-	return r.client.HGet(playerKey, playerID).Result()
+import (
+	"fmt"
+	"time"
+)
+
+const playerExpiration = 12 * time.Hour
+
+func (r Redis) GetPlayer(playerID int) (Player, error) {
+	key := fmt.Sprintf("player-%d", playerID)
+
+	var player Player
+	err := r.client.Get(key).Scan(&player)
+	return player, err
 }
 
-func (r Redis) SetPlayer(playerID, steamID string) error {
-	return r.client.HSet(playerKey, playerID, steamID).Err()
+func (r Redis) SetPlayer(playerID int, player Player) error {
+	key := fmt.Sprintf("player-%d", playerID)
+
+	return r.client.Set(key, player, playerExpiration).Err()
 }

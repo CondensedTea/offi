@@ -1,29 +1,9 @@
-import "regenerator-runtime/runtime";
-import {apiUrl} from "./utils";
+import {apiUrl, api, type} from "./utils";
+import {Log, LogResponse} from "./types";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
 
 const NoLogsError = new Error("api didnt found logs for this match");
-
-class Log {
-  id: number;
-  title: string;
-  map: string;
-  played_at: Date;
-  is_secondary: boolean;
-
-  constructor(data: Log) {
-    this.id = data.id;
-    this.title = data.title;
-    this.map = data.map;
-    this.played_at = new Date(data.played_at);
-    this.is_secondary = data.is_secondary;
-  }
-}
-
-type ApiLogResponse = {
-  logs: Log[];
-};
 
 function getMatchID(): number {
   const match = document.URL.match(matchRe);
@@ -36,7 +16,8 @@ function getMatchID(): number {
 
 async function getLogsFromAPI(matchId: number): Promise<Log[]> {
   const getMatchURL = new URL(apiUrl + "match/" + matchId.toString());
-  getMatchURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  getMatchURL.searchParams.append("version", api.runtime.getManifest().version);
+  getMatchURL.searchParams.append("browser", type);
 
   const res = await fetch(getMatchURL.toString());
 
@@ -44,7 +25,7 @@ async function getLogsFromAPI(matchId: number): Promise<Log[]> {
     throw new Error("offi api returned error: " + res.statusText);
   }
 
-  const { logs } = (await res.json()) as ApiLogResponse;
+  const { logs } = (await res.json()) as LogResponse;
   if (logs === null) {
     throw NoLogsError;
   }
@@ -114,4 +95,8 @@ async function addLogLinks(): Promise<void> {
   createLogHeader(PrimaryLogList, true);
 }
 
-addLogLinks();
+api.storage.sync.get((fields) => {
+  if (fields.etf2l_show_logs === true) {
+    addLogLinks();
+  }
+});

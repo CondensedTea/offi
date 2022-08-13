@@ -30,9 +30,7 @@ func New(c *core.Core) *Handler {
 
 	app.Use(prometheus.Middleware)
 	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-	}))
+	app.Use(cors.New(cors.Config{}))
 	app.Use(clientVersionMiddleware)
 
 	handler := &Handler{
@@ -43,8 +41,8 @@ func New(c *core.Core) *Handler {
 
 	handler.app.Get("/match/:matchId", handler.GetMatch)
 	handler.app.Get("/log/:logId", handler.GetLog)
-	handler.app.Get("/player/:id", handler.GetPlayer)
 	handler.app.Get("/team/:id", handler.GetTeam)
+	handler.app.Get("/players", handler.GetPlayers)
 
 	handler.app.Get("/debug/keys/:hashKey", handler.Debug)
 

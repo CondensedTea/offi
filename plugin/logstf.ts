@@ -1,17 +1,8 @@
 import "regenerator-runtime/runtime";
-import {apiUrl} from "./utils";
+import {api, apiUrl, type} from "./utils";
+import {MatchResponse, Match, Player, PlayersResponse} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
-
-type Match = {
-  id: number;
-  competition: string;
-  stage: string;
-}
-
-type ApiMatchResponse = {
-  match: Match;
-}
 
 function getLogID(): number {
   const match = document.URL.match(matchRe);
@@ -24,7 +15,8 @@ function getLogID(): number {
 
 async function getMatchFromAPI(matchId: number): Promise<Match> {
   const logURL = new URL(apiUrl + "log/" + matchId.toString());
-  logURL.searchParams.append("version", chrome.runtime.getManifest().version);
+  logURL.searchParams.append("version", api.runtime.getManifest().version);
+  logURL.searchParams.append("browser", type);
 
   const res = await fetch(logURL.toString());
 
@@ -32,13 +24,38 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
     throw new Error("offi api returned error: " + res.statusText);
   }
 
-  const apiResponse = await res.json() as ApiMatchResponse;
+  const apiResponse = await res.json() as MatchResponse;
 
   return apiResponse.match;
 }
 
+async function getPlayers(ids: string[]): Promise<Player[]> {
+  const playersURL = new URL(apiUrl + "players");
+
+  const idsString = ids.join(",");
+
+  playersURL.searchParams.append("id", idsString);
+  playersURL.searchParams.append("version", api.runtime.getManifest().version);
+  playersURL.searchParams.append("browser", type);
+
+  const res = await fetch(playersURL.toString());
+  if (!res.ok) {
+    throw new Error("offi api returned error: " + res.statusText);
+  }
+
+  const response = await res.json() as PlayersResponse;
+  return response.players;
+}
+
 async function addMatchLink(): Promise<void> {
-  const matchId = getLogID();
+  let matchId: number;
+
+  try {
+    matchId = getLogID();
+  } catch (e) {
+    return;
+  }
+
   let match: Match;
 
   try {
@@ -61,4 +78,34 @@ async function addMatchLink(): Promise<void> {
   logDateElem.after(competitionBlock);
 }
 
-addMatchLink();
+async function replacePlayerNames() {
+  const match = document.URL.match(matchRe);
+  if (match === null) {
+    return;
+  }
+
+  const playerNodes = document.querySelectorAll("[id^=player_]");
+
+  const playerIDs = Array.from(playerNodes).map((node) => {
+    return node.id.replace("player_", "");
+  });
+
+  const players = await getPlayers(playerIDs);
+
+  players.forEach((player) => {
+    const query = `#player_${player.steam_id} td.log-player-name div.dropdown a.dropdown-toggle`;
+
+    const playerNode = document.querySelector(query);
+    playerNode.innerHTML = player.name;
+  });
+}
+
+api.storage.sync.get((fields: Options) => {
+  if (fields.logstf_link_matchpage === true) {
+    addMatchLink();
+  }
+  if (fields.logstf_replace_names === true) {
+    replacePlayerNames();
+  }
+});
+

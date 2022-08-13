@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
-	"offi/pkg/logstf"
+	"os"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -13,18 +13,21 @@ import (
 type Core struct {
 	cache     cache.Cache
 	etf2l     *etf2l.Client
-	logsTf    *logstf.Client
 	scheduler *gocron.Scheduler
+
+	enableErrorCaching bool
 }
 
-func New(cache cache.Cache, etf2l *etf2l.Client, logsTf *logstf.Client) (*Core, error) {
-	c := &Core{
+func New(cache cache.Cache, etf2l *etf2l.Client) *Core {
+	_, ok := os.LookupEnv("DISABLE_ERROR_CACHE")
+
+	return &Core{
 		cache:     cache,
 		etf2l:     etf2l,
-		logsTf:    logsTf,
 		scheduler: gocron.NewScheduler(time.UTC),
+
+		enableErrorCaching: !ok,
 	}
-	return c, nil
 }
 
 func (c Core) StartScheduler() error {

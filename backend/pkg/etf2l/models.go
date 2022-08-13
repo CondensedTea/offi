@@ -2,6 +2,8 @@ package etf2l
 
 import (
 	"offi/pkg/cache"
+
+	"github.com/samber/lo"
 )
 
 type Page struct {
@@ -46,8 +48,8 @@ type Recruitment struct {
 	Urls     URLs     `json:"urls"`
 }
 
-func (r Recruitment) ToCache() cache.Entry {
-	return cache.Entry{
+func (r Recruitment) ToCache() *cache.RecruitmentStatus {
+	return &cache.RecruitmentStatus{
 		ID:       r.Id,
 		Skill:    r.Skill,
 		URL:      r.Urls.Recruitment,
@@ -69,11 +71,33 @@ type Ban struct {
 }
 
 type Player struct {
-	ID   int   `json:"id"`
-	Bans []Ban `json:"bans"`
+	ID    int `json:"id"`
+	Steam struct {
+		ID64 string `json:"id64"`
+	} `json:"steam"`
+	Name string `json:"name"`
+	Bans []Ban  `json:"bans"`
 }
 
 type PlayerResponse struct {
 	Player Player `json:"player"`
 	Status Status `json:"status"`
+}
+
+// ToCache converts a Player to a cache.Player
+func (p Player) ToCache() cache.Player {
+	cacheBans := lo.Map(p.Bans, func(b Ban, _ int) cache.PlayerBan {
+		return cache.PlayerBan{
+			Start:  b.Start,
+			End:    b.End,
+			Reason: b.Reason,
+		}
+	})
+
+	return cache.Player{
+		ID:      p.ID,
+		Bans:    cacheBans,
+		SteamID: p.Steam.ID64,
+		Name:    p.Name,
+	}
 }
