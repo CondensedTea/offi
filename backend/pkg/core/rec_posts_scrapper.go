@@ -43,7 +43,7 @@ func (c Core) loadPlayersRecruitmentPosts() {
 
 		cachePlayer := player.ToCache()
 		cachePlayer.Recruitment = entry.ToCache()
-		if err = c.cache.SetPlayer(entry.Id, cachePlayer); err != nil {
+		if err = c.cache.SetPlayer(cachePlayer.SteamID, cachePlayer); err != nil {
 			logrus.Errorf("failed to save recruitment team posts: %v", err)
 		}
 	})

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"offi/pkg/cache"
 	"offi/pkg/logstf"
+	"strconv"
 
 	"github.com/go-redis/redis"
 	"github.com/samber/lo"
@@ -58,7 +59,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 	}
 
 	steamIDs := lo.Map(players, func(player cache.Player, _ int) string {
-		return player.SteamID
+		return strconv.Itoa(player.SteamID)
 	})
 
 	var cacheLogs []cache.Log
