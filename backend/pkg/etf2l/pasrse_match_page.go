@@ -10,6 +10,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nleeper/goment"
+	"github.com/sirupsen/logrus"
 )
 
 var timeNow = func() time.Time {
@@ -56,7 +57,11 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		Find(".fix.match-players").
 		Find("span.winr, span.looser").
 		Each(func(i int, selection *goquery.Selection) {
-			playerURL, _ := selection.Find("a").Attr("href")
+			playerURL, ok := selection.Find("a").Attr("href")
+			if !ok {
+				logrus.Errorf("failed to get player URl for match %d", matchId)
+				return
+			}
 			playerIDInt, _ := strconv.Atoi(playerURL[len("https://etf2l.org/forum/user/"):])
 			playerIDs = append(playerIDs, playerIDInt)
 		})
