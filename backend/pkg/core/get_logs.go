@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"offi/pkg/cache"
+	"offi/pkg/logstf"
 
 	"github.com/go-redis/redis"
 	"github.com/samber/lo"
@@ -62,7 +63,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 
 	var cacheLogs []cache.Log
 
-	matchLogs, secondaryLogs, err := c.logsTf.SearchLogs(steamIDs, match.Maps, match.PlayedAt)
+	matchLogs, secondaryLogs, err := logstf.SearchLogs(steamIDs, match.Maps, match.PlayedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}

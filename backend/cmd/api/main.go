@@ -6,7 +6,6 @@ import (
 	"offi/pkg/core"
 	"offi/pkg/etf2l"
 	"offi/pkg/handler"
-	"offi/pkg/logstf"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,6 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	logsTf := logstf.New()
 	etf2lClient := etf2l.New()
 
 	redisUrl := os.Getenv("REDIS_URL")
@@ -25,7 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c := core.New(cacheClient, etf2lClient, logsTf)
+	c := core.New(cacheClient, etf2lClient)
 
 	if err = c.StartScheduler(); err != nil {
 		logrus.Fatalf("failed to start scheduler: %v", err)

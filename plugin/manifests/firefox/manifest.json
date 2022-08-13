@@ -61,7 +61,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "offi@example2.com"
+      "id": "{e8ce3e9f-e974-438c-b4e9-081c7ff7be34}"
     }
   },
   "web_accessible_resources": ["../../styles.css"]

@@ -23,7 +23,7 @@ func (l Log) ToCache(isSecondary bool) cache.Log {
 		ID:          l.Id,
 		Title:       l.Title,
 		Map:         l.Map,
-		PlayedAt:    time.Unix(int64(l.Date), 0),
+		PlayedAt:    time.Unix(l.Date, 0),
 		IsSecondary: isSecondary,
 	}
 }

@@ -16,27 +16,13 @@ const (
 	matchPlayedOffset = 3 * 24 * time.Hour
 )
 
-type Getter interface {
-	Get(string) (*http.Response, error)
-}
-
-type Client struct {
-	httpClient Getter
-}
-
-func New() *Client {
-	return &Client{
-		httpClient: &http.Client{Timeout: timeout},
-	}
-}
-
-func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+func SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	started := time.Now()
 	defer func() {
 		logsTfSearchTime.Observe(time.Since(started).Seconds())
 	}()
 
-	resp, err := c.getLogsWithPlayers(players)
+	resp, err := getLogsWithPlayers(players)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
@@ -46,7 +32,7 @@ func (c Client) SearchLogs(players, maps []string, playedAt time.Time) ([]Log, [
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func (c Client) getLogsWithPlayers(players []string) (*Response, error) {
+func getLogsWithPlayers(players []string) (*Response, error) {
 	query := "player=" + strings.Join(players, ",")
 
 	u := fmt.Sprintf("https://logs.tf/api/v1/log?%s", query)
