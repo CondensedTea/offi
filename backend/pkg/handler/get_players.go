@@ -25,7 +25,7 @@ func (h Handler) GetPlayers(ctx *fiber.Ctx) error {
 		return idInt, true
 	})
 
-	players, err := h.core.GetPlayers(parsedIDs)
+	players, err := h.core.GetPlayers(ctx.Context(), parsedIDs)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get player info: %v", err))
 	}

@@ -1,16 +1,23 @@
 package core
 
 import (
+	"context"
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
 	"strconv"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
+const loadJobTimeout = 5 * time.Minute
+
 func (c Core) loadTeamsRecruitmentPosts() {
-	entries, err := c.etf2l.LoadRecruitmentPosts(etf2l.TeamPost)
+	ctx, cancel := context.WithTimeout(context.Background(), loadJobTimeout)
+	defer cancel()
+
+	entries, err := etf2l.LoadRecruitmentPosts(ctx, etf2l.TeamPost)
 	if err != nil {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
@@ -28,7 +35,10 @@ func (c Core) loadTeamsRecruitmentPosts() {
 }
 
 func (c Core) loadPlayersRecruitmentPosts() {
-	entries, err := c.etf2l.LoadRecruitmentPosts(etf2l.PlayerPost)
+	ctx, cancel := context.WithTimeout(context.Background(), loadJobTimeout)
+	defer cancel()
+
+	entries, err := etf2l.LoadRecruitmentPosts(ctx, etf2l.PlayerPost)
 	if err != nil {
 		logrus.Errorf("failed to load recruitment posts from etf2l: %v", err)
 		return
@@ -36,7 +46,7 @@ func (c Core) loadPlayersRecruitmentPosts() {
 
 	var player etf2l.Player
 	lo.ForEach[etf2l.Recruitment](entries, func(entry etf2l.Recruitment, i int) {
-		player, err = c.etf2l.GetPlayer(entry.Id)
+		player, err = etf2l.GetPlayer(ctx, entry.Id)
 		if err != nil {
 			logrus.Errorf("failed to get player from cache: %v", err)
 			return

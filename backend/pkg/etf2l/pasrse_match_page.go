@@ -1,14 +1,16 @@
 package etf2l
 
 import (
+	"bytes"
+	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/carlmjohnson/requests"
 	"github.com/nleeper/goment"
 	"github.com/sirupsen/logrus"
 )
@@ -30,16 +32,15 @@ type Match struct {
 	Stage       string
 }
 
-func (c Client) ParseMatchPage(matchId int) (*Match, error) {
+func ParseMatchPage(ctx context.Context, matchId int) (*Match, error) {
 	url := fmt.Sprintf("https://etf2l.org/matches/%d/", matchId)
 
-	matchPage, err := c.getHtml(url)
+	matchPageBuffer, err := getHtml(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	defer matchPage.Close()
 
-	doc, err := goquery.NewDocumentFromReader(matchPage)
+	doc, err := goquery.NewDocumentFromReader(matchPageBuffer)
 	if err != nil {
 		return nil, err
 	}
@@ -157,13 +158,13 @@ func parseMatchDate(textBlock string) (time.Time, error) {
 	return gm.ToTime(), nil
 }
 
-func (c Client) getHtml(url string) (io.ReadCloser, error) {
-	resp, err := c.httpClient.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
-	}
-	return resp.Body, nil
+func getHtml(ctx context.Context, url string) (*bytes.Buffer, error) {
+	var buf bytes.Buffer
+
+	err := requests.
+		URL(url).
+		ToBytesBuffer(&buf).
+		CheckStatus(http.StatusOK).
+		Fetch(ctx)
+	return &buf, err
 }

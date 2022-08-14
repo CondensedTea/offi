@@ -1,27 +1,30 @@
 package etf2l
 
 import (
-	"encoding/json"
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/carlmjohnson/requests"
 )
 
-func (c Client) GetPlayer(id int) (Player, error) {
-	url := fmt.Sprintf("https://api.etf2l.org/player/%d.json", id)
-	resp, err := c.httpClient.Get(url)
-	if err != nil {
-		return Player{}, fmt.Errorf("failed to get player from etf2l api: %v", err)
-	}
-	defer resp.Body.Close()
+var ErrPlayerNotFound = errors.New("etf2l api could not resolve player")
 
-	if resp.StatusCode != http.StatusOK {
-		return Player{}, fmt.Errorf("etf2l api returned non-200 status: %d", resp.StatusCode)
-	}
+func GetPlayer(ctx context.Context, id int) (Player, error) {
+	url := fmt.Sprintf("https://api.etf2l.org/player/%d.json", id)
 
 	var playerResponse PlayerResponse
-	if err = json.NewDecoder(resp.Body).Decode(&playerResponse); err != nil {
+	err := requests.
+		URL(url).
+		ToJSON(&playerResponse).
+		CheckStatus(http.StatusOK).
+		Fetch(ctx)
+	switch {
+	case requests.HasStatusErr(err, http.StatusInternalServerError):
+		return Player{}, ErrPlayerNotFound
+	case err != nil:
 		return Player{}, err
 	}
-
 	return playerResponse.Player, nil
 }

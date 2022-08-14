@@ -1,9 +1,11 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"offi/pkg/cache"
+	"offi/pkg/etf2l"
 	"offi/pkg/logstf"
 	"strconv"
 
@@ -16,7 +18,7 @@ var ErrTooManyPlayers = errors.New("too many players, 18 or less allowed")
 
 const maxPlayers = 18
 
-func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
+func (c Core) GetLogs(ctx context.Context, matchId int) ([]cache.Log, error) {
 	logSet, err := c.cache.GetLogs(matchId)
 	switch {
 	case err == redis.Nil:
@@ -25,7 +27,7 @@ func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 				return nil, storedErr
 			}
 		}
-		logs, saveErr := c.saveNewMatch(matchId)
+		logs, saveErr := c.saveNewMatch(ctx, matchId)
 		if saveErr != nil {
 			if c.enableErrorCaching {
 				if cacheErr := c.cache.SetLogError(matchId, saveErr); cacheErr != nil {
@@ -41,10 +43,10 @@ func (c Core) GetLogs(matchId int) ([]cache.Log, error) {
 	return logSet.Logs, nil
 }
 
-func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
+func (c Core) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, error) {
 	logIDs := make([]int, 0)
 
-	match, err := c.etf2l.ParseMatchPage(matchId)
+	match, err := etf2l.ParseMatchPage(ctx, matchId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get players for etf2l match: %v", err)
 	}
@@ -58,7 +60,7 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		return id
 	})
 
-	players, err := c.GetPlayers(playerIDs)
+	players, err := c.GetPlayers(ctx, playerIDs)
 	if err != nil {
 		return nil, err
 	}

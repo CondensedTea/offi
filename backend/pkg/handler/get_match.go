@@ -16,7 +16,7 @@ func (h Handler) GetMatch(ctx *fiber.Ctx) error {
 	if matchId == 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "match id is required")
 	}
-	logs, err := h.core.GetLogs(matchId)
+	logs, err := h.core.GetLogs(ctx.Context(), matchId)
 	if errors.Is(err, cache.ErrCached) {
 		return fiber.NewError(fiber.StatusTooEarly, err.Error())
 	}

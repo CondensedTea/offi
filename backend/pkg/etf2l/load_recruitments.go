@@ -1,9 +1,10 @@
 package etf2l
 
 import (
-	"encoding/json"
-	"fmt"
+	"context"
 	"net/http"
+
+	"github.com/carlmjohnson/requests"
 )
 
 type postType string
@@ -13,7 +14,7 @@ const (
 	TeamPost   = "team"
 )
 
-func (c Client) LoadRecruitmentPosts(postType postType) ([]Recruitment, error) {
+func LoadRecruitmentPosts(ctx context.Context, postType postType) ([]Recruitment, error) {
 	var (
 		entries []Recruitment
 		url     string
@@ -29,19 +30,13 @@ func (c Client) LoadRecruitmentPosts(postType postType) ([]Recruitment, error) {
 	pageIsNotLast := true
 
 	for pageIsNotLast {
-		resp, err := c.httpClient.Get(url)
-		if err != nil {
-			return nil, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("etf2l api returned bad status: %d", resp.StatusCode)
-		}
-
 		var response RecruitmentResponse
-		if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, err
-		}
-		if err = resp.Body.Close(); err != nil {
+		err := requests.
+			URL(url).
+			ToJSON(&response).
+			CheckStatus(http.StatusOK).
+			Fetch(ctx)
+		if err != nil {
 			return nil, err
 		}
 
