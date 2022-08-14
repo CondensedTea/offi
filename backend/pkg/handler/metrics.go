@@ -20,7 +20,8 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(clientVersionCounter, clientBrowserCounter)
+	prometheus.MustRegister(clientVersionCounter)
+	prometheus.MustRegister(clientBrowserCounter)
 }
 
 func clientVersionMiddleware(ctx *fiber.Ctx) error {
