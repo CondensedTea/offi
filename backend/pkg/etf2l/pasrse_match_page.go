@@ -20,7 +20,7 @@ var timeNow = func() time.Time {
 var reSubmittedDateTime = regexp.MustCompile(`Results submitted: (\d{1,2} \w+? \d{4}|Yesterday|Today), (\d{2}):(\d{2})`)
 
 type Match struct {
-	Players  []int
+	Players  []string
 	Maps     []string
 	PlayedAt time.Time
 
@@ -45,7 +45,7 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 	}
 
 	var (
-		playerIDs []int
+		playerIDs []string
 		matchMaps []string
 	)
 
@@ -62,8 +62,8 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 				logrus.Errorf("failed to get player URl for match %d", matchId)
 				return
 			}
-			playerIDInt, _ := strconv.Atoi(playerURL[len("https://etf2l.org/forum/user/"):])
-			playerIDs = append(playerIDs, playerIDInt)
+
+			playerIDs = append(playerIDs, playerURL[len("https://etf2l.org/forum/user/"):])
 		})
 
 	doc.Find("div.maps").Each(func(i int, selection *goquery.Selection) {

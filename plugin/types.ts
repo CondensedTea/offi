@@ -14,7 +14,7 @@ export type Ban = {
 }
 
 export type Player = {
-  id: number;
+  id: string;
   steam_id: string;
   name: string;
   bans: Ban[];

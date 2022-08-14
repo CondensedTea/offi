@@ -53,13 +53,18 @@ func (c Core) saveNewMatch(matchId int) ([]cache.Log, error) {
 		return nil, ErrTooManyPlayers
 	}
 
-	players, err := c.GetPlayers(match.Players)
+	playerIDs := lo.Map(match.Players, func(playerID string, _ int) int {
+		id, _ := strconv.Atoi(playerID)
+		return id
+	})
+
+	players, err := c.GetPlayers(playerIDs)
 	if err != nil {
 		return nil, err
 	}
 
 	steamIDs := lo.Map(players, func(player cache.Player, _ int) string {
-		return strconv.Itoa(player.SteamID)
+		return player.SteamID
 	})
 
 	var cacheLogs []cache.Log

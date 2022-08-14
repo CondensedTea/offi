@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Offi",
   "description": "etf2l.org QoL extension",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "content_scripts": [
     {
       "run_at": "document_end",
@@ -55,7 +55,6 @@
     "storage"
   ],
   "options_ui": {
-    "page": "../../options.html",
-    "open_in_tab": true
+    "page": "../../options.html"
   }
 }

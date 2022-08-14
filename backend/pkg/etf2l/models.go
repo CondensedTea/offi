@@ -2,7 +2,6 @@ package etf2l
 
 import (
 	"offi/pkg/cache"
-	"strconv"
 
 	"github.com/samber/lo"
 )
@@ -95,11 +94,10 @@ func (p Player) ToCache() cache.Player {
 		}
 	})
 
-	steamId64, _ := strconv.Atoi(p.Steam.ID64)
 	return cache.Player{
 		ID:      p.ID,
 		Bans:    cacheBans,
-		SteamID: steamId64,
+		SteamID: p.Steam.ID64,
 		Name:    p.Name,
 	}
 }

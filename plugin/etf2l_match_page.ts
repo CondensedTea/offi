@@ -77,22 +77,35 @@ async function addLogLinks(): Promise<void> {
     return;
   }
 
-  const PrimaryLogList = document.createElement("ul");
-  const OtherLogList = document.createElement("ul");
-
-  for (const log of logs) {
-    const logItem = document.createElement("li");
+  const primaryLogs: Log[] = [];
+  const secondaryLogs: Log[] = [];
+  logs.forEach((log) => {
     if (log.is_secondary) {
-      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.title !== "" ? log.title : log.map} | ${log.played_at.toLocaleString()}`;
-      OtherLogList.appendChild(logItem);
+      secondaryLogs.unshift(log);
     } else {
-      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
-      PrimaryLogList.appendChild(logItem);
+      primaryLogs.unshift(log);
     }
+  });
+
+  if (secondaryLogs.length > 0) {
+    const OtherLogList = document.createElement("ul");
+    secondaryLogs.forEach((log) => {
+      const logItem = document.createElement("li");
+      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
+      OtherLogList.appendChild(logItem);
+    });
+    createLogHeader(OtherLogList, false);
   }
 
-  createLogHeader(OtherLogList, false);
-  createLogHeader(PrimaryLogList, true);
+  if (primaryLogs.length > 0) {
+    const PrimaryLogList = document.createElement("ul");
+    primaryLogs.forEach((log) => {
+      const logItem = document.createElement("li");
+      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
+      PrimaryLogList.appendChild(logItem);
+    });
+    createLogHeader(PrimaryLogList, true);
+  }
 }
 
 api.storage.sync.get((fields) => {

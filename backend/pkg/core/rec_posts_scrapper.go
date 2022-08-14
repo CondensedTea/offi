@@ -3,6 +3,7 @@ package core
 import (
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
+	"strconv"
 
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
@@ -43,7 +44,9 @@ func (c Core) loadPlayersRecruitmentPosts() {
 
 		cachePlayer := player.ToCache()
 		cachePlayer.Recruitment = entry.ToCache()
-		if err = c.cache.SetPlayer(cachePlayer.SteamID, cachePlayer); err != nil {
+
+		steamID64, _ := strconv.Atoi(cachePlayer.SteamID)
+		if err = c.cache.SetPlayer(steamID64, cachePlayer); err != nil {
 			logrus.Errorf("failed to save recruitment team posts: %v", err)
 		}
 	})
