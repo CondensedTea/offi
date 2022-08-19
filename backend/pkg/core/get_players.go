@@ -1,10 +1,13 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"offi/pkg/cache"
+	"offi/pkg/etf2l"
 
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 )
 
 func (c Core) GetPlayers(playerIDs []int) ([]cache.Player, error) {
@@ -15,8 +18,12 @@ func (c Core) GetPlayers(playerIDs []int) ([]cache.Player, error) {
 		switch {
 		case err == redis.Nil:
 			etf2lPlayer, etf2lErr := c.etf2l.GetPlayer(playerID)
-			if etf2lErr != nil {
-				return nil, fmt.Errorf("failed to get player page from etf2l: %v", etf2lErr)
+			switch {
+			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
+				logrus.Warnf("failed to get player %d from etf2l: %v", playerID, etf2lErr)
+				continue
+			case etf2lErr != nil:
+				return nil, fmt.Errorf("failed to get player from etf2l: %v", etf2lErr)
 			}
 
 			player = etf2lPlayer.ToCache()
