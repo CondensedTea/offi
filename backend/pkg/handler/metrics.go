@@ -19,10 +19,10 @@ var (
 	// 	}, []string{"browser"})
 )
 
-func init() {
-	prometheus.MustRegister(clientVersionCounter)
-	// prometheus.MustRegister(clientBrowserCounter)
-}
+// func init() {
+// 	prometheus.MustRegister(clientVersionCounter)
+// 	// prometheusMustRegister(clientBrowserCounter)
+// }
 
 func clientVersionMiddleware(ctx *fiber.Ctx) error {
 	clientVersionCounter.WithLabelValues(ctx.Query("version")).Inc()
