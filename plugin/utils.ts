@@ -27,3 +27,16 @@ api.storage.sync.get((fields: Object) => {
     api.storage.sync.set(fields);
   }
 });
+
+export function replaceInText(element, pattern, replacement) {
+  for (const node of element.childNodes) {
+    switch (node.nodeType) {
+      case Node.ELEMENT_NODE || Node.DOCUMENT_NODE:
+        replaceInText(node, pattern, replacement);
+        break;
+      case Node.TEXT_NODE:
+        node.textContent = node.textContent.replace(pattern, replacement);
+        break;
+    }
+  }
+}

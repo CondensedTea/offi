@@ -1,5 +1,5 @@
 import "regenerator-runtime/runtime";
-import {api, apiUrl, type} from "./utils";
+import {api, apiUrl, type, replaceInText} from "./utils";
 import {MatchResponse, Match, Player, PlayersResponse} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
@@ -86,17 +86,33 @@ async function replacePlayerNames() {
 
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
+  const steamPlayerNames: Map<string, string> = new Map();
+
   const playerIDs = Array.from(playerNodes).map((node) => {
-    return node.id.replace("player_", "");
+    const steamId = node.id.replace("player_", "");
+    const oldName = node.querySelector(".log-player-name a").textContent;
+
+    steamPlayerNames.set(steamId, oldName);
+
+    return steamId;
   });
 
   const players = await getPlayers(playerIDs);
 
-  players.forEach((player) => {
-    const query = `#player_${player.steam_id} td.log-player-name div.dropdown a.dropdown-toggle`;
+  players.forEach((player, i) => {
+    const oldName = steamPlayerNames.get(player.steam_id);
 
-    const playerNode = document.querySelector(query);
-    playerNode.innerHTML = player.name;
+    const logSelectionNode = document.querySelector("div#log-section-players");
+    replaceInText(logSelectionNode, oldName, player.name);
+
+    const healSpreadNode = document.querySelector("div.healspread");
+    replaceInText(healSpreadNode, oldName, player.name);
+
+    const tabContentNode = document.querySelector("div.tab-content");
+    replaceInText(tabContentNode, oldName, player.name);
+
+    const showstreaksNode = document.querySelector("#showstreaks");
+    replaceInText(showstreaksNode, oldName, player.name);
   });
 }
 
