@@ -1,6 +1,6 @@
 import "regenerator-runtime/runtime";
-import {api, apiUrl, type, replaceInText} from "./utils";
-import {MatchResponse, Match, Player, PlayersResponse} from "./types";
+import {api, apiUrl, type, replaceInText, getPlayers} from "./utils";
+import {MatchResponse, Match} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
 
@@ -21,30 +21,12 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
   const res = await fetch(logURL.toString());
 
   if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
+    throw new Error("api returned error: " + res.statusText);
   }
 
   const apiResponse = await res.json() as MatchResponse;
 
   return apiResponse.match;
-}
-
-async function getPlayers(ids: string[]): Promise<Player[]> {
-  const playersURL = new URL(apiUrl + "players");
-
-  const idsString = ids.join(",");
-
-  playersURL.searchParams.append("id", idsString);
-  playersURL.searchParams.append("version", api.runtime.getManifest().version);
-  playersURL.searchParams.append("browser", type);
-
-  const res = await fetch(playersURL.toString());
-  if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
-  }
-
-  const response = await res.json() as PlayersResponse;
-  return response.players;
 }
 
 async function addMatchLink(): Promise<void> {
@@ -61,13 +43,13 @@ async function addMatchLink(): Promise<void> {
   try {
     match = await getMatchFromAPI(matchId);
   } catch (e) {
-    console.error("could not get match: " + e.toString());
+    console.log("off: could not get match: " + e.toString());
     return;
   }
 
   const competitionBlock = document.createElement("h3");
   competitionBlock.innerHTML =
-    `<a href="https://etf2l.org/matches/${match.id}">${match.competition}</a>`;
+    `<a href="https://etf2l.org/matches/${match.match_id}">${match.competition}</a>`;
 
   const matchBlock = document.createElement("h3");
   matchBlock.innerText = match.stage;
@@ -99,7 +81,7 @@ async function replacePlayerNames() {
 
   const players = await getPlayers(playerIDs);
 
-  players.forEach((player, i) => {
+  players.forEach((player) => {
     const oldName = steamPlayerNames.get(player.steam_id);
 
     const logSelectionNode = document.querySelector("div#log-section-players");

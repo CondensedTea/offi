@@ -1,3 +1,5 @@
+import {Player, PlayersResponse} from "./types";
+
 export const apiUrl = "https://offi.lemontea.dev/";
 
 class Options {
@@ -27,6 +29,24 @@ api.storage.sync.get((fields: Object) => {
     api.storage.sync.set(fields);
   }
 });
+
+export async function getPlayers(ids: string[]): Promise<Player[]> {
+  const playersURL = new URL(apiUrl + "players");
+
+  const idsString = ids.join(",");
+
+  playersURL.searchParams.append("id", idsString);
+  playersURL.searchParams.append("version", api.runtime.getManifest().version);
+  playersURL.searchParams.append("browser", type);
+
+  const res = await fetch(playersURL.toString());
+  if (!res.ok) {
+    throw new Error("offi api returned error: " + res.statusText);
+  }
+
+  const response = await res.json() as PlayersResponse;
+  return response.players;
+}
 
 export function replaceInText(element, pattern, replacement) {
   for (const node of element.childNodes) {
