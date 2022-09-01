@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Offi",
-  "description": "etf2l.org QoL extension",
-  "version": "3.0.1",
+  "description": "tf2 competitive QoL extension",
+  "version": "3.1.0",
   "content_scripts": [
     {
       "run_at": "document_end",
@@ -47,6 +47,15 @@
       ],
       "css": [
         "../../styles.css"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://steamcommunity.com/id/*"
+      ],
+      "js": [
+        "../../steam_profile.ts"
       ]
     }
   ],

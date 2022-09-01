@@ -14,6 +14,8 @@ class Options {
   etf2l_show_lft = true;
   etf2l_show_lfp = true;
   etf2l_show_logs = true;
+
+  steam_add_player_links = true;
 }
 
 function saveOptions() {
@@ -36,7 +38,6 @@ function saveOptions() {
 
 function restoreOptions() {
   api.storage.sync.get((fields) => {
-    console.log("restoreOptions ", fields);
     Object.entries(fields).forEach((value: [string, boolean]) => {
       if (value[0] !== "defaults_loaded") {
         const node = document.getElementById(value[0]) as HTMLInputElement;
@@ -48,7 +49,6 @@ function restoreOptions() {
 
 function restoreDefaults() {
   const fields = Object(new Options());
-  console.log("new fields", fields);
   api.storage.sync.set(fields, () => {
     const status = document.getElementById("status");
     status.textContent = "Options reset.";

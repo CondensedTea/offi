@@ -1,6 +1,6 @@
 import "regenerator-runtime/runtime";
-import {api, apiUrl, type} from "./utils";
-import {MatchResponse, Match, Player, PlayersResponse} from "./types";
+import {api, apiUrl, type, replaceInText, getPlayers} from "./utils";
+import {MatchResponse, Match} from "./types";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
 
@@ -21,30 +21,12 @@ async function getMatchFromAPI(matchId: number): Promise<Match> {
   const res = await fetch(logURL.toString());
 
   if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
+    throw new Error("api returned error: " + res.statusText);
   }
 
   const apiResponse = await res.json() as MatchResponse;
 
   return apiResponse.match;
-}
-
-async function getPlayers(ids: string[]): Promise<Player[]> {
-  const playersURL = new URL(apiUrl + "players");
-
-  const idsString = ids.join(",");
-
-  playersURL.searchParams.append("id", idsString);
-  playersURL.searchParams.append("version", api.runtime.getManifest().version);
-  playersURL.searchParams.append("browser", type);
-
-  const res = await fetch(playersURL.toString());
-  if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
-  }
-
-  const response = await res.json() as PlayersResponse;
-  return response.players;
 }
 
 async function addMatchLink(): Promise<void> {
@@ -61,13 +43,13 @@ async function addMatchLink(): Promise<void> {
   try {
     match = await getMatchFromAPI(matchId);
   } catch (e) {
-    console.error("could not get match: " + e.toString());
+    console.log("off: could not get match: " + e.toString());
     return;
   }
 
   const competitionBlock = document.createElement("h3");
   competitionBlock.innerHTML =
-    `<a href="https://etf2l.org/matches/${match.id}">${match.competition}</a>`;
+    `<a href="https://etf2l.org/matches/${match.match_id}">${match.competition}</a>`;
 
   const matchBlock = document.createElement("h3");
   matchBlock.innerText = match.stage;
@@ -86,17 +68,33 @@ async function replacePlayerNames() {
 
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
+  const steamPlayerNames: Map<string, string> = new Map();
+
   const playerIDs = Array.from(playerNodes).map((node) => {
-    return node.id.replace("player_", "");
+    const steamId = node.id.replace("player_", "");
+    const oldName = node.querySelector(".log-player-name a").textContent;
+
+    steamPlayerNames.set(steamId, oldName);
+
+    return steamId;
   });
 
   const players = await getPlayers(playerIDs);
 
   players.forEach((player) => {
-    const query = `#player_${player.steam_id} td.log-player-name div.dropdown a.dropdown-toggle`;
+    const oldName = steamPlayerNames.get(player.steam_id);
 
-    const playerNode = document.querySelector(query);
-    playerNode.innerHTML = player.name;
+    const logSelectionNode = document.querySelector("div#log-section-players");
+    replaceInText(logSelectionNode, oldName, player.name);
+
+    const healSpreadNode = document.querySelector("div.healspread");
+    replaceInText(healSpreadNode, oldName, player.name);
+
+    const tabContentNode = document.querySelector("div.tab-content");
+    replaceInText(tabContentNode, oldName, player.name);
+
+    const showstreaksNode = document.querySelector("#showstreaks");
+    replaceInText(showstreaksNode, oldName, player.name);
   });
 }
 

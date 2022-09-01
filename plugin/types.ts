@@ -43,7 +43,7 @@ export class Log {
 }
 
 export type Match = {
-  id: number;
+  match_id: number;
   competition: string;
   stage: string;
 }
