@@ -84,17 +84,13 @@ async function replacePlayerNames() {
   players.forEach((player) => {
     const oldName = steamPlayerNames.get(player.steam_id);
 
-    const logSelectionNode = document.querySelector("div#log-section-players");
-    replaceInText(logSelectionNode, oldName, player.name);
-
-    const healSpreadNode = document.querySelector("div.healspread");
-    replaceInText(healSpreadNode, oldName, player.name);
-
-    const tabContentNode = document.querySelector("div.tab-content");
-    replaceInText(tabContentNode, oldName, player.name);
-
-    const showstreaksNode = document.querySelector("#showstreaks");
-    replaceInText(showstreaksNode, oldName, player.name);
+    const playerNameNodes = document.querySelectorAll(
+        // select player name cells or heal table headers or player names in chat
+        ".log-player-name, .healtable h6, .chat-name",
+    );
+    playerNameNodes.forEach((node) => {
+      replaceInText(node, oldName, player.name);
+    });
   });
 }
 
