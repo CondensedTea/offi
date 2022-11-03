@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Offi",
   "description": "tf2 competitive QoL extension",
-  "version": "3.1.0",
+  "version": "3.1.2",
   "content_scripts": [
     {
       "run_at": "document_end",
@@ -10,7 +10,7 @@
         "https://etf2l.org/matches/*"
       ],
       "js": [
-        "../../etf2l_match_page.ts"
+        "etf2l_match_page.ts"
       ]
     },
     {
@@ -19,10 +19,10 @@
         "https://etf2l.org/forum/user/*"
       ],
       "js": [
-        "../../etf2l_player_page.ts"
+        "etf2l_player_page.ts"
       ],
       "css": [
-        "../../styles.css"
+        "styles.css"
       ]
     },
     {
@@ -31,10 +31,10 @@
         "https://etf2l.org/teams/*"
       ],
       "js": [
-        "../../etf2l_team_page.ts"
+        "etf2l_team_page.ts"
       ],
       "css": [
-        "../../styles.css"
+        "styles.css"
       ]
     },
     {
@@ -43,7 +43,7 @@
         "https://logs.tf/*"
       ],
       "js": [
-        "../../logstf.ts"
+        "logstf.ts"
       ]
     },
     {
@@ -53,18 +53,18 @@
         "https://steamcommunity.com/profiles/*"
       ],
       "js": [
-        "../../steam_profile.ts"
+        "steam_profile.ts"
       ]
     }
   ],
   "web_accessible_resources": [{
-      "resources": ["../../styles.css"],
+      "resources": ["styles.css"],
       "matches": ["https://etf2l.org/*", "https://logs.tf/*"]
     }],
   "permissions": [
     "storage"
   ],
   "options_ui": {
-    "page": "../../options.html"
+    "page": "options.html"
   }
 }
