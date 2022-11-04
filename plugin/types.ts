@@ -8,8 +8,10 @@ export type Recruitment = {
 }
 
 export type Ban = {
-  start: number;
+  start: number
+  startDate: Date;
   end: number;
+  endDate: Date;
   reason: string;
 }
 

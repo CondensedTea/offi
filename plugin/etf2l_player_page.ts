@@ -38,22 +38,22 @@ async function addPlayerStatus(recruitment: Recruitment) {
   node.innerText = `LFT ${recruitment.skill} ${recruitment.game_mode}`;
 
   document
-      .querySelector("#rs-discuss")
-      .querySelector("h2")
-      .appendChild(node);
+    .querySelector("#rs-discuss")
+    .querySelector("h2")
+    .appendChild(node);
 
   // I love WordPress
   document
-      .querySelector(".playerinfo")
-      .querySelector("tbody")
-      .querySelectorAll("tr")[1]
-      .querySelectorAll("td")[1]
-      .querySelectorAll("img")
-      .forEach((imgNode) => {
-        if (recruitment.classes.includes(imgNode.title)) {
-          imgNode.className = "invert-img";
-        }
-      });
+    .querySelector(".playerinfo")
+    .querySelector("tbody")
+    .querySelectorAll("tr")[1]
+    .querySelectorAll("td")[1]
+    .querySelectorAll("img")
+    .forEach((imgNode) => {
+      if (recruitment.classes.includes(imgNode.title)) {
+        imgNode.className = "invert-img";
+      }
+    });
 }
 
 async function addPlayersBans(bans: Ban[]) {
@@ -64,15 +64,31 @@ async function addPlayersBans(bans: Ban[]) {
   header.innerText = "Bans";
 
   const banList = document.createElement("ul");
+
   bans.forEach((ban) => {
-    const banStart = new Date(ban.start * 1000);
-    const banEnd = new Date(ban.end * 1000);
-    banList.appendChild(document.createElement("li")).innerHTML = `<b>${ban.reason}</b>: ${banStart.toLocaleDateString()} to ${banEnd.toLocaleDateString()}`;
+    ban.startDate = new Date(ban.start * 1000);
+    ban.endDate = new Date(ban.end * 1000);
+
+    banList.appendChild(createBanEntryNode(ban))
   });
   container.appendChild(header);
   container.appendChild(banList);
 
   document.getElementById("rs-discuss").appendChild(container);
+}
+
+function createBanEntryNode(ban: Ban): HTMLLIElement {
+  let node = document.createElement("li")
+
+  let banReasonHTML = `<b>${ban.reason}</b>`
+  let banCommentHTML = `${ban.startDate.toLocaleDateString()} to ${ban.endDate.toLocaleDateString()}`
+  if (ban.end - ban.start < 0) {
+    banCommentHTML = `<span style="text-decoration: line-through">${banCommentHTML}</span> reverted`
+  }
+
+  node.innerHTML = `${banReasonHTML}: ${banCommentHTML}`
+
+  return node
 }
 
 async function updatePlayerPage(options: Options) {
