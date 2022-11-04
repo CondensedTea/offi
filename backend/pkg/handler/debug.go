@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h Handler) Debug(ctx *fiber.Ctx) error {
+func (h Handler) DebugKeys(ctx *fiber.Ctx) error {
 	hashKey := ctx.Params("hashKey")
 
 	keys, err := h.core.GetKeys(hashKey)

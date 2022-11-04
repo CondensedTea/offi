@@ -111,5 +111,5 @@ func getGenericMapName(mapName string) string {
 	if len(logMapParts) < 2 {
 		return ""
 	}
-	return strings.Join(logMapParts[:genericMapItemLength], "_")
+	return strings.ToLower(strings.Join(logMapParts[:genericMapItemLength], "_"))
 }

@@ -44,7 +44,7 @@ func New(c *core.Core) *Handler {
 	handler.app.Get("/team/:id", handler.GetTeam)
 	handler.app.Get("/players", handler.GetPlayers)
 
-	handler.app.Get("/debug/keys/:hashKey", handler.Debug)
+	handler.app.Get("/debug/keys/:hashKey", handler.DebugKeys)
 
 	return handler
 }
