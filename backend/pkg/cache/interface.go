@@ -1,6 +1,8 @@
 package cache
 
 type Cache interface {
+	Ping() error
+
 	GetLogs(matchId int) (LogSet, error)
 	SetLogs(matchId int, match *LogSet) error
 

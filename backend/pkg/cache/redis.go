@@ -28,7 +28,12 @@ func New(url string) (*Redis, error) {
 	}
 
 	client := redis.NewClient(opts)
+
 	return &Redis{client: client}, nil
+}
+
+func (r Redis) Ping() error {
+	return r.client.Ping().Err()
 }
 
 func (r Redis) GetAllKeys(hashKey string) ([]string, error) {

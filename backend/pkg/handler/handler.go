@@ -3,14 +3,12 @@ package handler
 import (
 	"offi/pkg/core"
 
-	"github.com/ansrivas/fiberprometheus/v2"
+	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
-
-const appName = "offi-backend"
 
 type Handler struct {
 	app          *fiber.App
@@ -25,19 +23,16 @@ func New(c *core.Core) *Handler {
 		GETOnly:      true,
 	})
 
-	prometheus := fiberprometheus.New(appName)
-	prometheus.RegisterAt(app, "/metrics")
-
-	app.Use(prometheus.Middleware)
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{}))
-	app.Use(clientVersionMiddleware)
 
 	handler := &Handler{
 		app:          app,
 		sessionStore: session.New(),
 		core:         c,
 	}
+
+	handler.app.Get("/ready", adaptor.HTTPHandlerFunc(c.Ready()))
 
 	handler.app.Get("/match/:matchId", handler.GetMatch)
 	handler.app.Get("/log/:logId", handler.GetLog)

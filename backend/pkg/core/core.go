@@ -2,12 +2,14 @@ package core
 
 import (
 	"fmt"
+	"net/http"
 	"offi/pkg/cache"
 	"offi/pkg/etf2l"
 	"os"
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"github.com/heptiolabs/healthcheck"
 )
 
 type Core struct {
@@ -15,11 +17,19 @@ type Core struct {
 	etf2l     *etf2l.Client
 	scheduler *gocron.Scheduler
 
+	health healthcheck.Handler
+
 	enableErrorCaching bool
 }
 
 func New(cache cache.Cache, etf2l *etf2l.Client) *Core {
 	_, ok := os.LookupEnv("DISABLE_ERROR_CACHE")
+
+	health := healthcheck.NewHandler()
+
+	health.AddReadinessCheck("redis", func() error {
+		return cache.Ping()
+	})
 
 	return &Core{
 		cache:     cache,
@@ -28,6 +38,10 @@ func New(cache cache.Cache, etf2l *etf2l.Client) *Core {
 
 		enableErrorCaching: !ok,
 	}
+}
+
+func (c Core) Ready() http.HandlerFunc {
+	return c.health.ReadyEndpoint
 }
 
 func (c Core) StartScheduler() error {
