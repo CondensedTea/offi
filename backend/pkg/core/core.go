@@ -36,6 +36,7 @@ func New(cache cache.Cache, etf2l *etf2l.Client) *Core {
 		etf2l:     etf2l,
 		scheduler: gocron.NewScheduler(time.UTC),
 
+		health:             health,
 		enableErrorCaching: !ok,
 	}
 }
