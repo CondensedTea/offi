@@ -7,10 +7,6 @@ mounts = []
 primary_region = "ams"
 processes = []
 
-[metrics]
-port = 8080
-path = "/metrics"
-
 [[services]]
   internal_port = 8080
   processes = ["app"]
@@ -33,7 +29,7 @@ path = "/metrics"
 	interval = 10000
 	grace_period = "5s"
 	method = "get"
-	path = "/live"
+	path = "/ready"
 	protocol = "http"
 	restart_limit = 0
 	timeout = 2000
