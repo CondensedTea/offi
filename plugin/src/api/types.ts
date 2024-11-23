@@ -28,6 +28,8 @@ export type Team = {
   recruitment: Recruitment;
 }
 
+
+
 export class Log {
   id: number;
   title: string;

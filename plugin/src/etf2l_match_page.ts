@@ -1,9 +1,8 @@
-import {apiUrl, api, type} from "./utils";
-import {Log, LogResponse} from "./types";
+import { getSettingValue } from "@kocal/web-extension-library";
+import { getLogs, NoLogsError } from "./api/get_logs";
+import { Log } from "./api/types";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
-
-const NoLogsError = new Error("api didnt found logs for this match");
 
 function getMatchID(): number {
   const match = document.URL.match(matchRe);
@@ -12,31 +11,6 @@ function getMatchID(): number {
     throw new Error("could not find match ID");
   }
   return parseInt(match[1]);
-}
-
-async function getLogsFromAPI(matchId: number): Promise<Log[]> {
-  const getMatchURL = new URL(apiUrl + "match/" + matchId.toString());
-  getMatchURL.searchParams.append("version", api.runtime.getManifest().version);
-  getMatchURL.searchParams.append("browser", type);
-
-  const res = await fetch(getMatchURL.toString());
-
-  if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
-  }
-
-  const { logs } = (await res.json()) as LogResponse;
-  if (logs === null) {
-    throw NoLogsError;
-  }
-
-  const parsedLogs: Log[] = [];
-
-  for (const rawLog of logs) {
-    parsedLogs.push(new Log(rawLog));
-  }
-
-  return parsedLogs;
 }
 
 function createLogHeader(logList: Node, isPrimary: boolean) {
@@ -63,12 +37,14 @@ function createLogHeader(logList: Node, isPrimary: boolean) {
   playersSection[0].after(LogHeader);
 }
 
-async function addLogLinks(): Promise<void> {
+export async function addLogLinks(): Promise<void> {
   const matchId = getMatchID();
   let logs: Log[];
 
+  const apiBaseUrl = await getSettingValue("apiBaseURL");
+
   try {
-    logs = await getLogsFromAPI(matchId);
+    logs = await getLogs(apiBaseUrl, matchId);
   } catch (e) {
     if (e === NoLogsError) {
       return;
@@ -107,9 +83,3 @@ async function addLogLinks(): Promise<void> {
     createLogHeader(PrimaryLogList, true);
   }
 }
-
-api.storage.sync.get((fields) => {
-  if (fields.etf2l_show_logs === true) {
-    addLogLinks();
-  }
-});

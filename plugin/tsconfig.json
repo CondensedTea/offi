@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2020",
-    "sourceMap": true
+    "moduleResolution": "node",
+    "target": "es2022",
+    "module": "es2022",
+    "lib": ["es2021", "es2022", "dom"],
+    "sourceMap": false,
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["node_modules/@types"]
   },
   "exclude": [
     "node_modules"

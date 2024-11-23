@@ -1,6 +1,8 @@
 import "regenerator-runtime/runtime";
-import {api, apiUrl, type, replaceInText, getPlayers} from "./utils";
-import {MatchResponse, Match} from "./types";
+import { Match } from "./api/types";
+import { getSettingValue } from "@kocal/web-extension-library";
+import { getMatchFromAPI } from "./api/get_match";
+import { getPlayers } from "./api/get_players";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
 
@@ -13,37 +15,23 @@ function getLogID(): number {
   return parseInt(match[1]);
 }
 
-async function getMatchFromAPI(matchId: number): Promise<Match> {
-  const logURL = new URL(apiUrl + "log/" + matchId.toString());
-  logURL.searchParams.append("version", api.runtime.getManifest().version);
-  logURL.searchParams.append("browser", type);
+export async function addMatchLink() {
+  const apiBaseUrl = await getSettingValue("apiBaseURL");
 
-  const res = await fetch(logURL.toString());
-
-  if (!res.ok) {
-    throw new Error("api returned error: " + res.statusText);
-  }
-
-  const apiResponse = await res.json() as MatchResponse;
-
-  return apiResponse.match;
-}
-
-async function addMatchLink(): Promise<void> {
   let matchId: number;
 
   try {
     matchId = getLogID();
-  } catch (e) {
+  } catch {
     return;
   }
 
   let match: Match;
 
   try {
-    match = await getMatchFromAPI(matchId);
+    match = await getMatchFromAPI(apiBaseUrl, matchId);
   } catch (e) {
-    console.log("off: could not get match: " + e.toString());
+    console.warn("off: could not get match: " + e.toString());
     return;
   }
 
@@ -60,7 +48,9 @@ async function addMatchLink(): Promise<void> {
   logDateElem.after(competitionBlock);
 }
 
-async function replacePlayerNames() {
+export async function replacePlayerNames() {
+  const apiBaseUrl = await getSettingValue("apiBaseURL");
+
   const match = document.URL.match(matchRe);
   if (match === null) {
     return;
@@ -79,7 +69,7 @@ async function replacePlayerNames() {
     return steamId;
   });
 
-  const players = await getPlayers(playerIDs);
+  const players = await getPlayers(apiBaseUrl, playerIDs);
 
   players.forEach((player) => {
     const oldName = steamPlayerNames.get(player.steam_id);
@@ -94,12 +84,15 @@ async function replacePlayerNames() {
   });
 }
 
-api.storage.sync.get((fields: Options) => {
-  if (fields.logstf_link_matchpage === true) {
-    addMatchLink();
+export function replaceInText(element, pattern, replacement) {
+  for (const node of element.childNodes) {
+    switch (node.nodeType) {
+      case Node.ELEMENT_NODE || Node.DOCUMENT_NODE:
+        replaceInText(node, pattern, replacement);
+        break;
+      case Node.TEXT_NODE:
+        node.textContent = node.textContent.replace(pattern, replacement);
+        break;
+    }
   }
-  if (fields.logstf_replace_names === true) {
-    replacePlayerNames();
-  }
-});
-
+}

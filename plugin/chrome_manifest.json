@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Offi",
+  "description": "tf2 competitive QoL extension",
+  "version": "4.0.0",
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": [
+        "https://etf2l.org/matches/*",
+        "https://etf2l.org/forum/user/*",
+        "https://etf2l.org/teams/*",
+        "https://logs.tf/*",
+        "https://steamcommunity.com/id/*",
+        "https://steamcommunity.com/profiles/*"
+      ],
+      "js": [
+        "src/index.ts"
+      ],
+      "css": [
+        "src/styles.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["src/styles.css"],
+    "matches": ["https://etf2l.org/*", "https://logs.tf/*"]
+  }],
+  "permissions": [
+    "storage"
+  ],
+  "options_ui": {
+    "page": "src/options.html"
+  }
+}

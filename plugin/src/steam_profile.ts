@@ -1,11 +1,13 @@
-import {api, getPlayers} from "./utils";
+import { getSettingValue } from "@kocal/web-extension-library";
+import { getPlayers } from "./api/get_players";
 
-async function addPlayerLinks() {
+export async function addPlayerLinks() {
+  const apiBaseUrl = await getSettingValue("apiBaseURL");
   const steamID = document.querySelector("[id^=commentthread_Profile_]").id.split("_")[2];
 
-  const players = await getPlayers([steamID]);
+  const players = await getPlayers(apiBaseUrl, [steamID]);
   if (players === null) {
-    console.log("offi: player does not have an etf2l account");
+    console.warn("offi: player does not have an etf2l account");
     return;
   }
   const player = players[0];
@@ -42,9 +44,3 @@ function createItemListElement(label: string, href: string): Element {
 
   return containerNode;
 }
-
-api.storage.sync.get(async (fields: Options) => {
-  if (fields.steam_add_player_links === true) {
-    await addPlayerLinks();
-  }
-});
