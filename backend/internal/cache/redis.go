@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -21,10 +22,12 @@ type Redis struct {
 	client *redis.Client
 }
 
-func New(url string) (*Redis, error) {
-	opts, err := redis.ParseURL(url)
-	if err != nil {
-		return nil, err
+func New(host, password string) (*Redis, error) {
+	opts := &redis.Options{
+		Network:  "tcp",
+		Addr:     net.JoinHostPort(host, "6379"),
+		Password: password,
+		DB:       0,
 	}
 
 	client := redis.NewClient(opts)

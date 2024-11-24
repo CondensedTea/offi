@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.22-alpine as builder
 
 WORKDIR /build
 
@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY cmd/ ./cmd/
-COPY pkg/ ./pkg/
+COPY internal ./internal/
 
 RUN CGO_ENABLED=0 go build -o bin/offi ./cmd/api/main.go
 

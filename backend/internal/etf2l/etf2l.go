@@ -15,6 +15,6 @@ type Client struct {
 
 func New() *Client {
 	return &Client{
-		httpClient: &http.Client{Timeout: 5 * time.Minute},
+		httpClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }

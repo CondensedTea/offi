@@ -3,13 +3,15 @@ package logstf
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/sirupsen/logrus"
 )
+
+var logger = slog.With("component", "logs-tf")
 
 const (
 	timeout           = 5 * time.Minute
@@ -88,7 +90,7 @@ func mapIsNotValid(maps []string, logMap string) bool {
 	for _, m := range maps {
 		genericMap := getGenericMapName(m)
 		if genericMap == "" {
-			logrus.Errorf("etf2l returned map without pattern [gamemode]_[mapname]: %s", m)
+			logger.Error("etf2l returned map without pattern [gamemode]_[mapname]", "map_name", m)
 			return true
 		}
 		mapsWhitelist[genericMap] = struct{}{}

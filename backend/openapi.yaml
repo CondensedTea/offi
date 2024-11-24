@@ -1,0 +1,233 @@
+openapi: 3.1.0
+info:
+  title: Offi backend API
+  version: 1.0.0
+paths:
+  /match/{match_id}:
+    get:
+      operationId: GetLogsForMatch
+      summary: Get logs associated with ETF2L match
+      parameters:
+        - name: match_id
+          description: ETF2L match ID
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Match resolved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Log'
+        '404':
+          description: 'ETF2L match does not exists or have not been completed'
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /log/{log_id}:
+    get:
+      operationId: GetMatchForLog
+      summary: Get logs associated with given ETF2L match ID
+      parameters:
+        - name: log_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Get log details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  required:
+                    - match
+                  match:
+                    $ref: '#/components/schemas/Match'
+        '404':
+          description: 'Log does not exists'
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /team/{id}:
+    get:
+      summary: Get team details
+      operationId: GetTeam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Team details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/Team'
+        default:
+          $ref: '#/components/responses/Error'
+  /players:
+    get:
+      summary: Get players by Steam IDs
+      operationId: GetPlayers
+      parameters:
+        - name: id
+          in: query
+          explode: false
+          style: form
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '200':
+          description: List of resolved players
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+        default:
+          $ref: '#/components/responses/Error'
+components:
+  schemas:
+    Log:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        map:
+          type: string
+        played_at:
+          type: string
+          format: date-time
+        is_secondary:
+          type: boolean
+      required:
+        - id
+        - title
+        - map
+        - played_at
+        - is_secondary
+    Match:
+      type: object
+      properties:
+        match_id:
+          type: integer
+        competition:
+          type: string
+        stage:
+          type: string
+      required:
+        - match_id
+        - competition
+        - stage
+    Team:
+      type: object
+      properties:
+        recruitment:
+          $ref: '#/components/schemas/RecruitmentInfo'
+      required:
+        - recruitment
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+        steam_id:
+          type: string
+        name:
+          type: string
+        bans:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerBan'
+        recruitment:
+          $ref: '#/components/schemas/RecruitmentInfo'
+      required:
+        - id
+        - steam_id
+        - name
+        - bans
+    GameClass:
+      type: string
+      enum:
+        - 'Demoman'
+        - 'Engineer'
+        - 'Heavy'
+        - 'Medic'
+        - 'Pyro'
+        - 'Scout'
+        - 'Sniper'
+        - 'Soldier'
+        - 'Spy'
+    RecruitmentInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        skill:
+          type: string
+        url:
+          type: string
+        classes:
+          type: array
+          items:
+            $ref: '#/components/schemas/GameClass'
+        game_mode:
+          type: string
+      required:
+        - id
+        - skill
+        - url
+        - classes
+    PlayerBan:
+      type: object
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        reason:
+          type: string
+      required:
+        - start
+        - end
+        - reason
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+      example:
+        error: 'doing stuff: an error has occurred'
+  responses:
+    Error:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

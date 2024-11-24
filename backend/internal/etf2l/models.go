@@ -1,7 +1,7 @@
 package etf2l
 
 import (
-	"offi/pkg/cache"
+	"offi/internal/cache"
 
 	"github.com/samber/lo"
 )

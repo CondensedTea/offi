@@ -1,7 +1,7 @@
 package logstf
 
 import (
-	"offi/pkg/cache"
+	"offi/internal/cache"
 	"time"
 )
 

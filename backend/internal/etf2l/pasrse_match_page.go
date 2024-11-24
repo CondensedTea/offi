@@ -3,6 +3,7 @@ package etf2l
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -10,8 +11,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/nleeper/goment"
-	"github.com/sirupsen/logrus"
 )
+
+var logger = slog.With("component", "etf2l")
 
 var timeNow = func() time.Time {
 	return time.Now().UTC()
@@ -59,7 +61,7 @@ func (c Client) ParseMatchPage(matchId int) (*Match, error) {
 		Each(func(i int, selection *goquery.Selection) {
 			playerURL, ok := selection.Find("a").Attr("href")
 			if !ok {
-				logrus.Errorf("failed to get player URl for match %d", matchId)
+				logger.Error("failed to get player URl for match", "match_id", matchId)
 				return
 			}
 
