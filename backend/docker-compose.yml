@@ -2,7 +2,7 @@ services:
   backend:
     build: .
     environment:
-      - "REDIS_HOST=cache"
+      - "REDIS_URL=redis://cache:6379/1"
     ports:
       - "127.0.0.1:8085:8080"
     links:
