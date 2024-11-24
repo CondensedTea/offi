@@ -78,11 +78,11 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 					slog.Error("failed to cache log error", "error", cacheErr)
 				}
 			}
-			return nil, saveErr
+			return nil, fmt.Errorf("failed to save parsed match: %w", saveErr)
 		}
 		return logs, nil
 	case err != nil:
-		return nil, fmt.Errorf("failed to get match from cache: %v", err)
+		return nil, fmt.Errorf("failed to get match from cache: %w", err)
 	}
 
 	return logSet.Logs, nil

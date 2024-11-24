@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/go-faster/errors"
 	"github.com/go-redis/redis"
 )
 
@@ -28,10 +29,10 @@ func (r Redis) SetLogError(matchId int, err error) error {
 func (r Redis) CheckLogError(matchId int) error {
 	match := fmt.Sprintf("match-%d", matchId)
 	val, err := r.client.Get(match).Result()
-	if err == redis.Nil {
-		return nil
-	}
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil
+		}
 		return err
 	}
 	return fmt.Errorf("%w: %v", ErrCached, val)
