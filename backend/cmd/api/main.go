@@ -8,6 +8,8 @@ import (
 	gen "offi/internal/gen/api"
 	"offi/internal/service"
 	"os"
+
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -31,7 +33,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = http.ListenAndServe(":8080", handler); err != nil {
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
+		AllowedMethods: []string{http.MethodGet},
+	})
+
+	if err = http.ListenAndServe(":8080", corsMiddleware.Handler(handler)); err != nil {
 		slog.Error("failed to run server", "error", err)
 		os.Exit(1)
 	}

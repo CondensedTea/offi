@@ -48,9 +48,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - match
                 properties:
-                  required:
-                    - match
                   match:
                     $ref: '#/components/schemas/Match'
         '404':

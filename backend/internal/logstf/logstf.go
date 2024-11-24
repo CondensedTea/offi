@@ -19,11 +19,6 @@ const (
 )
 
 func SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
-	started := time.Now()
-	defer func() {
-		logsTfSearchTime.Observe(time.Since(started).Seconds())
-	}()
-
 	resp, err := getLogsWithPlayers(players)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
