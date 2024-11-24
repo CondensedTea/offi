@@ -21,9 +21,9 @@ func (c Client) LoadRecruitmentPosts(postType postType) ([]Recruitment, error) {
 
 	switch postType {
 	case PlayerPost:
-		url = "https://api.etf2l.org/recruitment/players.json?per_page=100"
+		url = "https://api-v2.etf2l.org/recruitment/players?per_page=100"
 	case TeamPost:
-		url = "https://api.etf2l.org/recruitment/teams.json?per_page=100"
+		url = "https://api.etf2l.org/recruitment/teams?per_page=100"
 	}
 
 	pageIsNotLast := true

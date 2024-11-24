@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"offi/internal/cache"
 	"offi/internal/etf2l"
@@ -51,6 +52,8 @@ func NewService(cache Cache, etf2lClient *etf2l.Client, cacheErrors bool) *Servi
 }
 
 func (s *Service) NewError(_ context.Context, err error) (r *gen.ErrorStatusCode) {
+	slog.Error("unexpected error", "error", err, "component", "api")
+
 	return &gen.ErrorStatusCode{
 		StatusCode: http.StatusInternalServerError,
 		Response:   gen.Error{Error: err.Error()},

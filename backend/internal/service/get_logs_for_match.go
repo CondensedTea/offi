@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"offi/internal/cache"
+	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/logstf"
 	"strconv"
@@ -25,6 +26,20 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 		if errors.Is(err, cache.ErrCached) {
 			return &gen.ErrorStatusCode{
 				StatusCode: http.StatusTooEarly,
+				Response:   gen.Error{Error: err.Error()},
+			}, nil
+		}
+
+		if errors.Is(err, ErrTooManyPlayers) {
+			return &gen.ErrorStatusCode{
+				StatusCode: http.StatusBadRequest,
+				Response:   gen.Error{Error: err.Error()},
+			}, nil
+		}
+
+		if errors.Is(err, etf2l.ErrMatchNotFound) {
+			return &gen.ErrorStatusCode{
+				StatusCode: http.StatusNotFound,
 				Response:   gen.Error{Error: err.Error()},
 			}, nil
 		}
@@ -76,9 +91,9 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, error) {
 	logIDs := make([]int, 0)
 
-	match, err := s.etf2l.ParseMatchPage(matchId)
+	match, err := s.etf2l.GetMatch(matchId)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get players for etf2l match: %v", err)
+		return nil, fmt.Errorf("failed to get players for etf2l match: %w", err)
 	}
 
 	if len(match.Players) > maxPlayers {

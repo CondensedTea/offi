@@ -10,14 +10,14 @@ import (
 var ErrPlayerNotFound = errors.New(`player does not have an etf2l account`)
 
 func (c Client) GetPlayer(id int) (Player, error) {
-	url := fmt.Sprintf("https://api.etf2l.org/player/%d.json", id)
+	url := fmt.Sprintf("https://api-v2.etf2l.org/player/%d", id)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return Player{}, fmt.Errorf("failed to get player from etf2l api: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusInternalServerError {
+	if resp.StatusCode == http.StatusNotFound {
 		return Player{}, ErrPlayerNotFound
 	}
 

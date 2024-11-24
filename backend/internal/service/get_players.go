@@ -34,7 +34,7 @@ func (s *Service) getPlayers(_ context.Context, playerIDs []int) ([]gen.Player, 
 			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(playerID)
 			switch {
 			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
-				slog.Warn("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)
+				slog.Debug("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)
 				continue
 			case etf2lErr != nil:
 				return nil, fmt.Errorf("failed to get player from etf2l: %v", etf2lErr)

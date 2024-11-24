@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
@@ -34,20 +36,26 @@ func main() {
 
 	srv := service.NewService(cacheClient, etf2lClient, true)
 
+	router := chi.NewRouter()
+
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
+		AllowedMethods: []string{http.MethodGet},
+	}))
+
+	router.Use(middleware.Recoverer)
+
 	handler, err := gen.NewServer(srv)
 	if err != nil {
 		slog.Error("failed to init api server", "error", err)
 		os.Exit(1)
 	}
 
-	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
-		AllowedMethods: []string{http.MethodGet},
-	})
+	router.Handle("/*", handler)
 
 	httpSrv := http.Server{
 		Addr:              ":8080",
-		Handler:           corsMiddleware.Handler(handler),
+		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

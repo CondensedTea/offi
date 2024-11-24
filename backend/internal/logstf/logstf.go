@@ -2,19 +2,18 @@ package logstf
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/carlmjohnson/requests"
 )
 
 var logger = slog.With("component", "logs-tf")
 
 const (
-	timeout           = 5 * time.Minute
+	timeout           = 5 * time.Second
 	matchPlayedOffset = 3 * 24 * time.Hour
 )
 
@@ -30,26 +29,38 @@ func SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
 func getLogsWithPlayers(players []string) (*Response, error) {
-	query := "player=" + strings.Join(players, ",")
+	playerIDs := strings.Join(players, ",")
 
-	u := fmt.Sprintf("https://logs.tf/api/v1/log?%s", query)
+	u := fmt.Sprintf("https://logs.tf/api/v1/log?player=%s", playerIDs)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	var r Response
-	err := requests.
-		URL(u).
-		ToJSON(&r).
-		CheckStatus(http.StatusOK).
-		Fetch(ctx)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, http.NoBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating request: %v", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("doing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("logs.tf API returned non-200 status: %d", resp.StatusCode)
+	}
+
+	var r Response
+	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return nil, fmt.Errorf("decoding response: %v", err)
 	}
 	return &r, nil
 }
 
 func filterLogs(maps []string, logs []Log, playedAt time.Time) (matchLogs, combinedLogs []Log) {
+	// TODO: try to use ETF2L api-v2 data about map order, GC status, map scores
+
 	for _, log := range logs {
 		primary, valid := matchIsPrimary(playedAt, log.Date, log.Map, maps)
 		if !valid {
