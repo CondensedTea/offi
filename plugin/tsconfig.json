@@ -3,7 +3,7 @@
     "moduleResolution": "node",
     "target": "es2022",
     "module": "es2022",
-    "lib": ["es2021", "es2022", "dom"],
+    "lib": ["es2021", "es2022", "dom", "dom.iterable"],
     "sourceMap": false,
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["node_modules/@types"]

@@ -1,6 +1,6 @@
 import {Match, MatchResponse} from "./types";
 
-export async function getMatchFromAPI(apiBaseUrl: string, matchId: number): Promise<Match> {
+export async function getMatch(apiBaseUrl: string, matchId: number): Promise<Match> {
   const logURL = new URL(apiBaseUrl + "/log/" + matchId.toString());
 
   const res = await fetch(logURL.toString());

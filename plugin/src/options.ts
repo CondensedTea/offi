@@ -1,4 +1,4 @@
-import { InterfaceSettings } from "@kocal/web-extension-library";
+import { InterfaceSettings } from "./web-extension/settings";
 
 export default {
   linkLogsOnMatchpages: {
@@ -26,6 +26,11 @@ export default {
     label: "Link recruitments on player pages",
     defaultValue: "true",
   },
+  showLfpForTeam: {
+    type: "boolean",
+    label: "Link recruitments on team pages",
+    defaultValue: "true",
+  },
   addLinksOnSteamProfiles: {
     type: "boolean",
     label: "Add links to etf2l and logs.tf to Steam profiles",
@@ -37,4 +42,3 @@ export default {
     defaultValue: "https://offi.lemontea.dev",
   },
 } as InterfaceSettings;
-

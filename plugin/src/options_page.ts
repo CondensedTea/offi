@@ -1,4 +1,4 @@
-import { registerSettings, setSettingValue, getSettings } from "@kocal/web-extension-library";
+import { registerSettings, setSettingValue, getSettings } from "./web-extension/settings";
 import settings from "./options";
 
 document.addEventListener("DOMContentLoaded", async () => {

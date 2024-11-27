@@ -8,6 +8,8 @@ export default tseslint.config(
     files: ['src/*.ts'],
     rules: {
       'object-curly-spacing': ['error', 'always'],
+      'no-async-promise-executor': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   }
 );

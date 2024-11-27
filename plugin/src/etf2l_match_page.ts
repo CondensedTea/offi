@@ -1,4 +1,4 @@
-import { getSettingValue } from "@kocal/web-extension-library";
+import { getSettingValue } from "./web-extension/settings";
 import { getLogs, NoLogsError } from "./api/get_logs";
 import { Log } from "./api/types";
 

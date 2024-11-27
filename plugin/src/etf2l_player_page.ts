@@ -1,5 +1,5 @@
 import { Player, Recruitment, Ban } from "./api/types";
-import { getSettingValue } from "@kocal/web-extension-library";
+import { getSettingValue } from "./web-extension/settings";
 import { getPlayers } from "./api/get_players";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");

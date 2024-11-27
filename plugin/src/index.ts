@@ -1,9 +1,10 @@
 import { addLogLinks } from "./etf2l_match_page";
 import { updatePlayerPage } from "./etf2l_player_page";
 import { addPlayerLinks } from "./steam_profile";
-import { registerSettings, loadSettings, getSettingValue } from "@kocal/web-extension-library";
+import { registerSettings, loadSettings, getSettingValue } from "./web-extension/settings";
 import settings from "./options";
 import { addMatchLink, replacePlayerNames } from "./logstf";
+import { addTeamStatus } from "./etf2l_team_page";
 
 async function main() {
   await registerSettings(settings);
@@ -37,6 +38,14 @@ async function main() {
     if (!showBans && !showLft) return;
 
     return await updatePlayerPage(showLft, showBans);
+  }
+
+  if (url.startsWith("https://etf2l.org/teams/")) {
+    const showTeamStatus = getSettingValue("showLfpForTeam") as boolean;
+
+    if (!showTeamStatus) return;
+
+    return await addTeamStatus();
   }
 
   if (url.startsWith("https://steamcommunity.com/profiles/") || url.startsWith("https://steamcommunity.com/id/")) {

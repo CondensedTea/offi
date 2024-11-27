@@ -1,4 +1,4 @@
-import { getSettingValue } from "@kocal/web-extension-library";
+import { getSettingValue } from "./web-extension/settings";
 import { getPlayers } from "./api/get_players";
 
 export async function addPlayerLinks() {

@@ -1,7 +1,6 @@
-import "regenerator-runtime/runtime";
-import { Match } from "./api/types";
-import { getSettingValue } from "@kocal/web-extension-library";
-import { getMatchFromAPI } from "./api/get_match";
+import { Match, Player } from "./api/types";
+import { getSettingValue } from "./web-extension/settings";
+import { getMatch } from "./api/get_match";
 import { getPlayers } from "./api/get_players";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
@@ -29,7 +28,7 @@ export async function addMatchLink() {
   let match: Match;
 
   try {
-    match = await getMatchFromAPI(apiBaseUrl, matchId);
+    match = await getMatch(apiBaseUrl, matchId);
   } catch (e) {
     console.warn("off: could not get match: " + e.toString());
     return;
@@ -51,11 +50,6 @@ export async function addMatchLink() {
 export async function replacePlayerNames() {
   const apiBaseUrl = await getSettingValue("apiBaseURL");
 
-  const match = document.URL.match(matchRe);
-  if (match === null) {
-    return;
-  }
-
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
   const steamPlayerNames: Map<string, string> = new Map();
@@ -71,27 +65,45 @@ export async function replacePlayerNames() {
 
   const players = await getPlayers(apiBaseUrl, playerIDs);
 
+  /*
+    1. Player names in main table
+    2. Player names in "kills" table
+    3. Medic names in heals table
+    4. Player names in heal target table
+    5. Player names in chat
+  */
+  const mainSelector = "#class_k .log-player-name, .log-player-name .dropdown-toggle, .healtable h6, td.log-player-name, .chat-name"
+  replacePlayerNamesInNodes(players, steamPlayerNames, mainSelector);
+
+  // On toggle of death/kills tables trigger name replacement
+  document.querySelectorAll("#classtab [data-toggle]").forEach((node) => {
+    node.addEventListener("click", () => {
+      replacePlayerNamesInNodes(players, steamPlayerNames, node.attributes["href"].value);
+    });
+  })
+}
+
+function replacePlayerNamesInNodes(players: Player[], steamPlayerNames: Map<string, string>, selector: string) {
   players.forEach((player) => {
     const oldName = steamPlayerNames.get(player.steam_id);
 
-    const playerNameNodes = document.querySelectorAll(
-        // select player name cells or heal table headers or player names in chat
-        ".log-player-name, .healtable h6, .chat-name",
-    );
+    const playerNameNodes = document.querySelectorAll(selector);
     playerNameNodes.forEach((node) => {
       replaceInText(node, oldName, player.name);
     });
   });
 }
 
-export function replaceInText(element, pattern, replacement) {
+export function replaceInText(element: ChildNode, pattern: string, replacement: string) {
   for (const node of element.childNodes) {
     switch (node.nodeType) {
       case Node.ELEMENT_NODE || Node.DOCUMENT_NODE:
         replaceInText(node, pattern, replacement);
         break;
       case Node.TEXT_NODE:
-        node.textContent = node.textContent.replace(pattern, replacement);
+        if (node.textContent === pattern) {
+          node.textContent = replacement;
+        }
         break;
     }
   }
