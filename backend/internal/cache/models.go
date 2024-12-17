@@ -30,6 +30,7 @@ type MatchPage struct {
 	Id          int    `json:"match_id"`
 	Competition string `json:"competition"`
 	Stage       string `json:"stage"`
+	Tier        string `json:"tier"`
 }
 
 func (m MatchPage) MarshalBinary() ([]byte, error) {

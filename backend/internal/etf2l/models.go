@@ -1,29 +1,15 @@
 package etf2l
 
 import (
+	"errors"
+	"fmt"
 	"offi/internal/cache"
 
 	"github.com/samber/lo"
 )
 
-type Page struct {
-	EntriesPerPage  int    `json:"entries_per_page"`
-	NextPageUrl     string `json:"next_page_url"`
-	PreviousPageUrl string `json:"previous_page_url"`
-	Page            int    `json:"page"`
-	TotalPages      int    `json:"total_pages"`
-}
-
-type Status struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
 type Steam struct {
-	Avatar string `json:"avatar"`
-	Id     string `json:"id,omitempty"`
-	Id3    string `json:"id3,omitempty"`
-	Id64   string `json:"id64,omitempty"`
+	Id64 string `json:"id64"`
 }
 
 type URLs struct {
@@ -40,28 +26,33 @@ type Comments struct {
 type Recruitment struct {
 	Classes  []string `json:"classes"`
 	Comments Comments `json:"comments"`
-	Id       int      `json:"id"`
+	AuthorID int64    `json:"id"`
 	Name     string   `json:"name"`
 	Skill    string   `json:"skill"`
 	Steam    Steam    `json:"steam"`
 	Type     string   `json:"type"`
-	Urls     URLs     `json:"urls"`
+	URLs     URLs     `json:"urls"`
 }
 
-func (r Recruitment) ToCache() *cache.RecruitmentStatus {
-	return &cache.RecruitmentStatus{
-		ID:       r.Id,
-		Skill:    r.Skill,
-		URL:      r.Urls.Recruitment,
-		GameMode: r.Type,
-		Classes:  r.Classes,
+func (r Recruitment) RecruitmentID() (int64, error) {
+	if r.URLs.Recruitment == "" {
+		return 0, errors.New("recruitment does not have URL")
 	}
+
+	var id int64
+	_, err := fmt.Sscanf(r.URLs.Player, "https://etf2l.org/recruitment/%d", &id)
+	if err != nil {
+		return 0, fmt.Errorf("recruitment %d: parsing player ID: %w", r.RecruitmentID, err)
+	}
+
+	return id, nil
 }
 
 type RecruitmentResponse struct {
-	Page         Page          `json:"page"`
-	Recruitments []Recruitment `json:"recruitment"`
-	Status       Status        `json:"status"`
+	Recruitments struct {
+		NextPageURL string        `json:"next_page_url"`
+		Data        []Recruitment `json:"data"`
+	} `json:"recruitment"`
 }
 
 type Ban struct {
@@ -81,7 +72,6 @@ type Player struct {
 
 type PlayerResponse struct {
 	Player Player `json:"player"`
-	Status Status `json:"status"`
 }
 
 // ToCache converts a Player to a cache.Player

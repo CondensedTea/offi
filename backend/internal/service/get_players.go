@@ -24,14 +24,14 @@ func (s *Service) GetPlayers(ctx context.Context, params gen.GetPlayersParams) (
 	}, nil
 }
 
-func (s *Service) getPlayers(_ context.Context, playerIDs []int) ([]gen.Player, error) {
+func (s *Service) getPlayers(ctx context.Context, playerIDs []int) ([]gen.Player, error) {
 	var players []gen.Player
 
 	for _, playerID := range playerIDs {
 		player, err := s.cache.GetPlayer(playerID)
 		switch {
 		case err == redis.Nil:
-			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(playerID)
+			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
 				slog.Debug("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)

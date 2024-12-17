@@ -78,6 +78,10 @@ paths:
                 properties:
                   team:
                     $ref: '#/components/schemas/Team'
+                required:
+                  - team
+        '404':
+            description: 'Team does not exists'
         default:
           $ref: '#/components/responses/Error'
   /players:
@@ -146,10 +150,12 @@ components:
     Team:
       type: object
       properties:
-        recruitment:
-          $ref: '#/components/schemas/RecruitmentInfo'
+        recruitments:
+          type: array
+          items:
+              $ref: '#/components/schemas/RecruitmentInfo'
       required:
-        - recruitment
+        - recruitments
     Player:
       type: object
       properties:
@@ -185,8 +191,6 @@ components:
     RecruitmentInfo:
       type: object
       properties:
-        id:
-          type: integer
         skill:
           type: string
         url:
@@ -198,10 +202,10 @@ components:
         game_mode:
           type: string
       required:
-        - id
         - skill
         - url
         - classes
+        - game_mode
     PlayerBan:
       type: object
       properties:

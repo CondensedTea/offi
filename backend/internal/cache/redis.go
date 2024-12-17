@@ -32,10 +32,6 @@ func New(url string) (*Redis, error) {
 	return &Redis{client: client}, nil
 }
 
-func (r Redis) Ping() error {
-	return r.client.Ping().Err()
-}
-
 func (r Redis) GetAllKeys(hashKey string) ([]string, error) {
 	var keys []string
 
@@ -54,14 +50,4 @@ func (r Redis) GetAllKeys(hashKey string) ([]string, error) {
 		keys = append(keys, key)
 	}
 	return keys, nil
-}
-
-func (r Redis) IncrementViews(object string, id int) (int64, error) {
-	key := fmt.Sprintf("views-%s-%d", object, id)
-	return r.client.Incr(key).Result()
-}
-
-func (r Redis) GetViews(object string, id int) (int64, error) {
-	key := fmt.Sprintf("views-%s-%d", object, id)
-	return r.client.Get(key).Int64()
 }

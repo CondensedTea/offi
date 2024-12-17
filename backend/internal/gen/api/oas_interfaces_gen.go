@@ -8,3 +8,7 @@ type GetLogsForMatchRes interface {
 type GetMatchForLogRes interface {
 	getMatchForLogRes()
 }
+
+type GetTeamRes interface {
+	getTeamRes()
+}

@@ -31,7 +31,7 @@ type Handler interface {
 	// Get team details.
 	//
 	// GET /team/{id}
-	GetTeam(ctx context.Context, params GetTeamParams) (*GetTeamOK, error)
+	GetTeam(ctx context.Context, params GetTeamParams) (GetTeamRes, error)
 	// NewError creates *ErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

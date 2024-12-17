@@ -1,8 +1,6 @@
 package cache
 
 type Cache interface {
-	Ping() error
-
 	GetLogs(matchId int) (LogSet, error)
 	SetLogs(matchId int, match *LogSet) error
 
@@ -21,7 +19,4 @@ type Cache interface {
 	SetMatch(logIds []int, matchPage *MatchPage) error
 
 	GetAllKeys(hashKey string) ([]string, error)
-
-	IncrementViews(object string, id int) (int64, error)
-	GetViews(object string, id int) (int64, error)
 }

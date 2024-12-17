@@ -91,7 +91,7 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, error) {
 	logIDs := make([]int, 0)
 
-	match, err := s.etf2l.GetMatch(matchId)
+	match, err := s.etf2l.GetMatch(ctx, matchId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get players for etf2l match: %w", err)
 	}
@@ -137,6 +137,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 		Id:          match.ID,
 		Competition: match.Competition,
 		Stage:       match.Stage,
+		Tier:        match.Tier,
 	}); err != nil {
 		return nil, fmt.Errorf("failed to set logs in cache: %v", err)
 	}

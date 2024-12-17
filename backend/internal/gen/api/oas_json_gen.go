@@ -415,10 +415,8 @@ func (s *GetTeamOK) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *GetTeamOK) encodeFields(e *jx.Encoder) {
 	{
-		if s.Team.Set {
-			e.FieldStart("team")
-			s.Team.Encode(e)
-		}
+		e.FieldStart("team")
+		s.Team.Encode(e)
 	}
 }
 
@@ -431,12 +429,13 @@ func (s *GetTeamOK) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode GetTeamOK to nil")
 	}
+	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "team":
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.Team.Reset()
 				if err := s.Team.Decode(d); err != nil {
 					return err
 				}
@@ -450,6 +449,38 @@ func (s *GetTeamOK) Decode(d *jx.Decoder) error {
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "decode GetTeamOK")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfGetTeamOK) {
+					name = jsonFieldsNameOfGetTeamOK[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
 	}
 
 	return nil
@@ -795,74 +826,6 @@ func (s *OptRecruitmentInfo) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes string as json.
-func (o OptString) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	e.Str(string(o.Value))
-}
-
-// Decode decodes string from json.
-func (o *OptString) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptString to nil")
-	}
-	o.Set = true
-	v, err := d.Str()
-	if err != nil {
-		return err
-	}
-	o.Value = string(v)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptString) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptString) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes Team as json.
-func (o OptTeam) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes Team from json.
-func (o *OptTeam) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptTeam to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptTeam) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptTeam) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode implements json.Marshaler.
 func (s *Player) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -1177,10 +1140,6 @@ func (s *RecruitmentInfo) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *RecruitmentInfo) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("id")
-		e.Int(s.ID)
-	}
-	{
 		e.FieldStart("skill")
 		e.Str(s.Skill)
 	}
@@ -1197,19 +1156,16 @@ func (s *RecruitmentInfo) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
-		if s.GameMode.Set {
-			e.FieldStart("game_mode")
-			s.GameMode.Encode(e)
-		}
+		e.FieldStart("game_mode")
+		e.Str(s.GameMode)
 	}
 }
 
-var jsonFieldsNameOfRecruitmentInfo = [5]string{
-	0: "id",
-	1: "skill",
-	2: "url",
-	3: "classes",
-	4: "game_mode",
+var jsonFieldsNameOfRecruitmentInfo = [4]string{
+	0: "skill",
+	1: "url",
+	2: "classes",
+	3: "game_mode",
 }
 
 // Decode decodes RecruitmentInfo from json.
@@ -1221,20 +1177,8 @@ func (s *RecruitmentInfo) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "id":
-			requiredBitSet[0] |= 1 << 0
-			if err := func() error {
-				v, err := d.Int()
-				s.ID = int(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"id\"")
-			}
 		case "skill":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Str()
 				s.Skill = string(v)
@@ -1246,7 +1190,7 @@ func (s *RecruitmentInfo) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"skill\"")
 			}
 		case "url":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.URL = string(v)
@@ -1258,7 +1202,7 @@ func (s *RecruitmentInfo) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"url\"")
 			}
 		case "classes":
-			requiredBitSet[0] |= 1 << 3
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				s.Classes = make([]GameClass, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -1276,9 +1220,11 @@ func (s *RecruitmentInfo) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"classes\"")
 			}
 		case "game_mode":
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
-				s.GameMode.Reset()
-				if err := s.GameMode.Decode(d); err != nil {
+				v, err := d.Str()
+				s.GameMode = string(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -1351,13 +1297,17 @@ func (s *Team) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Team) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("recruitment")
-		s.Recruitment.Encode(e)
+		e.FieldStart("recruitments")
+		e.ArrStart()
+		for _, elem := range s.Recruitments {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
 	}
 }
 
 var jsonFieldsNameOfTeam = [1]string{
-	0: "recruitment",
+	0: "recruitments",
 }
 
 // Decode decodes Team from json.
@@ -1369,15 +1319,23 @@ func (s *Team) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "recruitment":
+		case "recruitments":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.Recruitment.Decode(d); err != nil {
+				s.Recruitments = make([]RecruitmentInfo, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem RecruitmentInfo
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Recruitments = append(s.Recruitments, elem)
+					return nil
+				}); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"recruitment\"")
+				return errors.Wrap(err, "decode field \"recruitments\"")
 			}
 		default:
 			return d.Skip()

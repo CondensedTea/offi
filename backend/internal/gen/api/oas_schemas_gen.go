@@ -194,19 +194,26 @@ func (s *GetPlayersOK) SetPlayers(val []Player) {
 	s.Players = val
 }
 
+// GetTeamNotFound is response for GetTeam operation.
+type GetTeamNotFound struct{}
+
+func (*GetTeamNotFound) getTeamRes() {}
+
 type GetTeamOK struct {
-	Team OptTeam `json:"team"`
+	Team Team `json:"team"`
 }
 
 // GetTeam returns the value of Team.
-func (s *GetTeamOK) GetTeam() OptTeam {
+func (s *GetTeamOK) GetTeam() Team {
 	return s.Team
 }
 
 // SetTeam sets the value of Team.
-func (s *GetTeamOK) SetTeam(val OptTeam) {
+func (s *GetTeamOK) SetTeam(val Team) {
 	s.Team = val
 }
+
+func (*GetTeamOK) getTeamRes() {}
 
 // Ref: #/components/schemas/Log
 type Log struct {
@@ -350,98 +357,6 @@ func (o OptRecruitmentInfo) Or(d RecruitmentInfo) RecruitmentInfo {
 	return d
 }
 
-// NewOptString returns new OptString with value set to v.
-func NewOptString(v string) OptString {
-	return OptString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptString is optional string.
-type OptString struct {
-	Value string
-	Set   bool
-}
-
-// IsSet returns true if OptString was set.
-func (o OptString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptString) SetTo(v string) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptString) Get() (v string, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptString) Or(d string) string {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptTeam returns new OptTeam with value set to v.
-func NewOptTeam(v Team) OptTeam {
-	return OptTeam{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptTeam is optional Team.
-type OptTeam struct {
-	Value Team
-	Set   bool
-}
-
-// IsSet returns true if OptTeam was set.
-func (o OptTeam) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptTeam) Reset() {
-	var v Team
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptTeam) SetTo(v Team) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptTeam) Get() (v Team, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptTeam) Or(d Team) Team {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // Ref: #/components/schemas/Player
 type Player struct {
 	ID          int                `json:"id"`
@@ -540,16 +455,10 @@ func (s *PlayerBan) SetReason(val string) {
 
 // Ref: #/components/schemas/RecruitmentInfo
 type RecruitmentInfo struct {
-	ID       int         `json:"id"`
 	Skill    string      `json:"skill"`
 	URL      string      `json:"url"`
 	Classes  []GameClass `json:"classes"`
-	GameMode OptString   `json:"game_mode"`
-}
-
-// GetID returns the value of ID.
-func (s *RecruitmentInfo) GetID() int {
-	return s.ID
+	GameMode string      `json:"game_mode"`
 }
 
 // GetSkill returns the value of Skill.
@@ -568,13 +477,8 @@ func (s *RecruitmentInfo) GetClasses() []GameClass {
 }
 
 // GetGameMode returns the value of GameMode.
-func (s *RecruitmentInfo) GetGameMode() OptString {
+func (s *RecruitmentInfo) GetGameMode() string {
 	return s.GameMode
-}
-
-// SetID sets the value of ID.
-func (s *RecruitmentInfo) SetID(val int) {
-	s.ID = val
 }
 
 // SetSkill sets the value of Skill.
@@ -593,21 +497,21 @@ func (s *RecruitmentInfo) SetClasses(val []GameClass) {
 }
 
 // SetGameMode sets the value of GameMode.
-func (s *RecruitmentInfo) SetGameMode(val OptString) {
+func (s *RecruitmentInfo) SetGameMode(val string) {
 	s.GameMode = val
 }
 
 // Ref: #/components/schemas/Team
 type Team struct {
-	Recruitment RecruitmentInfo `json:"recruitment"`
+	Recruitments []RecruitmentInfo `json:"recruitments"`
 }
 
-// GetRecruitment returns the value of Recruitment.
-func (s *Team) GetRecruitment() RecruitmentInfo {
-	return s.Recruitment
+// GetRecruitments returns the value of Recruitments.
+func (s *Team) GetRecruitments() []RecruitmentInfo {
+	return s.Recruitments
 }
 
-// SetRecruitment sets the value of Recruitment.
-func (s *Team) SetRecruitment(val RecruitmentInfo) {
-	s.Recruitment = val
+// SetRecruitments sets the value of Recruitments.
+func (s *Team) SetRecruitments(val []RecruitmentInfo) {
+	s.Recruitments = val
 }

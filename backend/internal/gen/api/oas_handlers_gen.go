@@ -311,7 +311,7 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 		return
 	}
 
-	var response *GetTeamOK
+	var response GetTeamRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -331,7 +331,7 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 		type (
 			Request  = struct{}
 			Params   = GetTeamParams
-			Response = *GetTeamOK
+			Response = GetTeamRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,

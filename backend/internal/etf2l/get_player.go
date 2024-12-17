@@ -1,6 +1,7 @@
 package etf2l
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,8 +10,12 @@ import (
 
 var ErrPlayerNotFound = errors.New(`player does not have an etf2l account`)
 
-func (c Client) GetPlayer(id int) (Player, error) {
-	url := fmt.Sprintf("https://api-v2.etf2l.org/player/%d", id)
+func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
+	if err := c.limiter.Wait(ctx); err != nil {
+		return Player{}, err
+	}
+
+	url := fmt.Sprintf("%s/player/%d", c.apiURL, id)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return Player{}, fmt.Errorf("failed to get player from etf2l api: %v", err)

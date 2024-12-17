@@ -10,8 +10,6 @@ import (
 )
 
 type Cache interface {
-	Ping() error
-
 	GetLogs(matchId int) (cache.LogSet, error)
 	SetLogs(matchId int, match *cache.LogSet) error
 
@@ -30,9 +28,6 @@ type Cache interface {
 	SetMatch(logIds []int, matchPage *cache.MatchPage) error
 
 	GetAllKeys(hashKey string) ([]string, error)
-
-	IncrementViews(object string, id int) (int64, error)
-	GetViews(object string, id int) (int64, error)
 }
 
 type Service struct {

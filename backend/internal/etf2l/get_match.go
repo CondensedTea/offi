@@ -1,6 +1,7 @@
 package etf2l
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -73,12 +74,15 @@ type Match struct {
 }
 
 type MatchResponse struct {
-	Match  match  `json:"match"`
-	Status Status `json:"status"`
+	Match match `json:"match"`
 }
 
-func (c Client) GetMatch(id int) (*Match, error) {
-	url := fmt.Sprintf("https://api-v2.etf2l.org/matches/%d", id)
+func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
+	if err := c.limiter.Wait(ctx); err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/matches/%d", c.apiURL, id)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get match from etf2l api: %v", err)

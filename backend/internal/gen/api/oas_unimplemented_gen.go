@@ -45,7 +45,7 @@ func (UnimplementedHandler) GetPlayers(ctx context.Context, params GetPlayersPar
 // Get team details.
 //
 // GET /team/{id}
-func (UnimplementedHandler) GetTeam(ctx context.Context, params GetTeamParams) (r *GetTeamOK, _ error) {
+func (UnimplementedHandler) GetTeam(ctx context.Context, params GetTeamParams) (r GetTeamRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

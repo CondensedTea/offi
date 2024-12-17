@@ -102,17 +102,28 @@ func encodeGetPlayersResponse(response *GetPlayersOK, w http.ResponseWriter) err
 	return nil
 }
 
-func encodeGetTeamResponse(response *GetTeamOK, w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(200)
+func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
+	switch response := response.(type) {
+	case *GetTeamOK:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
 
-	e := new(jx.Encoder)
-	response.Encode(e)
-	if _, err := e.WriteTo(w); err != nil {
-		return errors.Wrap(err, "write")
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetTeamNotFound:
+		w.WriteHeader(404)
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
 	}
-
-	return nil
 }
 
 func encodeErrorResponse(response *ErrorStatusCode, w http.ResponseWriter) error {
