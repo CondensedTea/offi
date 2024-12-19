@@ -116,7 +116,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 
 	var cacheLogs []cache.Log
 
-	matchLogs, secondaryLogs, err := logstf.SearchLogs(steamIDs, match.Maps, match.PlayedAt)
+	matchLogs, secondaryLogs, err := logstf.SearchLogs(steamIDs, match.Maps, match.SubmittedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}

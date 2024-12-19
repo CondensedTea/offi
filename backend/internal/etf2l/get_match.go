@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ErrMatchNotFound = errors.New("match does not exist")
+	ErrMatchNotFound   = errors.New("match does not exist")
+	ErrIncompleteMatch = errors.New("match does not contain all required data")
 )
 
 type Clan struct {
@@ -54,8 +55,8 @@ type match struct {
 	Id          int         `json:"id"`
 	Maps        []string    `json:"maps"`
 	Round       string      `json:"round"`
-	Time        int         `json:"time"`
-	Submitted   *int        `json:"submitted"`
+	ScheduledAt int         `json:"time"`
+	SubmittedAt int         `json:"submitted"`
 	Week        int         `json:"week"`
 	Players     []Player    `json:"players"`
 	ByeWeek     bool        `json:"bye_week"`
@@ -63,9 +64,9 @@ type match struct {
 }
 
 type Match struct {
-	Players  []string
-	Maps     []string
-	PlayedAt time.Time
+	Players     []string
+	Maps        []string
+	SubmittedAt time.Time
 
 	ID          int
 	Competition string
@@ -102,9 +103,9 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 		return nil, err
 	}
 
-	if matchResponse.Match.Defaultwin || len(matchResponse.Match.Players) == 0 || matchResponse.Match.Submitted == nil {
+	if matchResponse.Match.Defaultwin || len(matchResponse.Match.Players) == 0 || matchResponse.Match.SubmittedAt == 0 {
 		// Default win, match without players or match will be played in the future
-		return nil, ErrMatchNotFound
+		return nil, ErrIncompleteMatch
 	}
 
 	// etf2l returns duplicate players in the match response
@@ -118,13 +119,11 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 		playerIDs = append(playerIDs, k)
 	}
 
-	playedAt := time.Unix(int64(*matchResponse.Match.Submitted), 0)
-
 	return &Match{
 		ID:          matchResponse.Match.Id,
 		Players:     playerIDs,
 		Maps:        matchResponse.Match.Maps,
-		PlayedAt:    playedAt,
+		SubmittedAt: time.Unix(int64(matchResponse.Match.SubmittedAt), 0),
 		Competition: matchResponse.Match.Competition.Name,
 		Tier:        matchResponse.Match.Division.Name,
 		Stage:       matchResponse.Match.Round,

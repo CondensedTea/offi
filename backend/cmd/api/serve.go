@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"offi/internal/cache"
+	"offi/internal/closer"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/service"
@@ -27,7 +28,7 @@ var serveCommand = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:        "address",
-			Value:       ":8008",
+			Value:       ":8080",
 			Destination: &address,
 		},
 	},
@@ -71,6 +72,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
+	closer.AddContext(httpSrv.Shutdown)
 
 	go func() {
 		if err = httpSrv.ListenAndServe(); err != nil {
@@ -85,13 +87,10 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	slog.Info("shutting down server")
 
 	stopCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
-	if err = httpSrv.Shutdown(stopCtx); err != nil && err != http.ErrServerClosed {
-		slog.Error("failed to gracefully stop http server", "error", err)
-	}
+	closer.CloseAll(stopCtx)
 
-	<-stopCtx.Done()
+	cancel()
 
 	return nil
 }
