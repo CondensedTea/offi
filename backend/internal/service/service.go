@@ -7,6 +7,8 @@ import (
 	"offi/internal/cache"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+
+	"errors"
 )
 
 type Cache interface {
@@ -49,8 +51,16 @@ func NewService(cache Cache, etf2lClient *etf2l.Client, cacheErrors bool) *Servi
 func (s *Service) NewError(_ context.Context, err error) (r *gen.ErrorStatusCode) {
 	slog.Error("unexpected error", "error", err, "component", "api")
 
-	return &gen.ErrorStatusCode{
-		StatusCode: http.StatusInternalServerError,
-		Response:   gen.Error{Error: err.Error()},
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		return &gen.ErrorStatusCode{
+			StatusCode: http.StatusRequestTimeout,
+			Response:   gen.Error{Error: err.Error()},
+		}
+	default:
+		return &gen.ErrorStatusCode{
+			StatusCode: http.StatusInternalServerError,
+			Response:   gen.Error{Error: err.Error()},
+		}
 	}
 }

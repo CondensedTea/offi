@@ -18,7 +18,7 @@ func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
 	url := fmt.Sprintf("%s/player/%d", c.apiURL, id)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		return Player{}, fmt.Errorf("failed to get player from etf2l api: %v", err)
+		return Player{}, fmt.Errorf("failed to get player %d from etf2l: %v", id, err)
 	}
 	defer resp.Body.Close()
 
@@ -27,7 +27,7 @@ func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return Player{}, fmt.Errorf("etf2l api returned non-200 status: %d", resp.StatusCode)
+		return Player{}, fmt.Errorf("non-200 status: %d", resp.StatusCode)
 	}
 
 	var playerResponse PlayerResponse
