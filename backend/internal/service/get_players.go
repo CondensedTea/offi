@@ -37,7 +37,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int) ([]gen.Player
 				slog.Debug("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)
 				continue
 			case etf2lErr != nil:
-				return nil, fmt.Errorf("failed to get player from etf2l: %v", etf2lErr)
+				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, etf2lErr)
 			}
 
 			player = etf2lPlayer.ToCache()

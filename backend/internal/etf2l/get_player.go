@@ -18,7 +18,7 @@ func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
 	url := fmt.Sprintf("%s/player/%d", c.apiURL, id)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		return Player{}, fmt.Errorf("failed to get player %d from etf2l: %v", id, err)
+		return Player{}, err
 	}
 	defer resp.Body.Close()
 
