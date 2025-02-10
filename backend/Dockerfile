@@ -11,7 +11,7 @@ RUN go mod download
 COPY cmd/ ./cmd/
 COPY internal ./internal/
 
-RUN CGO_ENABLED=0 go build -o bin/offi ./cmd/api/
+RUN CGO_ENABLED=0 go build -o bin/offi ./cmd/offi
 
 FROM scratch
 

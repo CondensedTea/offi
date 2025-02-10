@@ -13,6 +13,16 @@ import (
 	"github.com/ogen-go/ogen/ogenerrors"
 )
 
+type codeRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (c *codeRecorder) WriteHeader(status int) {
+	c.status = status
+	c.ResponseWriter.WriteHeader(status)
+}
+
 func recordError(string, error) {}
 
 // handleGetLogsForMatchRequest handles GetLogsForMatch operation.
@@ -21,12 +31,14 @@ func recordError(string, error) {}
 //
 // GET /match/{match_id}
 func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
 	ctx := r.Context()
 
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: "GetLogsForMatch",
+			Name: GetLogsForMatchOperation,
 			ID:   "GetLogsForMatch",
 		}
 	)
@@ -45,7 +57,7 @@ func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, 
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    "GetLogsForMatch",
+			OperationName:    GetLogsForMatchOperation,
 			OperationSummary: "Get logs associated with ETF2L match",
 			OperationID:      "GetLogsForMatch",
 			Body:             nil,
@@ -111,12 +123,14 @@ func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, 
 //
 // GET /log/{log_id}
 func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
 	ctx := r.Context()
 
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: "GetMatchForLog",
+			Name: GetMatchForLogOperation,
 			ID:   "GetMatchForLog",
 		}
 	)
@@ -135,7 +149,7 @@ func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    "GetMatchForLog",
+			OperationName:    GetMatchForLogOperation,
 			OperationSummary: "Get logs associated with given ETF2L match ID",
 			OperationID:      "GetMatchForLog",
 			Body:             nil,
@@ -201,12 +215,14 @@ func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w
 //
 // GET /players
 func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
 	ctx := r.Context()
 
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: "GetPlayers",
+			Name: GetPlayersOperation,
 			ID:   "GetPlayers",
 		}
 	)
@@ -225,7 +241,7 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    "GetPlayers",
+			OperationName:    GetPlayersOperation,
 			OperationSummary: "Get players by Steam IDs",
 			OperationID:      "GetPlayers",
 			Body:             nil,
@@ -291,12 +307,14 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 //
 // GET /team/{id}
 func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+	statusWriter := &codeRecorder{ResponseWriter: w}
+	w = statusWriter
 	ctx := r.Context()
 
 	var (
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: "GetTeam",
+			Name: GetTeamOperation,
 			ID:   "GetTeam",
 		}
 	)
@@ -315,7 +333,7 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    "GetTeam",
+			OperationName:    GetTeamOperation,
 			OperationSummary: "Get team details",
 			OperationID:      "GetTeam",
 			Body:             nil,

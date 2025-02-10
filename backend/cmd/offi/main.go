@@ -21,6 +21,7 @@ func main() {
 		Version: info.Version,
 		Commands: []*cli.Command{
 			serveCommand,
+			crawlCommand,
 		},
 	}
 

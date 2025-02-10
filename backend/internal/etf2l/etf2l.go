@@ -25,6 +25,6 @@ func New() *Client {
 			),
 			Timeout: 5 * time.Second,
 		},
-		limiter: rate.NewLimiter(rate.Every(time.Second), 10),
+		limiter: rate.NewLimiter(rate.Every(time.Second), 5),
 	}
 }

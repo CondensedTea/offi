@@ -278,7 +278,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = "GetMatchForLog"
+						r.name = GetMatchForLogOperation
 						r.summary = "Get logs associated with given ETF2L match ID"
 						r.operationID = "GetMatchForLog"
 						r.pathPattern = "/log/{log_id}"
@@ -308,7 +308,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = "GetLogsForMatch"
+						r.name = GetLogsForMatchOperation
 						r.summary = "Get logs associated with ETF2L match"
 						r.operationID = "GetLogsForMatch"
 						r.pathPattern = "/match/{match_id}"
@@ -333,7 +333,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = "GetPlayers"
+						r.name = GetPlayersOperation
 						r.summary = "Get players by Steam IDs"
 						r.operationID = "GetPlayers"
 						r.pathPattern = "/players"
@@ -363,7 +363,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = "GetTeam"
+						r.name = GetTeamOperation
 						r.summary = "Get team details"
 						r.operationID = "GetTeam"
 						r.pathPattern = "/team/{id}"

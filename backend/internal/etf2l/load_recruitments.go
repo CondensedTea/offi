@@ -1,6 +1,7 @@
 package etf2l
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,7 +15,7 @@ const (
 	TeamPost   = "team"
 )
 
-func (c Client) LoadRecruitmentPosts(postType postType, lastID int64) ([]Recruitment, error) {
+func (c Client) LoadRecruitmentPosts(ctx context.Context, postType postType, lastID int) ([]Recruitment, error) {
 	var (
 		entries []Recruitment
 		url     string
@@ -28,6 +29,10 @@ func (c Client) LoadRecruitmentPosts(postType postType, lastID int64) ([]Recruit
 	}
 
 	for {
+		if err := c.limiter.Wait(ctx); err != nil {
+			return nil, err
+		}
+
 		resp, err := c.httpClient.Get(url)
 		if err != nil {
 			return nil, err

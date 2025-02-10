@@ -15,7 +15,16 @@ services:
     command: redis-server --save 20 1
     volumes:
       - cache:/data
-
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=offi
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "127.0.0.1:5432:5432"
 volumes:
   cache:
+    driver: local
+  postgres:
     driver: local

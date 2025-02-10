@@ -24,9 +24,9 @@ type Comments struct {
 }
 
 type Recruitment struct {
+	ID       int      `json:"id"`
 	Classes  []string `json:"classes"`
 	Comments Comments `json:"comments"`
-	AuthorID int64    `json:"id"`
 	Name     string   `json:"name"`
 	Skill    string   `json:"skill"`
 	Steam    Steam    `json:"steam"`
@@ -34,15 +34,40 @@ type Recruitment struct {
 	URLs     URLs     `json:"urls"`
 }
 
-func (r Recruitment) RecruitmentID() (int64, error) {
+func (r Recruitment) RecruitmentID() (int, error) {
 	if r.URLs.Recruitment == "" {
 		return 0, errors.New("recruitment does not have URL")
 	}
 
-	var id int64
-	_, err := fmt.Sscanf(r.URLs.Player, "https://etf2l.org/recruitment/%d", &id)
+	var id int
+	_, err := fmt.Sscanf(r.URLs.Recruitment, "https://etf2l.org/recruitment/%d", &id)
 	if err != nil {
-		return 0, fmt.Errorf("recruitment %d: parsing player ID: %w", r.RecruitmentID, err)
+		return 0, fmt.Errorf("recruitment %q: parsing player ID: %w", r.URLs.Recruitment, err)
+	}
+
+	return id, nil
+}
+
+func (r Recruitment) AuthorID(t postType) (int, error) {
+	var (
+		rawURL     string
+		urlPattern string
+	)
+	switch t {
+	case PlayerPost:
+		rawURL = r.URLs.Player
+		urlPattern = "http://api-v2.etf2l.org/player/%d"
+	case TeamPost:
+		rawURL = r.URLs.Team
+		urlPattern = "http://api-v2.etf2l.org/team/%d"
+	default:
+		return 0, fmt.Errorf("unknown post type %q", t)
+	}
+
+	var id int
+	_, err := fmt.Sscanf(rawURL, urlPattern, &id)
+	if err != nil {
+		return 0, fmt.Errorf("recruitment %q: %w", r.URLs.Recruitment, err)
 	}
 
 	return id, nil
