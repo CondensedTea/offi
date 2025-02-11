@@ -35,6 +35,7 @@ func (s *Service) GetMatchForLog(_ context.Context, params gen.GetMatchForLogPar
 			MatchID:     matchPage.Id,
 			Competition: matchPage.Competition,
 			Stage:       matchPage.Stage,
+			Tier:        matchPage.Tier,
 		},
 	}, nil
 }

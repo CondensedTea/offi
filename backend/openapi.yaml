@@ -149,10 +149,13 @@ components:
           type: string
         stage:
           type: string
+        tier:
+          type: string
       required:
         - match_id
         - competition
         - stage
+        - tier
     Team:
       type: object
       properties:

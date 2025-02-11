@@ -279,6 +279,7 @@ type Match struct {
 	MatchID     int    `json:"match_id"`
 	Competition string `json:"competition"`
 	Stage       string `json:"stage"`
+	Tier        string `json:"tier"`
 }
 
 // GetMatchID returns the value of MatchID.
@@ -296,6 +297,11 @@ func (s *Match) GetStage() string {
 	return s.Stage
 }
 
+// GetTier returns the value of Tier.
+func (s *Match) GetTier() string {
+	return s.Tier
+}
+
 // SetMatchID sets the value of MatchID.
 func (s *Match) SetMatchID(val int) {
 	s.MatchID = val
@@ -309,6 +315,11 @@ func (s *Match) SetCompetition(val string) {
 // SetStage sets the value of Stage.
 func (s *Match) SetStage(val string) {
 	s.Stage = val
+}
+
+// SetTier sets the value of Tier.
+func (s *Match) SetTier(val string) {
+	s.Tier = val
 }
 
 // NewOptBool returns new OptBool with value set to v.
