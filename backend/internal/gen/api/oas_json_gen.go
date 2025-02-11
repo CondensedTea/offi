@@ -1297,17 +1297,13 @@ func (s *Team) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Team) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("recruitments")
-		e.ArrStart()
-		for _, elem := range s.Recruitments {
-			elem.Encode(e)
-		}
-		e.ArrEnd()
+		e.FieldStart("recruitment")
+		s.Recruitment.Encode(e)
 	}
 }
 
 var jsonFieldsNameOfTeam = [1]string{
-	0: "recruitments",
+	0: "recruitment",
 }
 
 // Decode decodes Team from json.
@@ -1319,23 +1315,15 @@ func (s *Team) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "recruitments":
+		case "recruitment":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.Recruitments = make([]RecruitmentInfo, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem RecruitmentInfo
-					if err := elem.Decode(d); err != nil {
-						return err
-					}
-					s.Recruitments = append(s.Recruitments, elem)
-					return nil
-				}); err != nil {
+				if err := s.Recruitment.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"recruitments\"")
+				return errors.Wrap(err, "decode field \"recruitment\"")
 			}
 		default:
 			return d.Skip()

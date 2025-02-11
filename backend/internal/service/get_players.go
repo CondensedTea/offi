@@ -6,15 +6,17 @@ import (
 	"fmt"
 	"log/slog"
 	"offi/internal/cache"
+	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"unsafe"
 
 	"github.com/go-redis/redis"
 	"github.com/samber/lo"
 )
 
-func (s *Service) GetPlayers(ctx context.Context, params gen.GetPlayersParams) (r *gen.GetPlayersOK, _ error) {
-	players, err := s.getPlayers(ctx, params.ID)
+func (s *Service) GetPlayers(ctx context.Context, p gen.GetPlayersParams) (r *gen.GetPlayersOK, _ error) {
+	players, err := s.getPlayers(ctx, p.ID, p.WithRecruitmentStatus.Or(false))
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +26,7 @@ func (s *Service) GetPlayers(ctx context.Context, params gen.GetPlayersParams) (
 	}, nil
 }
 
-func (s *Service) getPlayers(ctx context.Context, playerIDs []int) ([]gen.Player, error) {
+func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitmentStatus bool) ([]gen.Player, error) {
 	var players []gen.Player
 
 	for _, playerID := range playerIDs {
@@ -48,7 +50,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int) ([]gen.Player
 			return nil, fmt.Errorf("failed to get player from cache: %v", err)
 		}
 
-		bans := lo.Map(player.Bans, func(ban cache.PlayerBan, i int) gen.PlayerBan {
+		bans := lo.Map(player.Bans, func(ban cache.PlayerBan, _ int) gen.PlayerBan {
 			return gen.PlayerBan{
 				Start:  ban.Start,
 				End:    ban.End,
@@ -63,7 +65,19 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int) ([]gen.Player
 			Bans:    bans,
 		}
 
-		// TODO: recruitment info
+		if withRecruitmentStatus {
+			recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Player, player.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get recruitments for player %d: %v", player.ID, err)
+			}
+
+			apiPlayer.Recruitment = gen.NewOptRecruitmentInfo(gen.RecruitmentInfo{
+				Skill:    recruitment.SkillLevel,
+				URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
+				Classes:  *(*[]gen.GameClass)(unsafe.Pointer(&recruitment.Classes)),
+				GameMode: recruitment.TeamType,
+			})
+		}
 
 		players = append(players, apiPlayer)
 	}

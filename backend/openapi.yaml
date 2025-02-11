@@ -96,8 +96,14 @@ paths:
           required: true
           schema:
             type: array
+            maxItems: 20
             items:
               type: integer
+        - name: with_recruitment_status
+          in: query
+          default: false
+          schema:
+              type: boolean
       responses:
         '200':
           description: List of resolved players
@@ -150,12 +156,10 @@ components:
     Team:
       type: object
       properties:
-        recruitments:
-          type: array
-          items:
-              $ref: '#/components/schemas/RecruitmentInfo'
+        recruitment:
+          $ref: '#/components/schemas/RecruitmentInfo'
       required:
-        - recruitments
+        - recruitment
     Player:
       type: object
       properties:

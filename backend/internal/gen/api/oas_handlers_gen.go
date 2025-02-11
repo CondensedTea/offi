@@ -250,6 +250,10 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 					Name: "id",
 					In:   "query",
 				}: params.ID,
+				{
+					Name: "with_recruitment_status",
+					In:   "query",
+				}: params.WithRecruitmentStatus,
 			},
 			Raw: r,
 		}

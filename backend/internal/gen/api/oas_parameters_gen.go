@@ -148,7 +148,8 @@ func decodeGetMatchForLogParams(args [1]string, argsEscaped bool, r *http.Reques
 
 // GetPlayersParams is parameters of GetPlayers operation.
 type GetPlayersParams struct {
-	ID []int
+	ID                    []int
+	WithRecruitmentStatus OptBool
 }
 
 func unpackGetPlayersParams(packed middleware.Parameters) (params GetPlayersParams) {
@@ -158,6 +159,15 @@ func unpackGetPlayersParams(packed middleware.Parameters) (params GetPlayersPara
 			In:   "query",
 		}
 		params.ID = packed[key].([]int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "with_recruitment_status",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.WithRecruitmentStatus = v.(OptBool)
+		}
 	}
 	return params
 }
@@ -202,6 +212,14 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 				if params.ID == nil {
 					return errors.New("nil is invalid value")
 				}
+				if err := (validate.Array{
+					MinLength:    0,
+					MinLengthSet: false,
+					MaxLength:    20,
+					MaxLengthSet: true,
+				}).ValidateLength(len(params.ID)); err != nil {
+					return errors.Wrap(err, "array")
+				}
 				return nil
 			}(); err != nil {
 				return err
@@ -213,6 +231,47 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "id",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: with_recruitment_status.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "with_recruitment_status",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotWithRecruitmentStatusVal bool
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToBool(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotWithRecruitmentStatusVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.WithRecruitmentStatus.SetTo(paramsDotWithRecruitmentStatusVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "with_recruitment_status",
 			In:   "query",
 			Err:  err,
 		}

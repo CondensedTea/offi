@@ -37,7 +37,7 @@ func (c *Crawler) CrawlTeamRecruitments() error {
 }
 
 func (c *Crawler) crawlTeamRecruitments() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	lastID, err := c.db.GetLasRecruitmentID(ctx, db.Team)
@@ -96,7 +96,7 @@ func (c *Crawler) CrawlPlayerRecruitments() error {
 }
 
 func (c *Crawler) crawlPlayerRecruitments() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	lastID, err := c.db.GetLasRecruitmentID(ctx, db.Player)

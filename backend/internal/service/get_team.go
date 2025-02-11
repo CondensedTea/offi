@@ -2,29 +2,33 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"offi/internal/db"
 	"offi/internal/gen/api"
+	"unsafe"
 
-	ht "github.com/ogen-go/ogen/http"
+	"github.com/jackc/pgx/v5"
 )
 
-func (s *Service) GetTeam(_ context.Context, _ api.GetTeamParams) (api.GetTeamRes, error) {
-	// recruitments, err := s.db.GetRecruitments(ctx, db.Team, p.ID)
-	// if err != nil {
-	// 	if errors.Is(err, pgx.ErrNoRows) {
-	// 		return &api.GetTeamNotFound{}, nil
-	// 	}
-	//
-	// 	return nil, fmt.Errorf("getting recruitments from db: %w", err)
-	// }
-	//
-	// res := make([]*api.RecruitmentInfo, len(recruitments))
-	// for i, r := range recruitments {
-	// 	res[i] = &api.RecruitmentInfo{
-	// 		Skill:    r.SkillLevel,
-	// 		URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", r.RecruitmentID),
-	// 		GameMode: r.TeamType,
-	// 	}
-	// }
+func (s *Service) GetTeam(ctx context.Context, p api.GetTeamParams) (api.GetTeamRes, error) {
+	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Team, p.ID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &api.GetTeamNotFound{}, nil
+		}
 
-	return nil, ht.ErrNotImplemented
+		return nil, fmt.Errorf("getting recruitments from db: %w", err)
+	}
+
+	return &api.GetTeamOK{
+		Team: api.Team{
+			Recruitment: api.RecruitmentInfo{
+				Skill:    recruitment.SkillLevel,
+				URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
+				Classes:  *(*[]api.GameClass)(unsafe.Pointer(&recruitment.Classes)),
+				GameMode: recruitment.TeamType,
+			},
+		},
+	}, nil
 }

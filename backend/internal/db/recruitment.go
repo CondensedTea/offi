@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type Post uint
@@ -60,7 +58,7 @@ func (c *Client) CleanupOldRecruitments(ctx context.Context, postType Post) (int
 	return res.RowsAffected(), nil
 }
 
-func (c *Client) GetRecruitments(ctx context.Context, postType Post, authorID int) ([]Recruitment, error) {
+func (c *Client) GetLastRecruitmentForAuthor(ctx context.Context, postType Post, authorID int) (Recruitment, error) {
 	const query = `
 		select
 			recruitment_id,
@@ -73,12 +71,13 @@ func (c *Client) GetRecruitments(ctx context.Context, postType Post, authorID in
 		where post_type = $1 and
 		      author_id = $2 and
 		      created_at > now() - interval '4 week'
-	  	order by created_at desc`
+	  	order by recruitment_id desc
+		limit 1`
 
-	rows, err := c.pool.Query(ctx, query, postType.String(), authorID)
-	if err != nil {
-		return nil, fmt.Errorf("running query: %w", err)
+	var r Recruitment
+	if err := c.pool.QueryRow(ctx, query, postType.String(), authorID).Scan(&r); err != nil {
+		return Recruitment{}, fmt.Errorf("running query: %w", err)
 	}
 
-	return pgx.CollectRows(rows, pgx.RowToStructByPos[Recruitment])
+	return r, nil
 }

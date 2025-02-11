@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"offi/internal/cache"
+	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 
@@ -32,10 +33,15 @@ type Cache interface {
 	GetAllKeys(hashKey string) ([]string, error)
 }
 
+type database interface {
+	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int) (db.Recruitment, error)
+}
+
 type Service struct {
 	gen.UnimplementedHandler
 
 	cache              Cache
+	db                 database
 	etf2l              *etf2l.Client
 	enableErrorCaching bool
 }
