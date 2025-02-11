@@ -19,13 +19,8 @@ type Cache interface {
 	SetLogError(matchId int, err error) error
 	CheckLogError(matchId int) error
 
-	DeleteLogs(matchId int) (*cache.LogSet, error)
-
 	GetPlayer(playerID int) (cache.Player, error)
 	SetPlayer(playerID int, player cache.Player) error
-
-	GetTeam(teamID int) (cache.Team, error)
-	SetTeam(teamID int, team cache.Team) error
 
 	GetMatch(logId int) (cache.MatchPage, error)
 	SetMatch(logIds []int, matchPage *cache.MatchPage) error
