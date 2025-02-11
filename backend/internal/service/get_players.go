@@ -12,6 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/go-redis/redis"
+	"github.com/jackc/pgx/v5"
 	"github.com/samber/lo"
 )
 
@@ -66,21 +67,32 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 		}
 
 		if withRecruitmentStatus {
-			recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Player, player.ID)
+			apiPlayer.Recruitment, err = s.getRecruitmentStatusForPlayer(ctx, playerID)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get recruitments for player %d: %v", player.ID, err)
+				return nil, err
 			}
-
-			apiPlayer.Recruitment = gen.NewOptRecruitmentInfo(gen.RecruitmentInfo{
-				Skill:    recruitment.SkillLevel,
-				URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
-				Classes:  *(*[]gen.GameClass)(unsafe.Pointer(&recruitment.Classes)),
-				GameMode: recruitment.TeamType,
-			})
 		}
 
 		players = append(players, apiPlayer)
 	}
 
 	return players, nil
+}
+
+func (s *Service) getRecruitmentStatusForPlayer(ctx context.Context, playerID int) (gen.OptRecruitmentInfo, error) {
+	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Player, playerID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return gen.OptRecruitmentInfo{Set: false}, nil
+		}
+
+		return gen.OptRecruitmentInfo{}, fmt.Errorf("failed to get recruitments for player %d: %v", playerID, err)
+	}
+
+	return gen.NewOptRecruitmentInfo(gen.RecruitmentInfo{
+		Skill:    recruitment.SkillLevel,
+		URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
+		Classes:  *(*[]gen.GameClass)(unsafe.Pointer(&recruitment.Classes)),
+		GameMode: recruitment.TeamType,
+	}), nil
 }
