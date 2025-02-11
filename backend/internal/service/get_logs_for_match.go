@@ -105,7 +105,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 		return id
 	})
 
-	players, err := s.getPlayers(ctx, playerIDs)
+	players, err := s.getPlayers(ctx, playerIDs, false)
 	if err != nil {
 		return nil, err
 	}

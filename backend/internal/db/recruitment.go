@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type Post uint
@@ -65,6 +67,7 @@ func (c *Client) GetLastRecruitmentForAuthor(ctx context.Context, postType Post,
 			author_id,
 			post_type,
 			team_type,
+			classes,
 			skill_level,
 			created_at
 		from recruitments 
@@ -74,10 +77,10 @@ func (c *Client) GetLastRecruitmentForAuthor(ctx context.Context, postType Post,
 	  	order by recruitment_id desc
 		limit 1`
 
-	var r Recruitment
-	if err := c.pool.QueryRow(ctx, query, postType.String(), authorID).Scan(&r); err != nil {
+	rows, err := c.pool.Query(ctx, query, postType.String(), authorID)
+	if err != nil {
 		return Recruitment{}, fmt.Errorf("running query: %w", err)
 	}
 
-	return r, nil
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByPos[Recruitment])
 }

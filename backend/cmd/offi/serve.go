@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"offi/internal/cache"
 	"offi/internal/closer"
+	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/service"
@@ -48,7 +49,12 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init redis client: %w", err)
 	}
 
-	srv := service.NewService(cacheClient, etf2lClient, true)
+	dbClient, err := db.NewClient(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return fmt.Errorf("failed to init database client: %w", err)
+	}
+
+	srv := service.NewService(cacheClient, dbClient, etf2lClient, true)
 
 	router := chi.NewRouter()
 

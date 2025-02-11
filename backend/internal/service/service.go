@@ -46,9 +46,10 @@ type Service struct {
 	enableErrorCaching bool
 }
 
-func NewService(cache Cache, etf2lClient *etf2l.Client, cacheErrors bool) *Service {
+func NewService(cache Cache, db database, etf2lClient *etf2l.Client, cacheErrors bool) *Service {
 	return &Service{
 		cache:              cache,
+		db:                 db,
 		etf2l:              etf2lClient,
 		enableErrorCaching: cacheErrors,
 	}
