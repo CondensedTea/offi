@@ -1,10 +1,8 @@
 export type Recruitment = {
-  id: number;
   skill: string;
   url: string;
   game_mode: string;
   classes: string[];
-  empty: boolean;
 }
 
 export type Ban = {
@@ -50,6 +48,7 @@ export type Match = {
   match_id: number;
   competition: string;
   stage: string;
+  tier: string;
 }
 
 export type MatchResponse = {

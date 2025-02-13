@@ -1,11 +1,13 @@
 import { Player, PlayersResponse } from "./types";
 
-export async function getPlayers(apiBaseUrl: string, ids: string[]): Promise<Player[]> {
+export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitmentStatus: boolean): Promise<Player[]> {
   const playersURL = new URL(apiBaseUrl + "/players");
 
   const idsString = ids.join(",");
 
   playersURL.searchParams.append("id", idsString);
+
+  if (withRecruitmentStatus) playersURL.searchParams.append("with_recruitment_status", "true");
 
   const res = await fetch(playersURL.toString());
   if (!res.ok) {

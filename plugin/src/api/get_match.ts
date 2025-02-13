@@ -1,9 +1,9 @@
 import {Match, MatchResponse} from "./types";
 
-export async function getMatch(apiBaseUrl: string, matchId: number): Promise<Match> {
-  const logURL = new URL(apiBaseUrl + "/log/" + matchId.toString());
+export async function getMatch(apiBaseUrl: string, logId: number): Promise<Match> {
+  const logURL = new URL(apiBaseUrl + `/log/${logId}`);
 
-  const res = await fetch(logURL.toString());
+  const res = await fetch(logURL);
 
   if (!res.ok) {
     throw new Error("api returned error: " + res.statusText);

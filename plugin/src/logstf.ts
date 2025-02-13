@@ -30,7 +30,7 @@ export async function addMatchLink() {
   try {
     match = await getMatch(apiBaseUrl, matchId);
   } catch (e) {
-    console.warn("off: could not get match: " + e.toString());
+    console.warn("offi: could not get match: " + e.toString());
     return;
   }
 
@@ -39,7 +39,12 @@ export async function addMatchLink() {
     `<a href="https://etf2l.org/matches/${match.match_id}">${match.competition}</a>`;
 
   const matchBlock = document.createElement("h3");
-  matchBlock.innerText = match.stage;
+
+  if (match.tier) {
+    matchBlock.innerText = `${match.tier} | ${match.stage}`;
+  } else {
+    matchBlock.innerText = match.stage;
+  }
 
   const logDateElem = document.getElementById("log-date");
 
@@ -63,23 +68,38 @@ export async function replacePlayerNames() {
     return steamId;
   });
 
-  const players = await getPlayers(apiBaseUrl, playerIDs);
+  const players = await getPlayers(apiBaseUrl, playerIDs, false);
 
-  /*
-    1. Player names in main table
-    2. Player names in "kills" table
-    3. Medic names in heals table
-    4. Player names in heal target table
-    5. Player names in chat
-  */
-  const mainSelector = "#class_k .log-player-name, .log-player-name .dropdown-toggle, .healtable h6, td.log-player-name, .chat-name"
-  replacePlayerNamesInNodes(players, steamPlayerNames, mainSelector);
+  const steamIDToETF2LID = new Map<string, string>();
+  players.map((player) => {
+    steamIDToETF2LID.set(player.steam_id, player.id)
+  });
+
+  const selectors = [
+    "#class_k .log-player-name",         // Player names in main table
+    ".log-player-name .dropdown-toggle", // Player names in "kills" table
+    ".healtable h6",                     // Medic names in heals table
+    "td.log-player-name",                // Player names in heal target table
+    ".chat-name"                         // Player names in chat
+  ]
+
+  replacePlayerNamesInNodes(players, steamPlayerNames, selectors.join(", "));
 
   // On toggle of death/kills tables trigger name replacement
   document.querySelectorAll("#classtab [data-toggle]").forEach((node) => {
     node.addEventListener("click", () => {
       replacePlayerNamesInNodes(players, steamPlayerNames, node.attributes["href"].value);
     });
+  })
+
+  document.querySelectorAll("a[href^='http://etf2l.org/search']").forEach((node) => {
+    const match = node.getAttribute("href").match(/\/search\/(\d+)/);
+    if (match.length < 2) return;
+
+    const etf2l_id = steamIDToETF2LID.get(match[1])
+    if (!etf2l_id) return;
+
+    node.setAttribute("href", `https://etf2l.org/forum/user/${etf2l_id}/`);
   })
 }
 

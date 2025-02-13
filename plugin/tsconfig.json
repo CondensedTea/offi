@@ -6,7 +6,8 @@
     "lib": ["es2021", "es2022", "dom", "dom.iterable"],
     "sourceMap": false,
     "allowSyntheticDefaultImports": true,
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "noUncheckedIndexedAccess": true
   },
   "exclude": [
     "node_modules"

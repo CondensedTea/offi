@@ -14,12 +14,8 @@ function getPlayerID(): string {
 }
 
 async function addPlayerStatus(recruitment: Recruitment) {
-  if (recruitment.empty) {
-    return;
-  }
-
   const node = document.createElement("a");
-  node.setAttribute("href", recruitment.url);
+  node.href = recruitment.url;
   node.className = "recruitment-status";
   node.innerText = `LFT ${recruitment.skill} ${recruitment.game_mode}`;
 
@@ -83,7 +79,7 @@ export async function updatePlayerPage(showLft: boolean, showBans: boolean) {
   let players: Player[];
 
   try {
-    players = await getPlayers(apiBaseUrl, [playerId]);
+    players = await getPlayers(apiBaseUrl, [playerId], true);
   } catch (e) {
     console.error("failed to get player status: ", e.toString());
   }
@@ -99,7 +95,7 @@ export async function updatePlayerPage(showLft: boolean, showBans: boolean) {
     await addPlayerStatus(player.recruitment);
   }
 
-  if (showBans && player.bans.length > 1) {
+  if (showBans && player.bans.length > 0) {
     await addPlayersBans(player.bans);
   }
 }

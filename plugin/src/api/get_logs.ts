@@ -3,10 +3,9 @@ import { Log, LogResponse } from "./types";
 export const NoLogsError = new Error("api didnt found logs for this match");
 
 export async function getLogs(apiBaseUrl: string, matchId: number): Promise<Log[]> {
-  const getMatchURL = new URL(apiBaseUrl + "/match/" + matchId.toString());
+  const getMatchURL = new URL(apiBaseUrl + `/match/${matchId}`);
 
-  const res = await fetch(getMatchURL.toString());
-
+  const res = await fetch(getMatchURL);
   if (!res.ok) {
     throw new Error("offi api returned error: " + res.statusText);
   }

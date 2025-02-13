@@ -4,13 +4,13 @@ import { getTeam, NoRecruitmentInfo } from "./api/get_team";
 
 const playerRe = RegExp("https://etf2l.org/teams/(\\d+)/");
 
-function getTeamID(): number {
+function getTeamID(): string {
   const match = document.URL.match(playerRe);
 
   if (match === null || match.length < 1) {
     throw new Error("could not find team ID");
   }
-  return parseInt(match[1]);
+  return match[1];
 }
 
 export async function addTeamStatus() {

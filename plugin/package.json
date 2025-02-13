@@ -1,6 +1,6 @@
 {
   "name": "offi",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "scripts": {
     "build_ff": "cp firefox_manifest.json manifest.json && parcel build manifest.json --dist-dir build/firefox --no-optimize && rm manifest.json",
     "build_c": "cp chrome_manifest.json manifest.json && parcel build manifest.json --dist-dir build/chrome --no-optimize && rm manifest.json",
@@ -18,15 +18,14 @@
     "@parcel/transformer-typescript-tsc": "2.13.2",
     "@types/node": "^22.9.3",
     "@types/webextension-polyfill": "^0.12.1",
-    "@typescript-eslint/eslint-plugin": "8.16.0",
-    "@typescript-eslint/parser": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "8.24.0",
+    "@typescript-eslint/parser": "8.24.0",
     "eslint": "^9.15.0",
     "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.0.0",
     "process": "^0.11.10",
     "typescript": "^5.7.2",
-    "typescript-eslint": "8.16.0",
+    "typescript-eslint": "8.24.0",
     "web-ext-types": "^3.2.1"
   },
   "repository": "github.com/CondensedTea/offi",
