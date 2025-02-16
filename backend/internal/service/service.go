@@ -57,6 +57,11 @@ func (s *Service) NewError(_ context.Context, err error) (r *gen.ErrorStatusCode
 			StatusCode: http.StatusRequestTimeout,
 			Response:   gen.Error{Error: err.Error()},
 		}
+	case errors.Is(err, etf2l.ErrIncompleteMatch):
+		return &gen.ErrorStatusCode{
+			StatusCode: http.StatusTooEarly,
+			Response:   gen.Error{Error: err.Error()},
+		}
 	default:
 		slog.Error("unexpected error", "error", err, "component", "api")
 
