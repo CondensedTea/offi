@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/go-chi/transport"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/time/rate"
 )
 
@@ -13,6 +15,7 @@ type Client struct {
 	apiURL     string
 	httpClient *http.Client
 	limiter    *rate.Limiter
+	tracer     trace.Tracer
 }
 
 func New() *Client {
@@ -26,5 +29,6 @@ func New() *Client {
 			Timeout: 5 * time.Second,
 		},
 		limiter: rate.NewLimiter(rate.Every(time.Second), 5),
+		tracer:  otel.Tracer("etf2l"),
 	}
 }

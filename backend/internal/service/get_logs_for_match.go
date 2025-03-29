@@ -63,18 +63,18 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 }
 
 func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log, error) {
-	logSet, err := s.cache.GetLogs(matchID)
+	logSet, err := s.cache.GetLogs(ctx, matchID)
 	switch {
 	case err == redis.Nil:
 		if s.enableErrorCaching {
-			if storedErr := s.cache.CheckLogError(matchID); storedErr != nil {
+			if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
 				return nil, storedErr
 			}
 		}
 		logs, saveErr := s.saveNewMatch(ctx, matchID)
 		if saveErr != nil {
 			if s.enableErrorCaching {
-				if cacheErr := s.cache.SetLogError(matchID, saveErr); cacheErr != nil {
+				if cacheErr := s.cache.SetLogError(ctx, matchID, saveErr); cacheErr != nil {
 					slog.Error("failed to cache log error", "error", cacheErr)
 				}
 			}
@@ -130,10 +130,10 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 		logIDs = append(logIDs, log.Id)
 		cacheLogs = append(cacheLogs, cacheLog)
 	}
-	if err = s.cache.SetLogs(matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
+	if err = s.cache.SetLogs(ctx, matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
 		return nil, fmt.Errorf("failed to set match in cache: %v", err)
 	}
-	if err = s.cache.SetMatch(logIDs, &cache.MatchPage{
+	if err = s.cache.SetMatch(ctx, logIDs, &cache.MatchPage{
 		Id:          match.ID,
 		Competition: match.Competition,
 		Stage:       match.Stage,

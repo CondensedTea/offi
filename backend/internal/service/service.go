@@ -13,19 +13,19 @@ import (
 )
 
 type Cache interface {
-	GetLogs(matchId int) (cache.LogSet, error)
-	SetLogs(matchId int, match *cache.LogSet) error
+	GetLogs(ctx context.Context, matchId int) (cache.LogSet, error)
+	SetLogs(ctx context.Context, matchId int, match *cache.LogSet) error
 
-	SetLogError(matchId int, err error) error
-	CheckLogError(matchId int) error
+	SetLogError(ctx context.Context, matchId int, err error) error
+	CheckLogError(ctx context.Context, matchId int) error
 
-	GetPlayer(playerID int) (cache.Player, error)
-	SetPlayer(playerID int, player cache.Player) error
+	GetPlayer(ctx context.Context, playerID int) (cache.Player, error)
+	SetPlayer(ctx context.Context, playerID int, player cache.Player) error
 
-	GetMatch(logId int) (cache.MatchPage, error)
-	SetMatch(logIds []int, matchPage *cache.MatchPage) error
+	GetMatch(ctx context.Context, logId int) (cache.MatchPage, error)
+	SetMatch(ctx context.Context, logIds []int, matchPage *cache.MatchPage) error
 
-	GetAllKeys(hashKey string) ([]string, error)
+	GetAllKeys(ctx context.Context, hashKey string) ([]string, error)
 }
 
 type database interface {

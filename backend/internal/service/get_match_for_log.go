@@ -10,8 +10,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func (s *Service) GetMatchForLog(_ context.Context, params gen.GetMatchForLogParams) (r gen.GetMatchForLogRes, _ error) {
-	matchPage, err := s.cache.GetMatch(params.LogID)
+func (s *Service) GetMatchForLog(ctx context.Context, params gen.GetMatchForLogParams) (r gen.GetMatchForLogRes, _ error) {
+	matchPage, err := s.cache.GetMatch(ctx, params.LogID)
 	if err != nil {
 		if errors.Is(err, cache.ErrCached) {
 			return &gen.ErrorStatusCode{

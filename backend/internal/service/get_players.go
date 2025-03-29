@@ -31,7 +31,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 	var players []gen.Player
 
 	for _, playerID := range playerIDs {
-		player, err := s.cache.GetPlayer(playerID)
+		player, err := s.cache.GetPlayer(ctx, playerID)
 		switch {
 		case err == redis.Nil:
 			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
@@ -44,7 +44,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			}
 
 			player = etf2lPlayer.ToCache()
-			if cacheErr := s.cache.SetPlayer(playerID, player); cacheErr != nil {
+			if cacheErr := s.cache.SetPlayer(ctx, playerID, player); cacheErr != nil {
 				return nil, fmt.Errorf("failed to save player to cache: %v", cacheErr)
 			}
 		case err != nil:

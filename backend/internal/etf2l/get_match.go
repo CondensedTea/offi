@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -79,6 +82,11 @@ type MatchResponse struct {
 }
 
 func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
+	ctx, span := c.tracer.Start(ctx, "etf2l.GetMatch",
+		trace.WithAttributes(attribute.Int("match_id", id)),
+	)
+	defer span.End()
+
 	if err := c.limiter.Wait(ctx); err != nil {
 		return nil, err
 	}

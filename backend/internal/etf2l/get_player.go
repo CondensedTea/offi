@@ -6,11 +6,19 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var ErrPlayerNotFound = errors.New(`player does not have an etf2l account`)
 
 func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
+	ctx, span := c.tracer.Start(ctx, "etf2l.GetPlayer",
+		trace.WithAttributes(attribute.Int("player_id", id)),
+	)
+	defer span.End()
+
 	if err := c.limiter.Wait(ctx); err != nil {
 		return Player{}, err
 	}
