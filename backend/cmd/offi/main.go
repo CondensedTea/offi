@@ -6,13 +6,16 @@ import (
 	info "offi/internal/build_info"
 	"os"
 
+	"github.com/go-slog/otelslog"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
-	})).With("version", info.Version)
+	})
+
+	logger := slog.New(otelslog.NewHandler(handler)).With("version", info.Version)
 
 	slog.SetDefault(logger)
 

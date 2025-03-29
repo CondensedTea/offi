@@ -11,6 +11,7 @@ import (
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/service"
+	"offi/internal/tracing"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,6 +43,8 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
+	tracing.Init(ctx)
+
 	etf2lClient := etf2l.New()
 
 	cacheClient, err := cache.New(os.Getenv("REDIS_URL"))
@@ -62,8 +65,6 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
 		AllowedMethods: []string{http.MethodGet},
 	}))
-
-	router.Use(middleware.RealIP)
 	router.Use(middleware.Recoverer)
 
 	handler, err := gen.NewServer(srv)

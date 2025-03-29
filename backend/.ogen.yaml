@@ -2,4 +2,3 @@ generator:
   features:
     disable:
       - 'paths/client'
-      - 'ogen/otel'

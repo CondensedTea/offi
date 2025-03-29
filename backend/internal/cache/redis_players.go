@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const playerExpiration = 24 * time.Hour
+const playerExpiration = 72 * time.Hour
 
 func (r Redis) GetPlayer(playerID int) (Player, error) {
 	key := fmt.Sprintf("player-%d", playerID)

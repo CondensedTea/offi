@@ -5,18 +5,52 @@ package api
 import (
 	"net/http"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
+	"github.com/ogen-go/ogen/otelogen"
+)
+
+var (
+	// Allocate option closure once.
+	serverSpanKind = trace.WithSpanKind(trace.SpanKindServer)
 )
 
 type (
 	optionFunc[C any] func(*C)
+	otelOptionFunc    func(*otelConfig)
 )
+
+type otelConfig struct {
+	TracerProvider trace.TracerProvider
+	Tracer         trace.Tracer
+	MeterProvider  metric.MeterProvider
+	Meter          metric.Meter
+}
+
+func (cfg *otelConfig) initOTEL() {
+	if cfg.TracerProvider == nil {
+		cfg.TracerProvider = otel.GetTracerProvider()
+	}
+	if cfg.MeterProvider == nil {
+		cfg.MeterProvider = otel.GetMeterProvider()
+	}
+	cfg.Tracer = cfg.TracerProvider.Tracer(otelogen.Name,
+		trace.WithInstrumentationVersion(otelogen.SemVersion()),
+	)
+	cfg.Meter = cfg.MeterProvider.Meter(otelogen.Name,
+		metric.WithInstrumentationVersion(otelogen.SemVersion()),
+	)
+}
 
 // ErrorHandler is error handler.
 type ErrorHandler = ogenerrors.ErrorHandler
 
 type serverConfig struct {
+	otelConfig
 	NotFound           http.HandlerFunc
 	MethodNotAllowed   func(w http.ResponseWriter, r *http.Request, allowed string)
 	ErrorHandler       ErrorHandler
@@ -34,6 +68,12 @@ var _ ServerOption = (optionFunc[serverConfig])(nil)
 
 func (o optionFunc[C]) applyServer(c *C) {
 	o(c)
+}
+
+var _ ServerOption = (otelOptionFunc)(nil)
+
+func (o otelOptionFunc) applyServer(c *serverConfig) {
+	o(&c.otelConfig)
 }
 
 func newServerConfig(opts ...ServerOption) serverConfig {
@@ -57,11 +97,15 @@ func newServerConfig(opts ...ServerOption) serverConfig {
 	for _, opt := range opts {
 		opt.applyServer(&cfg)
 	}
+	cfg.initOTEL()
 	return cfg
 }
 
 type baseServer struct {
-	cfg serverConfig
+	cfg      serverConfig
+	requests metric.Int64Counter
+	errors   metric.Int64Counter
+	duration metric.Float64Histogram
 }
 
 func (s baseServer) notFound(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +118,43 @@ func (s baseServer) notAllowed(w http.ResponseWriter, r *http.Request, allowed s
 
 func (cfg serverConfig) baseServer() (s baseServer, err error) {
 	s = baseServer{cfg: cfg}
+	if s.requests, err = otelogen.ServerRequestCountCounter(s.cfg.Meter); err != nil {
+		return s, err
+	}
+	if s.errors, err = otelogen.ServerErrorsCountCounter(s.cfg.Meter); err != nil {
+		return s, err
+	}
+	if s.duration, err = otelogen.ServerDurationHistogram(s.cfg.Meter); err != nil {
+		return s, err
+	}
 	return s, nil
 }
 
 // Option is config option.
 type Option interface {
 	ServerOption
+}
+
+// WithTracerProvider specifies a tracer provider to use for creating a tracer.
+//
+// If none is specified, the global provider is used.
+func WithTracerProvider(provider trace.TracerProvider) Option {
+	return otelOptionFunc(func(cfg *otelConfig) {
+		if provider != nil {
+			cfg.TracerProvider = provider
+		}
+	})
+}
+
+// WithMeterProvider specifies a meter provider to use for creating a meter.
+//
+// If none is specified, the otel.GetMeterProvider() is used.
+func WithMeterProvider(provider metric.MeterProvider) Option {
+	return otelOptionFunc(func(cfg *otelConfig) {
+		if provider != nil {
+			cfg.MeterProvider = provider
+		}
+	})
 }
 
 // WithNotFound specifies Not Found handler to use.

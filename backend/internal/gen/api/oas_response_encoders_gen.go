@@ -7,15 +7,18 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	ht "github.com/ogen-go/ogen/http"
 )
 
-func encodeGetLogsForMatchResponse(response GetLogsForMatchRes, w http.ResponseWriter) error {
+func encodeGetLogsForMatchResponse(response GetLogsForMatchRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *GetLogsForMatchOK:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -33,6 +36,11 @@ func encodeGetLogsForMatchResponse(response GetLogsForMatchRes, w http.ResponseW
 			code = http.StatusOK
 		}
 		w.WriteHeader(code)
+		if st := http.StatusText(code); code >= http.StatusBadRequest {
+			span.SetStatus(codes.Error, st)
+		} else {
+			span.SetStatus(codes.Ok, st)
+		}
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -50,11 +58,12 @@ func encodeGetLogsForMatchResponse(response GetLogsForMatchRes, w http.ResponseW
 	}
 }
 
-func encodeGetMatchForLogResponse(response GetMatchForLogRes, w http.ResponseWriter) error {
+func encodeGetMatchForLogResponse(response GetMatchForLogRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *GetMatchForLogOK:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -72,6 +81,11 @@ func encodeGetMatchForLogResponse(response GetMatchForLogRes, w http.ResponseWri
 			code = http.StatusOK
 		}
 		w.WriteHeader(code)
+		if st := http.StatusText(code); code >= http.StatusBadRequest {
+			span.SetStatus(codes.Error, st)
+		} else {
+			span.SetStatus(codes.Ok, st)
+		}
 
 		e := new(jx.Encoder)
 		response.Response.Encode(e)
@@ -89,9 +103,10 @@ func encodeGetMatchForLogResponse(response GetMatchForLogRes, w http.ResponseWri
 	}
 }
 
-func encodeGetPlayersResponse(response *GetPlayersOK, w http.ResponseWriter) error {
+func encodeGetPlayersResponse(response *GetPlayersOK, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
+	span.SetStatus(codes.Ok, http.StatusText(200))
 
 	e := new(jx.Encoder)
 	response.Encode(e)
@@ -102,11 +117,12 @@ func encodeGetPlayersResponse(response *GetPlayersOK, w http.ResponseWriter) err
 	return nil
 }
 
-func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
+func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *GetTeamOK:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -118,6 +134,7 @@ func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 
 	case *GetTeamNotFound:
 		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 
@@ -126,7 +143,7 @@ func encodeGetTeamResponse(response GetTeamRes, w http.ResponseWriter) error {
 	}
 }
 
-func encodeErrorResponse(response *ErrorStatusCode, w http.ResponseWriter) error {
+func encodeErrorResponse(response *ErrorStatusCode, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	code := response.StatusCode
 	if code == 0 {
@@ -134,6 +151,11 @@ func encodeErrorResponse(response *ErrorStatusCode, w http.ResponseWriter) error
 		code = http.StatusOK
 	}
 	w.WriteHeader(code)
+	if st := http.StatusText(code); code >= http.StatusBadRequest {
+		span.SetStatus(codes.Error, st)
+	} else {
+		span.SetStatus(codes.Ok, st)
+	}
 
 	e := new(jx.Encoder)
 	response.Response.Encode(e)
