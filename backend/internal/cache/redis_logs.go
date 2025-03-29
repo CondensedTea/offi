@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-faster/errors"
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func (r Redis) GetLogs(ctx context.Context, matchId int) (LogSet, error) {

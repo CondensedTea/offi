@@ -7,7 +7,7 @@ import (
 	"offi/internal/cache"
 	gen "offi/internal/gen/api"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func (s *Service) GetMatchForLog(ctx context.Context, params gen.GetMatchForLogParams) (r gen.GetMatchForLogRes, _ error) {

@@ -11,6 +11,8 @@ require (
 	github.com/go-slog/otelslog v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/ogen-go/ogen v1.10.0
+	github.com/redis/go-redis/extra/redisotel/v9 v9.7.3
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/samber/lo v1.47.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.0.0-beta1
@@ -35,7 +37,6 @@ require (
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -43,12 +44,8 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/onsi/gomega v1.18.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.7.3 // indirect
-	github.com/redis/go-redis/extra/redisotel/v9 v9.7.3 // indirect
-	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.35.0 // indirect
