@@ -65,7 +65,7 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log, error) {
 	logSet, err := s.cache.GetLogs(ctx, matchID)
 	switch {
-	case err == redis.Nil:
+	case errors.Is(err, redis.Nil):
 		if s.enableErrorCaching {
 			if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
 				return nil, storedErr

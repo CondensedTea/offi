@@ -33,7 +33,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 	for _, playerID := range playerIDs {
 		player, err := s.cache.GetPlayer(ctx, playerID)
 		switch {
-		case err == redis.Nil:
+		case errors.Is(err, redis.Nil):
 			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
