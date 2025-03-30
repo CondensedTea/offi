@@ -40,22 +40,23 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 		if errors.Is(err, etf2l.ErrMatchNotFound) {
 			return &gen.ErrorStatusCode{
 				StatusCode: http.StatusNotFound,
-				Response:   gen.Error{Error: err.Error()},
+				Response:   gen.Error{Error: "no logs found for the match"},
 			}, nil
 		}
 
 		return nil, err
 	}
 
-	res := lo.Map(logs, func(log cache.Log, _ int) gen.Log {
-		return gen.Log{
+	res := make([]gen.Log, len(logs))
+	for i, log := range logs {
+		res[i] = gen.Log{
 			ID:          log.ID,
 			Title:       log.Title,
 			Map:         log.Map,
 			PlayedAt:    log.PlayedAt,
 			IsSecondary: log.IsSecondary,
 		}
-	})
+	}
 
 	return &gen.GetLogsForMatchOK{
 		Logs: res,
@@ -116,7 +117,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 
 	var cacheLogs []cache.Log
 
-	matchLogs, secondaryLogs, err := logstf.SearchLogs(steamIDs, match.Maps, match.SubmittedAt)
+	matchLogs, secondaryLogs, err := logstf.SearchLogs(ctx, steamIDs, match.Maps, match.SubmittedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}

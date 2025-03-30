@@ -140,7 +140,7 @@ func (c *Crawler) crawlPlayerRecruitments() error {
 		return fmt.Errorf("cleaning up old team recruitments: %w", err)
 	}
 
-	slog.Info("loaded team recruitments", "new_count", len(recs), "deleted_count", deleted)
+	slog.Info("loaded player recruitments", "new_count", len(recs), "deleted_count", deleted)
 
 	return nil
 }

@@ -8,17 +8,24 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"go.opentelemetry.io/otel"
 )
 
-var logger = slog.With("component", "logs-tf")
+var (
+	logger = slog.With("component", "logs-tf")
+	tracer = otel.GetTracerProvider().Tracer("logstf")
+)
 
 const (
-	timeout           = 5 * time.Second
 	matchPlayedOffset = 3 * 24 * time.Hour
 )
 
-func SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
-	resp, err := getLogsWithPlayers(players)
+func SearchLogs(ctx context.Context, players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+	ctx, span := tracer.Start(ctx, "logstf.SearchLogs")
+	defer span.End()
+
+	resp, err := getLogsWithPlayers(ctx, players)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
@@ -28,13 +35,10 @@ func SearchLogs(players, maps []string, playedAt time.Time) ([]Log, []Log, error
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func getLogsWithPlayers(players []string) (*Response, error) {
+func getLogsWithPlayers(ctx context.Context, players []string) (*Response, error) {
 	playerIDs := strings.Join(players, ",")
 
 	u := fmt.Sprintf("https://logs.tf/api/v1/log?player=%s", playerIDs)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, http.NoBody)
 	if err != nil {

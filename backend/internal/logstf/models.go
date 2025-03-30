@@ -10,12 +10,10 @@ type Response struct {
 }
 
 type Log struct {
-	Id      int    `json:"id"`
-	Title   string `json:"title"`
-	Map     string `json:"map"`
-	Date    int64  `json:"date"`
-	Views   int    `json:"views"`
-	Players int    `json:"players"`
+	Id    int    `json:"id"`
+	Title string `json:"title"`
+	Map   string `json:"map"`
+	Date  int64  `json:"date"`
 }
 
 func (l Log) ToCache(isSecondary bool) cache.Log {
@@ -26,8 +24,4 @@ func (l Log) ToCache(isSecondary bool) cache.Log {
 		PlayedAt:    time.Unix(l.Date, 0),
 		IsSecondary: isSecondary,
 	}
-}
-
-type FullLog struct {
-	Info Log `json:"info"`
 }
