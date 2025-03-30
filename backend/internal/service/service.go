@@ -50,7 +50,7 @@ func NewService(cache Cache, db database, etf2lClient *etf2l.Client, cacheErrors
 	}
 }
 
-func (s *Service) NewError(_ context.Context, err error) (r *gen.ErrorStatusCode) {
+func (s *Service) NewError(ctx context.Context, err error) (r *gen.ErrorStatusCode) {
 	switch {
 	case errors.Is(err, context.DeadlineExceeded):
 		return &gen.ErrorStatusCode{
@@ -63,7 +63,7 @@ func (s *Service) NewError(_ context.Context, err error) (r *gen.ErrorStatusCode
 			Response:   gen.Error{Error: err.Error()},
 		}
 	default:
-		slog.Error("unexpected error", "error", err, "component", "api")
+		slog.ErrorContext(ctx, "unexpected error", "error", err, "component", "api")
 
 		return &gen.ErrorStatusCode{
 			StatusCode: http.StatusInternalServerError,

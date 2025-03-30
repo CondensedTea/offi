@@ -75,7 +75,7 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 		if saveErr != nil {
 			if s.enableErrorCaching {
 				if cacheErr := s.cache.SetLogError(ctx, matchID, saveErr); cacheErr != nil {
-					slog.Error("failed to cache log error", "error", cacheErr)
+					slog.ErrorContext(ctx, "failed to cache log error", "error", cacheErr)
 				}
 			}
 			return nil, fmt.Errorf("failed to save parsed match %d: %w", matchID, saveErr)

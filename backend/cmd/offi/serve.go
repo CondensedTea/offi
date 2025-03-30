@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -82,7 +83,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	closer.AddContext(httpSrv.Shutdown)
 
 	go func() {
-		if err = httpSrv.ListenAndServe(); err != nil {
+		if err = httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("failed to run server", "error", err)
 		}
 	}()

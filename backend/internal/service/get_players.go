@@ -37,6 +37,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
+				// TODO: cache the fact that the player does not exist
 				slog.Debug("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)
 				continue
 			case etf2lErr != nil:

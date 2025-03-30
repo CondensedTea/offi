@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -19,9 +20,13 @@ func (c Client) GetPlayer(ctx context.Context, id int) (Player, error) {
 	)
 	defer span.End()
 
+	t := time.Now()
+
 	if err := c.limiter.Wait(ctx); err != nil {
 		return Player{}, err
 	}
+
+	span.SetAttributes(attribute.Float64("rate_limit_wait", float64(time.Since(t).Milliseconds())))
 
 	url := fmt.Sprintf("%s/player/%d", c.apiURL, id)
 	resp, err := c.httpClient.Get(url)
