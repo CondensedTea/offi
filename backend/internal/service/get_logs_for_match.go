@@ -10,7 +10,6 @@ import (
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/logstf"
-	"strconv"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
@@ -97,16 +96,11 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 		return nil, fmt.Errorf("failed to get players for etf2l match: %w", err)
 	}
 
-	if len(match.Players) > maxPlayers {
+	if len(match.PlayerSteamIDs) > maxPlayers {
 		return nil, ErrTooManyPlayers
 	}
 
-	playerIDs := lo.Map(match.Players, func(playerID string, _ int) int {
-		id, _ := strconv.Atoi(playerID)
-		return id
-	})
-
-	players, err := s.getPlayers(ctx, playerIDs, false)
+	players, err := s.getPlayers(ctx, match.PlayerSteamIDs, false)
 	if err != nil {
 		return nil, err
 	}

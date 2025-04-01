@@ -52,9 +52,9 @@ func NewService(cache Cache, db database, etf2lClient *etf2l.Client, cacheErrors
 
 func (s *Service) NewError(ctx context.Context, err error) (r *gen.ErrorStatusCode) {
 	switch {
-	case errors.Is(err, context.DeadlineExceeded):
+	case errors.Is(err, context.Canceled):
 		return &gen.ErrorStatusCode{
-			StatusCode: http.StatusRequestTimeout,
+			StatusCode: http.StatusTeapot,
 			Response:   gen.Error{Error: err.Error()},
 		}
 	case errors.Is(err, etf2l.ErrIncompleteMatch):

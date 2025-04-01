@@ -89,7 +89,7 @@ type Ban struct {
 type Player struct {
 	ID    int `json:"id"`
 	Steam struct {
-		ID64 string `json:"id64"`
+		ID64 int `json:"id64,string"`
 	} `json:"steam"`
 	Name string `json:"name"`
 	Bans []Ban  `json:"bans"`

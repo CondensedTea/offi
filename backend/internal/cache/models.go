@@ -42,7 +42,7 @@ func (m *MatchPage) UnmarshalBinary(data []byte) error {
 
 type Player struct {
 	ID      int         `json:"id"`
-	SteamID string      `json:"steam_id"`
+	SteamID int         `json:"steam_id"`
 	Name    string      `json:"name"`
 	Bans    []PlayerBan `json:"bans"`
 }

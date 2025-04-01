@@ -9,6 +9,7 @@ import (
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"strconv"
 	"unsafe"
 
 	"github.com/jackc/pgx/v5"
@@ -62,7 +63,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 
 		apiPlayer := gen.Player{
 			ID:      player.ID,
-			SteamID: player.SteamID,
+			SteamID: strconv.Itoa(player.SteamID), // for backwards compatibility reasons
 			Name:    player.Name,
 			Bans:    bans,
 		}

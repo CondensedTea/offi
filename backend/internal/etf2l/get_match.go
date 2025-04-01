@@ -67,9 +67,9 @@ type match struct {
 }
 
 type Match struct {
-	Players     []string
-	Maps        []string
-	SubmittedAt time.Time
+	PlayerSteamIDs []int
+	Maps           []string
+	SubmittedAt    time.Time
 
 	ID          int
 	Competition string
@@ -117,23 +117,28 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 	}
 
 	// etf2l returns duplicate players in the match response
-	var playerIDSet = make(map[string]struct{})
+	var playerIDSet = make(map[int]struct{})
 	for _, player := range matchResponse.Match.Players {
+		if player.Steam.ID64 == 0 {
+			// Special case for matches restored after Great Data loss of 2020 (?)
+			return nil, ErrIncompleteMatch
+		}
+
 		playerIDSet[player.Steam.ID64] = struct{}{}
 	}
 
-	var playerIDs = make([]string, 0, len(playerIDSet))
+	var playerIDs = make([]int, 0, len(playerIDSet))
 	for k := range playerIDSet {
 		playerIDs = append(playerIDs, k)
 	}
 
 	return &Match{
-		ID:          matchResponse.Match.Id,
-		Players:     playerIDs,
-		Maps:        matchResponse.Match.Maps,
-		SubmittedAt: time.Unix(int64(matchResponse.Match.SubmittedAt), 0),
-		Competition: matchResponse.Match.Competition.Name,
-		Tier:        matchResponse.Match.Division.Name,
-		Stage:       matchResponse.Match.Round,
+		ID:             matchResponse.Match.Id,
+		PlayerSteamIDs: playerIDs,
+		Maps:           matchResponse.Match.Maps,
+		SubmittedAt:    time.Unix(int64(matchResponse.Match.SubmittedAt), 0),
+		Competition:    matchResponse.Match.Competition.Name,
+		Tier:           matchResponse.Match.Division.Name,
+		Stage:          matchResponse.Match.Round,
 	}, nil
 }
