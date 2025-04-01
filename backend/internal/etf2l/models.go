@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"offi/internal/cache"
+	"strconv"
 
 	"github.com/samber/lo"
 )
@@ -112,7 +113,7 @@ func (p Player) ToCache() cache.Player {
 	return cache.Player{
 		ID:      p.ID,
 		Bans:    cacheBans,
-		SteamID: p.Steam.ID64,
+		SteamID: strconv.Itoa(p.Steam.ID64),
 		Name:    p.Name,
 	}
 }
