@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"offi/internal/closer"
 	"os"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -95,4 +98,39 @@ func initMeterProvider(ctx context.Context, res *resource.Resource, endpoint str
 	closer.AddContext(meterProvider.Shutdown)
 
 	return nil
+}
+
+// Server is a generic ogen server type.
+type Server[R Route] interface {
+	FindPath(method string, u *url.URL) (r R, _ bool)
+}
+
+// Route is a generic ogen route type.
+type Route interface {
+	Name() string
+	OperationID() string
+}
+
+func NewMiddleware[R Route, S Server[R]](finder S) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return otelhttp.NewHandler(next, "",
+			otelhttp.WithTracerProvider(otel.GetTracerProvider()),
+			otelhttp.WithServerName("offi"),
+			otelhttp.WithPublicEndpoint(),
+			otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
+				route, ok := finder.FindPath(r.Method, r.URL)
+				if !ok {
+					return route.OperationID()
+				}
+				return fmt.Sprintf("%s %s", route.Name(), operation)
+			}),
+		)
+	}
+}
+
+func InjectTracingHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		otel.GetTextMapPropagator().Inject(r.Context(), propagation.HeaderCarrier(w.Header()))
+		next.ServeHTTP(w, r)
+	})
 }

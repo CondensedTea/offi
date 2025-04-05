@@ -60,6 +60,11 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 
 	srv := service.NewService(cacheClient, dbClient, etf2lClient, true)
 
+	handler, err := gen.NewServer(srv)
+	if err != nil {
+		return fmt.Errorf("failed to init api server: %w", err)
+	}
+
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -67,11 +72,8 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		AllowedMethods: []string{http.MethodGet},
 	}))
 	router.Use(middleware.Recoverer)
-
-	handler, err := gen.NewServer(srv)
-	if err != nil {
-		return fmt.Errorf("failed to init api server: %w", err)
-	}
+	router.Use(tracing.NewMiddleware(handler))
+	router.Use(tracing.InjectTracingHeaders)
 
 	router.Mount("/", handler)
 

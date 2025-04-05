@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 var (
@@ -24,6 +25,8 @@ const (
 func SearchLogs(ctx context.Context, players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	ctx, span := tracer.Start(ctx, "logstf.SearchLogs")
 	defer span.End()
+
+	span.SetAttributes(attribute.StringSlice("player_ids", players))
 
 	resp, err := getLogsWithPlayers(ctx, players)
 	if err != nil {
