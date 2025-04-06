@@ -11,9 +11,9 @@ RUN go mod download
 COPY cmd/ ./cmd/
 COPY internal ./internal/
 
-ARG version
+ARG VERSION="unknown"
 
-RUN CGO_ENABLED=0 go build -ldflags="-X 'offi/internal/build_info.Version=${version:-unknown}'" -o bin/offi ./cmd/offi
+RUN CGO_ENABLED=0 go build -ldflags="-X 'offi/internal/build_info.Version=${VERSION}'" -o bin/offi ./cmd/offi
 
 FROM scratch
 

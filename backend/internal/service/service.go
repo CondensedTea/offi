@@ -8,6 +8,7 @@ import (
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/logstf"
 
 	"errors"
 )
@@ -38,14 +39,16 @@ type Service struct {
 	cache              Cache
 	db                 database
 	etf2l              *etf2l.Client
+	logs               *logstf.Client
 	enableErrorCaching bool
 }
 
-func NewService(cache Cache, db database, etf2lClient *etf2l.Client, cacheErrors bool) *Service {
+func NewService(cache Cache, db database, etf2lClient *etf2l.Client, logs *logstf.Client, cacheErrors bool) *Service {
 	return &Service{
 		cache:              cache,
 		db:                 db,
 		etf2l:              etf2lClient,
+		logs:               logs,
 		enableErrorCaching: cacheErrors,
 	}
 }

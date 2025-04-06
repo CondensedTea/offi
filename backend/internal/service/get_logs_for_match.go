@@ -9,7 +9,6 @@ import (
 	"offi/internal/cache"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
-	"offi/internal/logstf"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
@@ -66,7 +65,7 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 	logSet, err := s.cache.GetLogs(ctx, matchID)
 	switch {
 	case errors.Is(err, redis.Nil):
-		if s.enableErrorCaching {
+		if s.enableErrorCaching { // todo make error checking default
 			if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
 				return nil, storedErr
 			}
@@ -111,7 +110,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 
 	var cacheLogs []cache.Log
 
-	matchLogs, secondaryLogs, err := logstf.SearchLogs(ctx, steamIDs, match.Maps, match.SubmittedAt)
+	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, steamIDs, match.Maps, match.SubmittedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}

@@ -40,7 +40,7 @@ jobs:
           context: ./backend
           push: true
           build-args: |
-            version=${{ steps.vars.outputs.COMMIT_SHORT_SHA }}
+            VERSION=${{ steps.vars.outputs.COMMIT_SHORT_SHA }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref='${{ steps.meta.outputs.tags }}'

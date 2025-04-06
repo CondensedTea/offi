@@ -11,6 +11,7 @@ import (
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/logstf"
 	"offi/internal/service"
 	"offi/internal/tracing"
 	"os"
@@ -48,6 +49,8 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 
 	etf2lClient := etf2l.New()
 
+	logsClient := logstf.NewClient()
+
 	cacheClient, err := cache.New(os.Getenv("REDIS_URL"))
 	if err != nil {
 		return fmt.Errorf("failed to init redis client: %w", err)
@@ -58,7 +61,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init database client: %w", err)
 	}
 
-	srv := service.NewService(cacheClient, dbClient, etf2lClient, true)
+	srv := service.NewService(cacheClient, dbClient, etf2lClient, logsClient, true)
 
 	handler, err := gen.NewServer(srv)
 	if err != nil {
