@@ -135,7 +135,7 @@ func (c *Crawler) crawlPlayerRecruitments() error {
 		return fmt.Errorf("savin player recruitments: %w", err)
 	}
 
-	deleted, err := c.db.CleanupOldRecruitments(ctx, db.Team)
+	deleted, err := c.db.CleanupOldRecruitments(ctx, db.Player)
 	if err != nil {
 		return fmt.Errorf("cleaning up old team recruitments: %w", err)
 	}

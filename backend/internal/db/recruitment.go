@@ -50,7 +50,7 @@ func (c *Client) SaveRecruitments(ctx context.Context, recs []Recruitment) error
 }
 
 func (c *Client) CleanupOldRecruitments(ctx context.Context, postType Post) (int64, error) {
-	const query = `delete from recruitments where now() - created_at > interval '2 weeks' and post_type = $1`
+	const query = `delete from recruitments where now() - created_at > interval '3 weeks' and post_type = $1`
 
 	res, err := c.pool.Exec(ctx, query, postType.String())
 	if err != nil {
