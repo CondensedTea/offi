@@ -11,45 +11,44 @@ import (
 	"offi/internal/logstf"
 
 	"errors"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type Cache interface {
-	GetLogs(ctx context.Context, matchId int) (cache.LogSet, error)
-	SetLogs(ctx context.Context, matchId int, match *cache.LogSet) error
-
 	SetLogError(ctx context.Context, matchId int, err error) error
 	CheckLogError(ctx context.Context, matchId int) error
 
 	GetPlayer(ctx context.Context, playerID int) (cache.Player, error)
 	SetPlayer(ctx context.Context, playerID int, player cache.Player) error
-
-	GetMatch(ctx context.Context, logId int) (cache.MatchPage, error)
-	SetMatch(ctx context.Context, logIds []int, matchPage *cache.MatchPage) error
-
-	GetAllKeys(ctx context.Context, hashKey string) ([]string, error)
 }
 
 type database interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
+
 	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int) (db.Recruitment, error)
+
+	SaveLog(ctx context.Context, tx pgx.Tx, log db.Log) error
+	GetLogsByMatchID(ctx context.Context, matchID int) ([]db.Log, error)
+	GetMatchByLogID(ctx context.Context, logID int) (db.Match, error)
+	SaveMatch(ctx context.Context, tx pgx.Tx, match db.Match) error
 }
 
 type Service struct {
 	gen.UnimplementedHandler
 
-	cache              Cache
-	db                 database
-	etf2l              *etf2l.Client
-	logs               *logstf.Client
-	enableErrorCaching bool
+	cache Cache
+	db    database
+	etf2l *etf2l.Client
+	logs  *logstf.Client
 }
 
-func NewService(cache Cache, db database, etf2lClient *etf2l.Client, logs *logstf.Client, cacheErrors bool) *Service {
+func NewService(cache Cache, db database, etf2lClient *etf2l.Client, logs *logstf.Client) *Service {
 	return &Service{
-		cache:              cache,
-		db:                 db,
-		etf2l:              etf2lClient,
-		logs:               logs,
-		enableErrorCaching: cacheErrors,
+		cache: cache,
+		db:    db,
+		etf2l: etf2lClient,
+		logs:  logs,
 	}
 }
 

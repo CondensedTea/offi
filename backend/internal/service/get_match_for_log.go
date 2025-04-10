@@ -4,23 +4,14 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"offi/internal/cache"
+	"offi/internal/db"
 	gen "offi/internal/gen/api"
-
-	"github.com/redis/go-redis/v9"
 )
 
 func (s *Service) GetMatchForLog(ctx context.Context, params gen.GetMatchForLogParams) (r gen.GetMatchForLogRes, _ error) {
-	matchPage, err := s.cache.GetMatch(ctx, params.LogID)
+	match, err := s.db.GetMatchByLogID(ctx, params.LogID)
 	if err != nil {
-		if errors.Is(err, cache.ErrCached) {
-			return &gen.ErrorStatusCode{
-				StatusCode: http.StatusTooEarly,
-				Response:   gen.Error{Error: err.Error()},
-			}, nil
-		}
-
-		if errors.Is(err, redis.Nil) {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, &gen.ErrorStatusCode{
 				StatusCode: http.StatusNotFound,
 				Response:   gen.Error{Error: err.Error()},
@@ -32,10 +23,10 @@ func (s *Service) GetMatchForLog(ctx context.Context, params gen.GetMatchForLogP
 
 	return &gen.GetMatchForLogOK{
 		Match: gen.Match{
-			MatchID:     matchPage.Id,
-			Competition: matchPage.Competition,
-			Stage:       matchPage.Stage,
-			Tier:        matchPage.Tier,
+			MatchID:     match.MatchID,
+			Competition: match.Competition,
+			Stage:       match.Stage,
+			Tier:        match.Tier,
 		},
 	}, nil
 }

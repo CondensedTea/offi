@@ -41,6 +41,8 @@ func (m *MatchPage) UnmarshalBinary(data []byte) error {
 }
 
 type Player struct {
+	DoesntExists bool `json:"doesnt_exists"`
+
 	ID      int         `json:"id"`
 	SteamID string      `json:"steam_id"`
 	Name    string      `json:"name"`

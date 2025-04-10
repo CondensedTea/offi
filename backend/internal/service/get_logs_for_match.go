@@ -7,11 +7,10 @@ import (
 	"log/slog"
 	"net/http"
 	"offi/internal/cache"
+	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
-
-	"github.com/redis/go-redis/v9"
-	"github.com/samber/lo"
+	"time"
 )
 
 var ErrTooManyPlayers = errors.New("too many players, 18 or less allowed")
@@ -48,7 +47,7 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 	res := make([]gen.Log, len(logs))
 	for i, log := range logs {
 		res[i] = gen.Log{
-			ID:          log.ID,
+			ID:          log.LogID,
 			Title:       log.Title,
 			Map:         log.Map,
 			PlayedAt:    log.PlayedAt,
@@ -56,26 +55,20 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 		}
 	}
 
-	return &gen.GetLogsForMatchOK{
-		Logs: res,
-	}, nil
+	return &gen.GetLogsForMatchOK{Logs: res}, nil
 }
 
-func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log, error) {
-	logSet, err := s.cache.GetLogs(ctx, matchID)
+func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]db.Log, error) {
+	logs, err := s.db.GetLogsByMatchID(ctx, matchID)
 	switch {
-	case errors.Is(err, redis.Nil):
-		if s.enableErrorCaching { // todo make error checking default
-			if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
-				return nil, storedErr
-			}
+	case errors.Is(err, db.ErrNotFound):
+		if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
+			return nil, storedErr
 		}
 		logs, saveErr := s.saveNewMatch(ctx, matchID)
 		if saveErr != nil {
-			if s.enableErrorCaching {
-				if cacheErr := s.cache.SetLogError(ctx, matchID, saveErr); cacheErr != nil {
-					slog.ErrorContext(ctx, "failed to cache log error", "error", cacheErr)
-				}
+			if cacheErr := s.cache.SetLogError(ctx, matchID, saveErr); cacheErr != nil {
+				slog.ErrorContext(ctx, "failed to cache log error", "error", cacheErr)
 			}
 			return nil, fmt.Errorf("failed to save parsed match %d: %w", matchID, saveErr)
 		}
@@ -84,13 +77,11 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]cache.Log
 		return nil, fmt.Errorf("failed to get match %d from cache: %w", matchID, err)
 	}
 
-	return logSet.Logs, nil
+	return logs, nil
 }
 
-func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, error) {
-	logIDs := make([]int, 0)
-
-	match, err := s.etf2l.GetMatch(ctx, matchId)
+func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, error) {
+	match, err := s.etf2l.GetMatch(ctx, matchID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get players for etf2l match: %w", err)
 	}
@@ -99,41 +90,65 @@ func (s *Service) saveNewMatch(ctx context.Context, matchId int) ([]cache.Log, e
 		return nil, ErrTooManyPlayers
 	}
 
-	players, err := s.getPlayers(ctx, match.PlayerSteamIDs, false)
-	if err != nil {
-		return nil, err
-	}
-
-	steamIDs := lo.Map(players, func(player gen.Player, _ int) string {
-		return player.SteamID
-	})
-
-	var cacheLogs []cache.Log
-
-	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, steamIDs, match.Maps, match.SubmittedAt)
+	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, match.PlayerSteamIDs, match.Maps, match.SubmittedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %v", err)
 	}
+
+	logs := make([]db.Log, 0, len(matchLogs)+len(secondaryLogs))
+
 	for _, log := range matchLogs {
-		cacheLog := log.ToCache(false)
-		logIDs = append(logIDs, log.Id)
-		cacheLogs = append(cacheLogs, cacheLog)
+		logs = append(logs, db.Log{
+			MatchID:     matchID,
+			LogID:       log.ID,
+			Title:       log.Title,
+			Map:         log.Map,
+			PlayedAt:    time.Unix(log.Date, 0),
+			IsSecondary: false,
+		})
 	}
+
 	for _, log := range secondaryLogs {
-		cacheLog := log.ToCache(true)
-		logIDs = append(logIDs, log.Id)
-		cacheLogs = append(cacheLogs, cacheLog)
+		logs = append(logs, db.Log{
+			MatchID:     matchID,
+			LogID:       log.ID,
+			Title:       log.Title,
+			Map:         log.Map,
+			PlayedAt:    time.Unix(log.Date, 0),
+			IsSecondary: true,
+		})
 	}
-	if err = s.cache.SetLogs(ctx, matchId, &cache.LogSet{Logs: cacheLogs}); err != nil {
-		return nil, fmt.Errorf("failed to set match in cache: %v", err)
+
+	if len(logs) > 20 {
+		return nil, fmt.Errorf("too many logs found for match %d", matchID)
 	}
-	if err = s.cache.SetMatch(ctx, logIDs, &cache.MatchPage{
-		Id:          match.ID,
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, log := range logs {
+		if err = s.db.SaveLog(ctx, tx, log); err != nil {
+			return nil, fmt.Errorf("failed to save log %d (matchID %d): %v", log.LogID, log.MatchID, err)
+		}
+	}
+
+	err = s.db.SaveMatch(ctx, tx, db.Match{
+		MatchID:     matchID,
 		Competition: match.Competition,
 		Stage:       match.Stage,
 		Tier:        match.Tier,
-	}); err != nil {
-		return nil, fmt.Errorf("failed to set logs in cache: %v", err)
+		CompletedAt: match.SubmittedAt,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to save match %d: %v", matchID, err)
 	}
-	return cacheLogs, nil
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }

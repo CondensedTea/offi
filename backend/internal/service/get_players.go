@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"offi/internal/cache"
 	"offi/internal/db"
 	"offi/internal/etf2l"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/redis/go-redis/v9"
-	"github.com/samber/lo"
 )
 
 func (s *Service) GetPlayers(ctx context.Context, p gen.GetPlayersParams) (r *gen.GetPlayersOK, _ error) {
@@ -37,8 +35,9 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
-				// TODO: cache the fact that the player does not exist
-				slog.Debug("failed to get player from etf2l", "player_id", playerID, "error", etf2lErr)
+				if cacheErr := s.cache.SetPlayer(ctx, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
+					return nil, fmt.Errorf("failed to save unknown player to cache: %v", cacheErr)
+				}
 				continue
 			case etf2lErr != nil:
 				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, etf2lErr)
@@ -52,13 +51,18 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			return nil, fmt.Errorf("failed to get player from cache: %v", err)
 		}
 
-		bans := lo.Map(player.Bans, func(ban cache.PlayerBan, _ int) gen.PlayerBan {
-			return gen.PlayerBan{
+		if player.DoesntExists {
+			continue
+		}
+
+		bans := make([]gen.PlayerBan, len(player.Bans))
+		for i, ban := range bans {
+			bans[i] = gen.PlayerBan{
 				Start:  ban.Start,
 				End:    ban.End,
 				Reason: ban.Reason,
 			}
-		})
+		}
 
 		apiPlayer := gen.Player{
 			ID:      player.ID,

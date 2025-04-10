@@ -61,7 +61,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init database client: %w", err)
 	}
 
-	srv := service.NewService(cacheClient, dbClient, etf2lClient, logsClient, true)
+	srv := service.NewService(cacheClient, dbClient, etf2lClient, logsClient)
 
 	handler, err := gen.NewServer(srv)
 	if err != nil {

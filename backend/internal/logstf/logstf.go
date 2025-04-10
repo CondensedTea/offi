@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,9 +15,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var (
-	logger = slog.With("component", "logs-tf")
-)
+var logger = slog.With("component", "logs-tf")
 
 const (
 	matchPlayedOffset = 3 * 24 * time.Hour
@@ -34,11 +33,11 @@ func NewClient() *Client {
 	}
 }
 
-func (c *Client) SearchLogs(ctx context.Context, players, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+func (c *Client) SearchLogs(ctx context.Context, players []int, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	ctx, span := c.tracer.Start(ctx, "logstf.SearchLogs")
 	defer span.End()
 
-	span.SetAttributes(attribute.StringSlice("player_ids", players))
+	span.SetAttributes(attribute.IntSlice("player_ids", players))
 
 	resp, err := c.getLogsWithPlayers(ctx, players)
 	if err != nil {
@@ -50,10 +49,19 @@ func (c *Client) SearchLogs(ctx context.Context, players, maps []string, playedA
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func (c *Client) getLogsWithPlayers(ctx context.Context, players []string) (*Response, error) {
-	playerIDs := strings.Join(players, ",")
+func (c *Client) getLogsWithPlayers(ctx context.Context, players []int) (*Response, error) {
+	var b strings.Builder
+	for _, steamID := range players {
+		if b.Len() > 0 {
+			b.WriteString(",")
+		}
+		b.WriteString(strconv.Itoa(steamID))
+	}
 
-	u := fmt.Sprintf("https://logs.tf/api/v1/log?player=%s", playerIDs)
+	// TODO: use undocumented format parameter:
+	// https://github.com/alevoska/logstf-web/blob/master/pylogstf/controllers/api.py#L156-L165
+
+	u := fmt.Sprintf("https://logs.tf/api/v1/log?player=%s", b.String())
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, http.NoBody)
 	if err != nil {

@@ -24,14 +24,14 @@ func Test_filterLogs(t *testing.T) {
 			args: args{
 				maps: []string{"cp_process_final", "cp_gullywash_final1"},
 				logs: []Log{
-					{Id: 1, Map: "cp_process_final", Date: 1650744000},
-					{Id: 2, Map: "cp_gullywash_final1", Date: 1650745800},
+					{ID: 1, Map: "cp_process_final", Date: 1650744000},
+					{ID: 2, Map: "cp_gullywash_final1", Date: 1650745800},
 				},
 				playedAt: time.Date(2022, time.April, 24, 1, 0, 0, 0, time.UTC),
 			},
 			wantMatchLogs: []Log{
-				{Id: 1, Map: "cp_process_final", Date: 1650744000},
-				{Id: 2, Map: "cp_gullywash_final1", Date: 1650745800},
+				{ID: 1, Map: "cp_process_final", Date: 1650744000},
+				{ID: 2, Map: "cp_gullywash_final1", Date: 1650745800},
 			},
 		},
 		{
@@ -39,16 +39,16 @@ func Test_filterLogs(t *testing.T) {
 			args: args{
 				maps: []string{"cp_process_final", "cp_gullywash_final1"},
 				logs: []Log{
-					{Id: 1, Map: "cp_process_final", Date: 1650744000},
-					{Id: 2, Map: "gully", Date: 1650745800},
+					{ID: 1, Map: "cp_process_final", Date: 1650744000},
+					{ID: 2, Map: "gully", Date: 1650745800},
 				},
 				playedAt: time.Date(2022, time.April, 24, 1, 0, 0, 0, time.UTC),
 			},
 			wantMatchLogs: []Log{
-				{Id: 1, Map: "cp_process_final", Date: 1650744000},
+				{ID: 1, Map: "cp_process_final", Date: 1650744000},
 			},
 			wantCombinedLogs: []Log{
-				{Id: 2, Map: "gully", Date: 1650745800},
+				{ID: 2, Map: "gully", Date: 1650745800},
 			},
 		},
 		{
@@ -56,12 +56,12 @@ func Test_filterLogs(t *testing.T) {
 			args: args{
 				maps: []string{"cp_process_final", "cp_gullywash_final1"},
 				logs: []Log{
-					{Id: 1, Map: "cp_process_final", Date: 1650659400},
-					{Id: 2, Map: "cp_gullywash_final1", Date: 1647376200}, //  1650054600
+					{ID: 1, Map: "cp_process_final", Date: 1650659400},
+					{ID: 2, Map: "cp_gullywash_final1", Date: 1647376200}, //  1650054600
 				}, playedAt: time.Unix(1650409200, 0),
 			},
 			wantMatchLogs: []Log{
-				{Id: 1, Map: "cp_process_final", Date: 1650659400},
+				{ID: 1, Map: "cp_process_final", Date: 1650659400},
 			},
 		},
 	}
