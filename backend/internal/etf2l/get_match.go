@@ -80,7 +80,13 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 	}
 
 	url := fmt.Sprintf("%s/matches/%d", c.apiURL, id)
-	resp, err := c.httpClient.Get(url)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get match from etf2l api: %v", err)
 	}
