@@ -29,6 +29,7 @@ type database interface {
 	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int) (db.Recruitment, error)
 
 	SaveLog(ctx context.Context, tx pgx.Tx, log db.Log) error
+	MatchExists(ctx context.Context, mathcID int) (bool, error)
 	GetLogsByMatchID(ctx context.Context, matchID int) ([]db.Log, error)
 	GetMatchByLogID(ctx context.Context, logID int) (db.Match, error)
 	SaveMatch(ctx context.Context, tx pgx.Tx, match db.Match) error

@@ -17,18 +17,6 @@ var (
 	ErrIncompleteMatch = errors.New("match does not contain all required data")
 )
 
-type Clan struct {
-	Country string `json:"country"`
-	Drop    bool   `json:"drop"`
-	Id      int    `json:"id"`
-	Name    string `json:"name"`
-	Steam   struct {
-		Avatar string      `json:"avatar"`
-		Group  interface{} `json:"group"`
-	} `json:"steam"`
-	Url string `json:"url"`
-}
-
 type Competition struct {
 	Category string `json:"category"`
 	Id       int    `json:"id"`

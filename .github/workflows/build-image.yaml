@@ -31,7 +31,7 @@ jobs:
       - name: Set short git commit SHA
         id: vars
         run: |
-          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          calculatedSha="$(git rev-parse --short ${{ github.sha }})"
           echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
 
       - uses: docker/build-push-action@v6

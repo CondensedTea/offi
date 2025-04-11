@@ -58,23 +58,29 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 	return &gen.GetLogsForMatchOK{Logs: res}, nil
 }
 
-func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]db.Log, error) {
-	logs, err := s.db.GetLogsByMatchID(ctx, matchID)
-	switch {
-	case errors.Is(err, db.ErrNotFound):
-		if storedErr := s.cache.CheckLogError(ctx, matchID); storedErr != nil {
-			return nil, storedErr
+func (s *Service) getLogsForMatch(ctx context.Context, matchID int) (logs []db.Log, err error) {
+	exists, err := s.db.MatchExists(ctx, matchID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get match %d from cache: %w", matchID, err)
+	}
+
+	if !exists {
+		if err = s.cache.CheckLogError(ctx, matchID); err != nil {
+			return nil, err
 		}
-		logs, saveErr := s.saveNewMatch(ctx, matchID)
-		if saveErr != nil {
-			if cacheErr := s.cache.SetLogError(ctx, matchID, saveErr); cacheErr != nil {
+		logs, err = s.saveNewMatch(ctx, matchID)
+		if err != nil {
+			if cacheErr := s.cache.SetLogError(ctx, matchID, err); cacheErr != nil {
 				slog.ErrorContext(ctx, "failed to cache log error", "error", cacheErr)
 			}
-			return nil, fmt.Errorf("failed to save parsed match %d: %w", matchID, saveErr)
+			return nil, fmt.Errorf("failed to save parsed match %d: %w", matchID, err)
 		}
 		return logs, nil
-	case err != nil:
-		return nil, fmt.Errorf("failed to get match %d from cache: %w", matchID, err)
+	}
+
+	logs, err = s.db.GetLogsByMatchID(ctx, matchID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get logs for match %d: %w", matchID, err)
 	}
 
 	return logs, nil
@@ -83,7 +89,7 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) ([]db.Log, e
 func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, error) {
 	match, err := s.etf2l.GetMatch(ctx, matchID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get players for etf2l match: %w", err)
+		return nil, fmt.Errorf("failed to get etf2l match: %w", err)
 	}
 
 	if len(match.PlayerSteamIDs) > maxPlayers {

@@ -36,7 +36,7 @@ var serveCommand = &cli.Command{
 			Destination: &address,
 		},
 	},
-	UsageText: "serve <address>",
+	UsageText: "serve",
 	Usage:     "starts the api server",
 	Action:    serveAction,
 }

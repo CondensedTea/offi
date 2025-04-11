@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	info "offi/internal/build_info"
+	"offi/internal/tracing"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/go-chi/transport"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -28,7 +31,13 @@ type Client struct {
 
 func NewClient() *Client {
 	return &Client{
-		client: http.DefaultClient,
+		client: &http.Client{
+			Transport: transport.Chain(
+				http.DefaultTransport,
+				tracing.OTelHTTPTransport,
+				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
+			),
+		},
 		tracer: otel.GetTracerProvider().Tracer("logstf"),
 	}
 }

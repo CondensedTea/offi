@@ -3,6 +3,7 @@ package etf2l
 import (
 	"net/http"
 	info "offi/internal/build_info"
+	"offi/internal/tracing"
 	"time"
 
 	"github.com/go-chi/transport"
@@ -24,11 +25,12 @@ func New() *Client {
 		httpClient: &http.Client{
 			Transport: transport.Chain(
 				http.DefaultTransport,
+				tracing.OTelHTTPTransport,
 				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
 			),
 			Timeout: 5 * time.Second,
 		},
-		limiter: rate.NewLimiter(rate.Every(time.Second), 5),
+		limiter: rate.NewLimiter(rate.Every(time.Second), 6),
 		tracer:  otel.Tracer("etf2l"),
 	}
 }

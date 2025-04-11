@@ -114,7 +114,6 @@ type Route interface {
 func NewMiddleware[R Route, S Server[R]](finder S) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return otelhttp.NewHandler(next, "",
-			otelhttp.WithTracerProvider(otel.GetTracerProvider()),
 			otelhttp.WithServerName("offi"),
 			otelhttp.WithPublicEndpoint(),
 			otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
@@ -133,4 +132,8 @@ func InjectTracingHeaders(next http.Handler) http.Handler {
 		otel.GetTextMapPropagator().Inject(r.Context(), propagation.HeaderCarrier(w.Header()))
 		next.ServeHTTP(w, r)
 	})
+}
+
+func OTelHTTPTransport(next http.RoundTripper) http.RoundTripper {
+	return otelhttp.NewTransport(next)
 }

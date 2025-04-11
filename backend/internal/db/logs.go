@@ -50,10 +50,6 @@ func (c *Client) GetLogsByMatchID(ctx context.Context, matchID int) ([]Log, erro
 		return nil, fmt.Errorf("collecting rows: %w", err)
 	}
 
-	if len(res) == 0 {
-		return nil, ErrNotFound
-	}
-
 	return res, nil
 }
 

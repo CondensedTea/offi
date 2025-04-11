@@ -2,11 +2,35 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 )
 
 const playerExpiration = 72 * time.Hour
+
+type Player struct {
+	DoesntExists bool `json:"doesnt_exists"`
+
+	ID      int         `json:"id"`
+	SteamID string      `json:"steam_id"`
+	Name    string      `json:"name"`
+	Bans    []PlayerBan `json:"bans"`
+}
+
+type PlayerBan struct {
+	Start  int    `json:"start"`
+	End    int    `json:"end"`
+	Reason string `json:"reason"`
+}
+
+func (p Player) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(p)
+}
+
+func (p *Player) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, &p)
+}
 
 func (r Redis) GetPlayer(ctx context.Context, playerID int) (Player, error) {
 	key := fmt.Sprintf("player-%d", playerID)
