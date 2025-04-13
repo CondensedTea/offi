@@ -32,15 +32,15 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 		player, err := s.cache.GetPlayer(ctx, playerID)
 		switch {
 		case errors.Is(err, redis.Nil):
-			etf2lPlayer, etf2lErr := s.etf2l.GetPlayer(ctx, playerID)
+			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
-			case errors.Is(etf2lErr, etf2l.ErrPlayerNotFound):
+			case errors.Is(err, etf2l.ErrPlayerNotFound):
 				if cacheErr := s.cache.SetPlayer(ctx, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
 					return nil, fmt.Errorf("failed to save unknown player to cache: %v", cacheErr)
 				}
 				continue
-			case etf2lErr != nil:
-				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, etf2lErr)
+			case err != nil:
+				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, err)
 			}
 
 			player = etf2lPlayer.ToCache()
@@ -56,7 +56,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 		}
 
 		bans := make([]gen.PlayerBan, len(player.Bans))
-		for i, ban := range bans {
+		for i, ban := range player.Bans {
 			bans[i] = gen.PlayerBan{
 				Start:  ban.Start,
 				End:    ban.End,
