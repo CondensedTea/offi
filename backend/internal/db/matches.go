@@ -30,8 +30,7 @@ func (c *Client) MatchExists(ctx context.Context, mathcID int) (bool, error) {
 func (c *Client) SaveMatch(ctx context.Context, tx pgx.Tx, match Match) error {
 	const query = `
 		insert into matches(match_id, competition, stage, tier, completed_at)
-		values($1, $2, $3, $4, $5)
-		on conflict do nothing`
+		values($1, $2, $3, $4, $5)`
 
 	_, err := tx.Exec(ctx, query, match.MatchID, match.Competition, match.Stage, match.Tier, match.CompletedAt)
 	if err != nil {

@@ -75,8 +75,9 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		AllowedMethods: []string{http.MethodGet},
 	}))
 	router.Use(middleware.Recoverer)
+	router.Use(middleware.RealIP)
 	router.Use(tracing.NewMiddleware(handler))
-	router.Use(tracing.InjectTracingHeaders)
+	router.Use(tracing.InjectTracing)
 
 	router.Mount("/", handler)
 

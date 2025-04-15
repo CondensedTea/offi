@@ -15,11 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha="$(git rev-parse --short ${{ github.sha }})"
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+
       - uses: docker/metadata-action@v5
         id: meta
         with:
           images: "ghcr.io/condensedtea/offi"
-          tags: ${{ github.ref_name }}
+          tags: $COMMIT_SHORT_SHA
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -28,19 +34,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Set short git commit SHA
-        id: vars
-        run: |
-          calculatedSha="$(git rev-parse --short ${{ github.sha }})"
-          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
-
       - uses: docker/build-push-action@v6
         with:
           file: ./backend/Dockerfile
           context: ./backend
           push: true
           build-args: |
-            VERSION=${{ steps.vars.outputs.COMMIT_SHORT_SHA }}
+            VERSION=$COMMIT_SHORT_SHA
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref='${{ steps.meta.outputs.tags }}'
