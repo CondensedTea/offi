@@ -8,6 +8,8 @@ import (
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pgx-contrib/pgxotel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -22,9 +24,7 @@ func NewClient(ctx context.Context, dsn string) (*Client, error) {
 		return nil, fmt.Errorf("parsing config: %w", err)
 	}
 
-	cfg.ConnConfig.Tracer = otelpgx.NewTracer(
-		otelpgx.WithDisableQuerySpanNamePrefix(),
-	)
+	cfg.ConnConfig.Tracer = &pgxotel.QueryTracer{Name: "db"}
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
