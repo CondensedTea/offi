@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pgx-contrib/pgxotel"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var ErrNotFound = errors.New("not found")

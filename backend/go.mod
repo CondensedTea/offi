@@ -11,6 +11,7 @@ require (
 	github.com/go-slog/otelslog v0.3.0
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/ogen-go/ogen v1.10.0
+	github.com/pgx-contrib/pgxotel v0.0.0-20250326222047-55ccee468e10
 	github.com/redis/go-redis/extra/redisotel/v9 v9.7.3
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/samber/lo v1.47.0
@@ -33,7 +34,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/exaring/otelpgx v0.9.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -47,7 +47,6 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/pgx-contrib/pgxotel v0.0.0-20250326222047-55ccee468e10 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.7.3 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
