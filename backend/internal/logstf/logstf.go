@@ -46,13 +46,17 @@ func (c *Client) SearchLogs(ctx context.Context, players []int, maps []string, p
 	ctx, span := c.tracer.Start(ctx, "logstf.SearchLogs")
 	defer span.End()
 
-	span.SetAttributes(attribute.IntSlice("player_ids", players))
-
 	resp, err := c.getLogsWithPlayers(ctx, players)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
 	}
 	matchLogs, secondaryLogs := filterLogs(maps, resp.Logs, playedAt)
+
+	span.SetAttributes(
+		attribute.Int("total_logs_count", len(resp.Logs)),
+		attribute.Int("primary_logs_count", len(matchLogs)),
+		attribute.Int("secondary_logs_count", len(secondaryLogs)),
+	)
 
 	return matchLogs, secondaryLogs, nil
 }

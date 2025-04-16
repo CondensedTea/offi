@@ -32,7 +32,8 @@ type database interface {
 	MatchExists(ctx context.Context, mathcID int) (bool, error)
 	GetLogsByMatchID(ctx context.Context, matchID int) ([]db.Log, error)
 	GetMatchByLogID(ctx context.Context, logID int) (db.Match, error)
-	SaveMatch(ctx context.Context, tx pgx.Tx, match db.Match) error
+	SaveMatchTx(ctx context.Context, tx pgx.Tx, match db.Match) error
+	SaveMatch(ctx context.Context, match db.Match) error
 }
 
 type Service struct {

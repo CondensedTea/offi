@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const playerExpiration = 72 * time.Hour
-
 type Player struct {
 	DoesntExists bool `json:"doesnt_exists"`
 
@@ -41,7 +39,17 @@ func (r Redis) GetPlayer(ctx context.Context, playerID int) (Player, error) {
 }
 
 func (r Redis) SetPlayer(ctx context.Context, playerID int, player Player) error {
+	const (
+		knownPlayerExpiration   = 5 * 24 * time.Hour
+		unknownPlayerExpiration = 10 * 24 * time.Hour
+	)
+
+	expire := knownPlayerExpiration
+	if player.DoesntExists {
+		expire = unknownPlayerExpiration
+	}
+
 	key := fmt.Sprintf("player-%d", playerID)
 
-	return r.client.Set(ctx, key, player, playerExpiration).Err()
+	return r.client.Set(ctx, key, player, expire).Err()
 }

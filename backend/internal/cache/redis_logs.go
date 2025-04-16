@@ -3,18 +3,21 @@ package cache
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-faster/errors"
 	"github.com/redis/go-redis/v9"
 )
 
 func (r Redis) SetLogError(ctx context.Context, matchID int, err error) error {
+	const errorCacheDuration = 3 * time.Hour
+
 	if !r.enableErrorCaching {
 		return nil
 	}
 
 	match := fmt.Sprintf("error-match-%d", matchID)
-	return r.client.Set(ctx, match, err.Error(), errorMatchExpire).Err()
+	return r.client.Set(ctx, match, err.Error(), errorCacheDuration).Err()
 }
 
 func (r Redis) CheckLogError(ctx context.Context, matchID int) error {

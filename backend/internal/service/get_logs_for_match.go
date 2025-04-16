@@ -93,7 +93,18 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 	}
 
 	if len(match.PlayerSteamIDs) > maxPlayers {
-		return nil, ErrTooManyPlayers
+		// logs.tf does not allow searching for more than 18 players, so we save only save the match
+		if err = s.db.SaveMatch(ctx, db.Match{
+			MatchID:     matchID,
+			Competition: match.Competition,
+			Stage:       match.Stage,
+			Tier:        match.Tier,
+			CompletedAt: match.SubmittedAt,
+		}); err != nil {
+			return nil, fmt.Errorf("failed to save match %d: %v", matchID, err)
+		}
+
+		return []db.Log{}, nil
 	}
 
 	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, match.PlayerSteamIDs, match.Maps, match.SubmittedAt)
@@ -137,11 +148,11 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 
 	for _, log := range logs {
 		if err = s.db.SaveLog(ctx, tx, log); err != nil {
-			return nil, fmt.Errorf("failed to save log %d (matchID %d): %v", log.LogID, log.MatchID, err)
+			return nil, fmt.Errorf("failed to save log %d: %v", log.LogID, err)
 		}
 	}
 
-	err = s.db.SaveMatch(ctx, tx, db.Match{
+	err = s.db.SaveMatchTx(ctx, tx, db.Match{
 		MatchID:     matchID,
 		Competition: match.Competition,
 		Stage:       match.Stage,

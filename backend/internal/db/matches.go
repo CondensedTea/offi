@@ -6,7 +6,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
+
+type conn interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+}
 
 type Match struct {
 	MatchID     int
@@ -27,12 +32,20 @@ func (c *Client) MatchExists(ctx context.Context, mathcID int) (bool, error) {
 	return exists, nil
 }
 
-func (c *Client) SaveMatch(ctx context.Context, tx pgx.Tx, match Match) error {
+func (c *Client) SaveMatchTx(ctx context.Context, tx pgx.Tx, match Match) error {
+	return c.saveMatch(ctx, tx, match)
+}
+
+func (c *Client) SaveMatch(ctx context.Context, match Match) error {
+	return c.saveMatch(ctx, c.pool, match)
+}
+
+func (c *Client) saveMatch(ctx context.Context, conn conn, match Match) error {
 	const query = `
 		insert into matches(match_id, competition, stage, tier, completed_at)
 		values($1, $2, $3, $4, $5)`
 
-	_, err := tx.Exec(ctx, query, match.MatchID, match.Competition, match.Stage, match.Tier, match.CompletedAt)
+	_, err := conn.Exec(ctx, query, match.MatchID, match.Competition, match.Stage, match.Tier, match.CompletedAt)
 	if err != nil {
 		return fmt.Errorf("executing query: %w", err)
 	}

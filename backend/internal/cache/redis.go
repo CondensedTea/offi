@@ -3,13 +3,10 @@ package cache
 import (
 	"errors"
 	"os"
-	"time"
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
-
-const errorMatchExpire = 3 * time.Hour
 
 var ErrCached = errors.New("cached error, retry later")
 
