@@ -73,6 +73,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
 		AllowedMethods: []string{http.MethodGet},
+		AllowedHeaders: []string{"X-Offi-Version"},
 	}))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
