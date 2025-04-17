@@ -61,22 +61,24 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init database client: %w", err)
 	}
 
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
+		AllowedMethods: []string{http.MethodGet},
+		AllowedHeaders: []string{"Content-Type", "X-Offi-Version"},
+	})
+
 	srv := service.NewService(cacheClient, dbClient, etf2lClient, logsClient)
 
-	handler, err := gen.NewServer(srv)
+	handler, err := gen.NewServer(srv, gen.WithMethodNotAllowed(notAllowedWithCORS(corsHandler)))
 	if err != nil {
 		return fmt.Errorf("failed to init api server: %w", err)
 	}
 
 	router := chi.NewRouter()
 
-	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
-		AllowedMethods: []string{http.MethodGet},
-		AllowedHeaders: []string{"X-Offi-Version"},
-	}))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
+	router.Use(corsHandler.Handler)
 	router.Use(tracing.NewMiddleware(handler))
 	router.Use(tracing.InjectTracing)
 
@@ -108,4 +110,15 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	cancel()
 
 	return nil
+}
+
+func notAllowedWithCORS(handler *cors.Cors) func(w http.ResponseWriter, r *http.Request, allowed string) {
+	return func(w http.ResponseWriter, r *http.Request, allowed string) {
+		if r.Method == http.MethodOptions {
+			handler.Handler(http.NotFoundHandler()).ServeHTTP(w, r)
+		} else {
+			w.Header().Set("Allow", allowed)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	}
 }
