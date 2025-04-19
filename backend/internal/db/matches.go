@@ -43,7 +43,7 @@ func (c *Client) SaveMatch(ctx context.Context, match Match) error {
 func (c *Client) saveMatch(ctx context.Context, conn conn, match Match) error {
 	const query = `
 		insert into matches(match_id, competition, stage, tier, completed_at)
-		values($1, $2, $3, $4, $5)`
+		values ($1, $2, $3, $4, $5)`
 
 	_, err := conn.Exec(ctx, query, match.MatchID, match.Competition, match.Stage, match.Tier, match.CompletedAt)
 	if err != nil {

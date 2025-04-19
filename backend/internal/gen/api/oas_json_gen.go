@@ -528,14 +528,21 @@ func (s *Log) encodeFields(e *jx.Encoder) {
 		e.FieldStart("is_secondary")
 		e.Bool(s.IsSecondary)
 	}
+	{
+		if s.DemoID.Set {
+			e.FieldStart("demo_id")
+			s.DemoID.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfLog = [5]string{
+var jsonFieldsNameOfLog = [6]string{
 	0: "id",
 	1: "title",
 	2: "map",
 	3: "played_at",
 	4: "is_secondary",
+	5: "demo_id",
 }
 
 // Decode decodes Log from json.
@@ -606,6 +613,16 @@ func (s *Log) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"is_secondary\"")
+			}
+		case "demo_id":
+			if err := func() error {
+				s.DemoID.Reset()
+				if err := s.DemoID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"demo_id\"")
 			}
 		default:
 			return d.Skip()
@@ -806,6 +823,41 @@ func (s *Match) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *Match) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes int as json.
+func (o OptInt) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Int(int(o.Value))
+}
+
+// Decode decodes int from json.
+func (o *OptInt) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptInt to nil")
+	}
+	o.Set = true
+	v, err := d.Int()
+	if err != nil {
+		return err
+	}
+	o.Value = int(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptInt) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptInt) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

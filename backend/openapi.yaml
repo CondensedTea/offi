@@ -134,6 +134,8 @@ components:
           format: date-time
         is_secondary:
           type: boolean
+        demo_id:
+          type: integer
       required:
         - id
         - title

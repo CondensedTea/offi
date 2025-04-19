@@ -9,6 +9,7 @@ import (
 	"offi/internal/cache"
 	"offi/internal/closer"
 	"offi/internal/db"
+	"offi/internal/demostf"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/logstf"
@@ -61,13 +62,15 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init database client: %w", err)
 	}
 
+	demosClient := demostf.NewClient()
+
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
 		AllowedMethods: []string{http.MethodGet},
 		AllowedHeaders: []string{"Content-Type", "X-Offi-Version"},
 	})
 
-	srv := service.NewService(cacheClient, dbClient, etf2lClient, logsClient)
+	srv := service.NewService(ctx, cacheClient, dbClient, etf2lClient, logsClient, demosClient)
 
 	handler, err := gen.NewServer(srv, gen.WithMethodNotAllowed(notAllowedWithCORS(corsHandler)))
 	if err != nil {

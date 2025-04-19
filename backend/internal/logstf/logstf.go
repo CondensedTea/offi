@@ -38,7 +38,7 @@ func NewClient() *Client {
 				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
 			),
 		},
-		tracer: otel.GetTracerProvider().Tracer("logstf"),
+		tracer: otel.Tracer("logstf"),
 	}
 }
 
@@ -160,4 +160,39 @@ func getGenericMapName(mapName string) string {
 		return ""
 	}
 	return strings.ToLower(strings.Join(logMapParts[:genericMapItemLength], "_"))
+}
+
+func (c *Client) GetLog(ctx context.Context, id int) (Log, error) {
+	ctx, span := c.tracer.Start(ctx, "logstf.GetLog",
+		trace.WithAttributes(attribute.Int("log_id", id)),
+	)
+	defer span.End()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://logs.tf/api/v1/log/"+strconv.Itoa(id), http.NoBody)
+	if err != nil {
+		return Log{}, fmt.Errorf("creating request: %w", err)
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return Log{}, fmt.Errorf("failed to get log from logs.tf api: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return Log{}, fmt.Errorf("logs.tf API returned non-200 status: %s", resp.Status)
+	}
+
+	type response struct {
+		Info Log `json:"info"`
+	}
+
+	var r response
+	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return Log{}, fmt.Errorf("decoding response: %v", err)
+	}
+
+	r.Info.ID = id
+
+	return r.Info, nil
 }

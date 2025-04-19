@@ -25,6 +25,7 @@ func New() *Client {
 		httpClient: &http.Client{
 			Transport: transport.Chain(
 				http.DefaultTransport,
+				transport.Retry(http.DefaultTransport, 3),
 				tracing.OTelHTTPTransport,
 				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
 			),

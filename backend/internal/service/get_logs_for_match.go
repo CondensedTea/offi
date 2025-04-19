@@ -52,6 +52,10 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 			Map:         log.Map,
 			PlayedAt:    log.PlayedAt,
 			IsSecondary: log.IsSecondary,
+			DemoID: gen.OptInt{
+				Set:   log.DemoID.Valid,
+				Value: log.DemoID.V,
+			},
 		}
 	}
 
@@ -166,6 +170,19 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
+
+	go func() {
+		for _, log := range logs {
+			if !log.IsSecondary {
+				s.resolveDemoQueue <- resolveDemoRequest{
+					logID:          log.LogID,
+					playerSteamIDs: match.PlayerSteamIDs,
+					playedAt:       log.PlayedAt,
+					mapName:        log.Map,
+				}
+			}
+		}
+	}()
 
 	return logs, nil
 }
