@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -19,6 +21,7 @@ type Match struct {
 	Stage       string
 	Tier        string
 	CompletedAt time.Time
+	DemoID      sql.Null[int]
 }
 
 func (c *Client) MatchExists(ctx context.Context, mathcID int) (bool, error) {
@@ -51,4 +54,30 @@ func (c *Client) saveMatch(ctx context.Context, conn conn, match Match) error {
 	}
 
 	return nil
+}
+
+func (c *Client) GetMatchByLogID(ctx context.Context, logID int) (Match, error) {
+	const query = `
+		with cte as (
+			select match_id, demo_id from logs where log_id = $1
+		)
+		select m.match_id, m.competition, m.stage, m.tier, m.completed_at, cte.demo_id
+		from matches m
+		join cte on m.match_id = cte.match_id`
+
+	rows, err := c.pool.Query(ctx, query, logID)
+	if err != nil {
+		return Match{}, fmt.Errorf("querying rows: %w", err)
+	}
+
+	res, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByPos[Match])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Match{}, ErrNotFound
+		}
+
+		return Match{}, fmt.Errorf("collecting rows: %w", err)
+	}
+
+	return res, nil
 }

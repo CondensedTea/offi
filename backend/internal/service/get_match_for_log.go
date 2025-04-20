@@ -28,5 +28,11 @@ func (s *Service) GetMatchForLog(ctx context.Context, params gen.GetMatchForLogP
 			Stage:       match.Stage,
 			Tier:        match.Tier,
 		},
+		Log: gen.GetMatchForLogOKLog{
+			DemoID: gen.OptInt{
+				Set:   match.DemoID.Valid,
+				Value: match.DemoID.V,
+			},
+		},
 	}, nil
 }

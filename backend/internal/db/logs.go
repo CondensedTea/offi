@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -61,26 +60,6 @@ func (c *Client) GetLogsByMatchID(ctx context.Context, matchID int) ([]Log, erro
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Log])
 	if err != nil {
 		return nil, fmt.Errorf("collecting rows: %w", err)
-	}
-
-	return res, nil
-}
-
-func (c *Client) GetMatchByLogID(ctx context.Context, logID int) (Match, error) {
-	const query = `select match_id, competition, stage, tier, completed_at from matches where match_id = (select match_id from logs where log_id = $1)`
-
-	rows, err := c.pool.Query(ctx, query, logID)
-	if err != nil {
-		return Match{}, fmt.Errorf("querying rows: %w", err)
-	}
-
-	res, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByPos[Match])
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return Match{}, ErrNotFound
-		}
-
-		return Match{}, fmt.Errorf("collecting rows: %w", err)
 	}
 
 	return res, nil

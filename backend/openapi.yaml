@@ -50,9 +50,15 @@ paths:
                 type: object
                 required:
                   - match
+                  - log
                 properties:
                   match:
                     $ref: '#/components/schemas/Match'
+                  log:
+                    type: object
+                    properties:
+                      demo_id:
+                        type: integer
         '404':
           description: 'Log does not exists'
           $ref: '#/components/responses/Error'

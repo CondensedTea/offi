@@ -250,10 +250,15 @@ func (s *GetMatchForLogOK) encodeFields(e *jx.Encoder) {
 		e.FieldStart("match")
 		s.Match.Encode(e)
 	}
+	{
+		e.FieldStart("log")
+		s.Log.Encode(e)
+	}
 }
 
-var jsonFieldsNameOfGetMatchForLogOK = [1]string{
+var jsonFieldsNameOfGetMatchForLogOK = [2]string{
 	0: "match",
+	1: "log",
 }
 
 // Decode decodes GetMatchForLogOK from json.
@@ -275,6 +280,16 @@ func (s *GetMatchForLogOK) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"match\"")
 			}
+		case "log":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Log.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"log\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -285,7 +300,7 @@ func (s *GetMatchForLogOK) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -327,6 +342,69 @@ func (s *GetMatchForLogOK) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *GetMatchForLogOK) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *GetMatchForLogOKLog) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *GetMatchForLogOKLog) encodeFields(e *jx.Encoder) {
+	{
+		if s.DemoID.Set {
+			e.FieldStart("demo_id")
+			s.DemoID.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfGetMatchForLogOKLog = [1]string{
+	0: "demo_id",
+}
+
+// Decode decodes GetMatchForLogOKLog from json.
+func (s *GetMatchForLogOKLog) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GetMatchForLogOKLog to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "demo_id":
+			if err := func() error {
+				s.DemoID.Reset()
+				if err := s.DemoID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"demo_id\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode GetMatchForLogOKLog")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *GetMatchForLogOKLog) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GetMatchForLogOKLog) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

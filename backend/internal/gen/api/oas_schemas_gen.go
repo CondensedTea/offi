@@ -165,7 +165,8 @@ func (s *GetLogsForMatchOK) SetLogs(val []Log) {
 func (*GetLogsForMatchOK) getLogsForMatchRes() {}
 
 type GetMatchForLogOK struct {
-	Match Match `json:"match"`
+	Match Match               `json:"match"`
+	Log   GetMatchForLogOKLog `json:"log"`
 }
 
 // GetMatch returns the value of Match.
@@ -173,12 +174,36 @@ func (s *GetMatchForLogOK) GetMatch() Match {
 	return s.Match
 }
 
+// GetLog returns the value of Log.
+func (s *GetMatchForLogOK) GetLog() GetMatchForLogOKLog {
+	return s.Log
+}
+
 // SetMatch sets the value of Match.
 func (s *GetMatchForLogOK) SetMatch(val Match) {
 	s.Match = val
 }
 
+// SetLog sets the value of Log.
+func (s *GetMatchForLogOK) SetLog(val GetMatchForLogOKLog) {
+	s.Log = val
+}
+
 func (*GetMatchForLogOK) getMatchForLogRes() {}
+
+type GetMatchForLogOKLog struct {
+	DemoID OptInt `json:"demo_id"`
+}
+
+// GetDemoID returns the value of DemoID.
+func (s *GetMatchForLogOKLog) GetDemoID() OptInt {
+	return s.DemoID
+}
+
+// SetDemoID sets the value of DemoID.
+func (s *GetMatchForLogOKLog) SetDemoID(val OptInt) {
+	s.DemoID = val
+}
 
 type GetPlayersOK struct {
 	Players []Player `json:"players"`
