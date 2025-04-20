@@ -12,11 +12,11 @@ async function main() {
 
   const url = document.URL;
 
-  if (url.startsWith("https://etf2l.org/matches/") && getSettingValue("linkLogsOnMatchpages") as boolean) {
+  if (url.match("https://etf2l.org/matches/\\d+/") && getSettingValue("linkLogsOnMatchpages") as boolean) {
     return await addLogLinks();
   }
 
-  if (url.startsWith("https://logs.tf/")) {
+  if (url.match(`https://logs.tf/\\d+`)) {
     const replaceNames = getSettingValue("replaceNamesInLogs") as boolean;
     const linkMatchpages = getSettingValue("linkMatchepagesOnLogs") as boolean;
 
@@ -32,7 +32,7 @@ async function main() {
   }
 
   if (url.startsWith("https://etf2l.org/forum/user/")) {
-    const showBans = getSettingValue("showBansForPlayers") as boolean;
+    const showBans = getSettingValue<boolean>("showBansForPlayers");
     const showLft = getSettingValue("showLftForPlayer") as boolean;
 
     if (!showBans && !showLft) return;
@@ -40,7 +40,7 @@ async function main() {
     return await updatePlayerPage(showLft, showBans);
   }
 
-  if (url.startsWith("https://etf2l.org/teams/")) {
+  if (url.match("https://etf2l.org/teams/\\d+/")) {
     const showTeamStatus = getSettingValue("showLfpForTeam") as boolean;
 
     if (!showTeamStatus) return;

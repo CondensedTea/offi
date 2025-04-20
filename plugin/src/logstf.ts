@@ -1,7 +1,8 @@
-import { Match, Player } from "./api/types";
+import { MatchResponse, Player } from "./api/types";
 import { getSettingValue } from "./web-extension/settings";
 import { getMatch } from "./api/get_match";
 import { getPlayers } from "./api/get_players";
+import { NoLogsError } from "./api/error";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
 
@@ -15,7 +16,7 @@ function getLogID(): number {
 }
 
 export async function addMatchLink() {
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
 
   let matchId: number;
 
@@ -25,35 +26,54 @@ export async function addMatchLink() {
     return;
   }
 
-  let match: Match;
+  let res: MatchResponse;
 
   try {
-    match = await getMatch(apiBaseUrl, matchId);
+    res = await getMatch(apiBaseUrl, matchId);
   } catch (e) {
-    console.warn("offi: could not get match: " + e.toString());
+    if (e === NoLogsError) {
+      return;
+    }
+
+    console.error("offi: could not get match: " + e.toString());
     return;
   }
 
   const competitionBlock = document.createElement("h3");
-  competitionBlock.innerHTML =
-    `<a href="https://etf2l.org/matches/${match.match_id}">${match.competition}</a>`;
+
+  const competitionLink = document.createElement("a")
+  competitionLink.href = `https://etf2l.org/matches/${res.match.match_id}`
+  competitionLink.innerText = res.match.competition;
+
+  competitionBlock.appendChild(competitionLink)
 
   const matchBlock = document.createElement("h3");
 
-  if (match.tier) {
-    matchBlock.innerText = `${match.tier} | ${match.stage}`;
+  if (res.match.tier) {
+    matchBlock.innerText = `${res.match.tier} | ${res.match.stage}`;
   } else {
-    matchBlock.innerText = match.stage;
+    matchBlock.innerText = res.match.stage;
   }
 
-  const logDateElem = document.getElementById("log-date");
+  document.getElementById("log-date").after(competitionBlock, matchBlock);
 
-  logDateElem.after(matchBlock);
-  logDateElem.after(competitionBlock);
+  if (res.log.demo_id) {
+    const demoLogo = document.createElement("img");
+    demoLogo.className = "demostf-logo medium";
+
+    const demoLink = document.createElement("a");
+    demoLink.href = `https://demos.tf/${res.log.demo_id}`;
+    demoLink.innerText = "demos.tf";
+
+    const demoContainer = document.createElement("h3");
+    demoContainer.append(demoLogo, demoLink);
+
+    document.getElementById("log-map").after(demoContainer);
+  }
 }
 
 export async function replacePlayerNames() {
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
 
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
@@ -68,7 +88,7 @@ export async function replacePlayerNames() {
     return steamId;
   });
 
-  const players = await getPlayers(apiBaseUrl, playerIDs, false);
+  const players = await getPlayers(apiBaseUrl, playerIDs);
 
   const steamIDToETF2LID = new Map<string, string>();
   players.map((player) => {

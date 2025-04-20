@@ -1,6 +1,8 @@
 import { Player, PlayersResponse } from "./types";
+import { APIError } from "./error";
+import {requestHeaders} from "./api";
 
-export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitmentStatus: boolean): Promise<Player[]> {
+export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitmentStatus: boolean = false): Promise<Player[]> {
   const playersURL = new URL(apiBaseUrl + "/players");
 
   const idsString = ids.join(",");
@@ -9,9 +11,11 @@ export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitm
 
   if (withRecruitmentStatus) playersURL.searchParams.append("with_recruitment_status", "true");
 
-  const res = await fetch(playersURL.toString());
-  if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
+  const res = await fetch(playersURL.toString(), {
+    headers: requestHeaders,
+  });
+  if (res.status !== 200) {
+    throw await APIError.fromResponse(res);
   }
 
   const response = await res.json() as PlayersResponse;

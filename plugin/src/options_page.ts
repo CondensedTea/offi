@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         textEl.textContent = item.label;
 
         inputEl.type = "checkbox";
-        inputEl.checked = item.value;
+        inputEl.checked = item.value as boolean;
         inputEl.addEventListener("change", async () => {
           await setSettingValue(key, inputEl.checked);
         });
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         textEl.textContent = item.label;
 
         inputEl.type = "url";
-        inputEl.value = item.value;
+        inputEl.value = item.value as string;
         inputEl.addEventListener("change", async () => {
           await setSettingValue(key, inputEl.value);
         });

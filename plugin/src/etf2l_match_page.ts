@@ -1,5 +1,6 @@
 import { getSettingValue } from "./web-extension/settings";
-import { getLogs, NoLogsError } from "./api/get_logs";
+import { getLogs } from "./api/get_logs";
+import { NoLogsError } from "./api/error"
 import { Log } from "./api/types";
 
 const matchRe = RegExp("https://etf2l.org/matches/(\\d+)/");
@@ -14,8 +15,8 @@ function getMatchID(): number {
 }
 
 function createLogHeader(logList: Node, isPrimary: boolean) {
-  const LogHeader = document.createElement("div");
-  LogHeader.className = "offi";
+  const headerContainer = document.createElement("div");
+
   let text = "";
 
   if (!isPrimary) {
@@ -26,27 +27,25 @@ function createLogHeader(logList: Node, isPrimary: boolean) {
   } else {
     text += `${logList.childNodes.length} logs`;
   }
-  LogHeader.innerHTML = `<h2>${text}</h2>`;
 
-  LogHeader.append(logList);
+  const header = document.createElement("h2");
+  header.innerText = text;
 
-  const playersSection = document.getElementsByClassName("fix match-players");
-  if (playersSection === null || playersSection.length < 1) {
-    return;
-  }
-  playersSection[0].after(LogHeader);
+  headerContainer.append(header, logList);
+
+  document.querySelector(".match-players")?.after(headerContainer);
 }
 
 export async function addLogLinks(): Promise<void> {
   const matchId = getMatchID();
   let logs: Log[];
 
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL");
 
   try {
     logs = await getLogs(apiBaseUrl, matchId);
   } catch (e) {
-    if (e === NoLogsError) {
+    if (e === NoLogsError || e.status === 425) {
       return;
     }
     console.error("could not get logs: " + e.toString());
@@ -65,21 +64,43 @@ export async function addLogLinks(): Promise<void> {
 
   if (secondaryLogs.length > 0) {
     const OtherLogList = document.createElement("ul");
-    secondaryLogs.forEach((log) => {
-      const logItem = document.createElement("li");
-      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
-      OtherLogList.appendChild(logItem);
-    });
+
+    OtherLogList.append(...secondaryLogs.map(buildLogList))
+
     createLogHeader(OtherLogList, false);
   }
 
   if (primaryLogs.length > 0) {
     const PrimaryLogList = document.createElement("ul");
-    primaryLogs.forEach((log) => {
-      const logItem = document.createElement("li");
-      logItem.innerHTML = `<a href="https://logs.tf/${log.id}">#${log.id}</a> | ${log.map} | ${log.played_at.toLocaleString()}`;
-      PrimaryLogList.appendChild(logItem);
-    });
+
+    PrimaryLogList.append(...primaryLogs.map(buildLogList))
+
     createLogHeader(PrimaryLogList, true);
   }
+}
+
+function buildLogList(log: Log): Node {
+  const logItem = document.createElement("li");
+
+  if (log.demo_id) {
+    const demosLink = document.createElement("a");
+    const demosLogo = document.createElement("img");
+    demosLogo.className = "demostf-logo small";
+    demosLink.append(demosLogo);
+    demosLink.href = "https://demos.tf/" + log.demo_id;
+    logItem.append(demosLink);
+  }
+
+  const logLink = document.createElement("a");
+  logLink.href = `https://logs.tf/${log.id}`
+  logLink.innerText = `#${log.id}`
+  logItem.append(logLink)
+
+  if (log.map) {
+    logItem.append(document.createTextNode(` | ${log.map}`))
+  }
+
+  logItem.append(document.createTextNode(` | ${log.played_at.toLocaleString()}`))
+
+  return logItem
 }

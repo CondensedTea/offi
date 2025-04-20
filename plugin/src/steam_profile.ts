@@ -2,14 +2,14 @@ import { getSettingValue } from "./web-extension/settings";
 import { getPlayers } from "./api/get_players";
 
 export async function addPlayerLinks() {
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
   const steamID = document.querySelector("[id^=commentthread_Profile_]").id?.split("_")[2];
   if (!steamID) {
     console.warn("offi: could not find steam ID");
     return;
   }
 
-  const players = await getPlayers(apiBaseUrl, [steamID], false);
+  const players = await getPlayers(apiBaseUrl, [steamID]);
   if (players === null) {
     console.warn("offi: player does not have an etf2l account");
     return;

@@ -1,5 +1,7 @@
 import { readFromSyncStorage, writeToSyncStorage } from './sync-storage';
 
+type ConfigValue = string | boolean
+
 /* tslint:disable variable-name */
 let _settings: InterfaceSettings = {};
 
@@ -13,8 +15,8 @@ export interface InterfaceSettingsItem {
   help?: string;
   children?: InterfaceSettings;
   // for any type
-  value?: any;
-  defaultValue?: any;
+  value?: ConfigValue;
+  defaultValue?: ConfigValue;
   // when type is `range'
   min?: number;
   max?: number;
@@ -41,16 +43,16 @@ export const registerSettings = (settings: InterfaceSettings): Promise<void> => 
   return loadSettings();
 };
 
-export const getSettingValue = (key: string): any | undefined => {
+export function getSettingValue<T = ConfigValue>(key: string): T | undefined {
   const setting = getSetting(key);
 
   if (setting === undefined) return undefined;
-  if (setting.value === undefined) return setting.defaultValue;
+  if (setting.value === undefined) return setting.defaultValue as T;
 
-  return setting.value;
-};
+  return setting.value as T;
+}
 
-export const setSettingValue = async (key: string, value: any, synchronize = true): Promise<void> => {
+export async function setSettingValue<T = ConfigValue>(key: string, value: T, synchronize = true): Promise<void> {
   const setting = getSetting(key);
   const previousValue = getSettingValue(key);
 
@@ -64,12 +66,12 @@ export const setSettingValue = async (key: string, value: any, synchronize = tru
 
   try {
     await writeToSyncStorage({ settings: getFlattenSettings() });
-    Promise.resolve();
-  } /* istanbul ignore next */ catch (e) {
+    return Promise.resolve();
+  } catch {
     Object.assign(setting, { value: previousValue });
-    Promise.reject();
+    return Promise.reject();
   }
-};
+}
 
 function getSetting(key: string): InterfaceSettingsItem | undefined {
   const keyParts = key.split('.');
@@ -87,7 +89,9 @@ function getSetting(key: string): InterfaceSettingsItem | undefined {
   }
 }
 
-function recursivelyIterate(settings: InterfaceSettings, cb: Function, prefix: string = ''): void {
+type Callback = (key: string, setting: InterfaceSettingsItem) => void;
+
+function recursivelyIterate(settings: InterfaceSettings, cb: Callback, prefix: string = ''): void {
   Object.entries(settings).forEach(([name, setting]) => {
     if (setting.children) {
       recursivelyIterate(setting.children, cb, `${name}.`);
@@ -97,8 +101,8 @@ function recursivelyIterate(settings: InterfaceSettings, cb: Function, prefix: s
   });
 }
 
-function getFlattenSettings(): { [k: string]: any } {
-  const flattenSettings: { [k: string]: any } = {};
+function getFlattenSettings(): { [k: string]: ConfigValue } {
+  const flattenSettings: { [k: string]: ConfigValue } = {};
 
   recursivelyIterate(getSettings(), dottedName => {
     flattenSettings[dottedName] = getSettingValue(dottedName);

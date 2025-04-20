@@ -407,6 +407,16 @@
     lightningcss "^1.22.1"
     nullthrows "^1.1.1"
 
+"@parcel/optimizer-data-url@2.13.2":
+  version "2.13.2"
+  resolved "https://registry.yarnpkg.com/@parcel/optimizer-data-url/-/optimizer-data-url-2.13.2.tgz#80c461768ce0c89a21262b87a179a1b37731bafc"
+  integrity sha512-y7ye3JnGAqA45Jg3Z3wrrPyssohFUTPjVW/2IA044infHnzrpDmIDnixjT8MuZsxJgbGAV9fgh1Ih00kBqP+UA==
+  dependencies:
+    "@parcel/plugin" "2.13.2"
+    "@parcel/utils" "2.13.2"
+    isbinaryfile "^5.0.2"
+    mime "^3.0.0"
+
 "@parcel/optimizer-htmlnano@2.13.2":
   version "2.13.2"
   resolved "https://registry.yarnpkg.com/@parcel/optimizer-htmlnano/-/optimizer-htmlnano-2.13.2.tgz#0158b2ad882ce5ff6e4c27d244fac7aa61d80956"
@@ -699,6 +709,13 @@
     "@parcel/utils" "2.13.2"
     "@parcel/workers" "2.13.2"
     nullthrows "^1.1.1"
+
+"@parcel/transformer-inline-string@2.13.2":
+  version "2.13.2"
+  resolved "https://registry.yarnpkg.com/@parcel/transformer-inline-string/-/transformer-inline-string-2.13.2.tgz#c05b46ae99c7552ba11119fa1add49d3dc34dbd0"
+  integrity sha512-FwRqLfoIriLavfG3QhzbYenA/CdWWGZD29dwG7+1/DmOcczfq8KfVKe/vad4psqmLWGJLJcWbTXs5Zq6UKRzYw==
+  dependencies:
+    "@parcel/plugin" "2.13.2"
 
 "@parcel/transformer-js@2.13.2":
   version "2.13.2"
@@ -2269,6 +2286,11 @@ isarray@^2.0.5:
   resolved "https://registry.npmjs.org/isarray/-/isarray-2.0.5.tgz"
   integrity sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==
 
+isbinaryfile@^5.0.2:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/isbinaryfile/-/isbinaryfile-5.0.4.tgz#2a2edefa76cafa66613fe4c1ea52f7f031017bdf"
+  integrity sha512-YKBKVkKhty7s8rxddb40oOkuP0NbaeXrQvLin6QMHL7Ypiy2RW9LwOVrVgZRyOrhQlayMd9t+D8yDy8MKFTSDQ==
+
 isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz"
@@ -2456,6 +2478,11 @@ micromatch@^4.0.5:
   dependencies:
     braces "^3.0.3"
     picomatch "^2.3.1"
+
+mime@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-3.0.0.tgz#b374550dca3a0c18443b0c950a6a58f1931cf7a7"
+  integrity sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==
 
 minimatch@^3.1.2:
   version "3.1.2"

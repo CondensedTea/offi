@@ -5,3 +5,19 @@
 .recruitment-status {
     padding-left: 12px;
 }
+
+.demostf-logo {
+    content: url('data-url:./static/demostf_logo.svg');
+}
+
+.small {
+    height: 16px;
+    width: 16px;
+    margin: 0 5px -0.25em;
+}
+
+.medium {
+    height: 24px;
+    width: 24px;
+    margin: 0 5px 0.25em;
+}

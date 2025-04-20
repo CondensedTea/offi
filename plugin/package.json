@@ -1,10 +1,10 @@
 {
   "name": "offi",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "scripts": {
-    "build_ff": "cp firefox_manifest.json manifest.json && parcel build manifest.json --dist-dir build/firefox --no-optimize && rm manifest.json",
-    "build_c": "cp chrome_manifest.json manifest.json && parcel build manifest.json --dist-dir build/chrome --no-optimize && rm manifest.json",
-    "lint": "eslint src/*.ts"
+    "build_ff": "cp firefox_manifest.json manifest.json && parcel build manifest.json --dist-dir build/firefox --no-optimize --no-content-hash && rm manifest.json",
+    "build_c": "cp chrome_manifest.json manifest.json && parcel build manifest.json --dist-dir build/chrome --no-optimize --no-scope-hoist --no-content-hash && rm manifest.json",
+    "lint": "eslint src/*.ts src/api/*.ts"
   },
   "dependencies": {
     "@parcel/config-webextension": "2.13.2",
@@ -15,6 +15,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@parcel/optimizer-data-url": "2.13.2",
+    "@parcel/transformer-inline-string": "2.13.2",
     "@parcel/transformer-typescript-tsc": "2.13.2",
     "@types/node": "^22.9.3",
     "@types/webextension-polyfill": "^0.12.1",

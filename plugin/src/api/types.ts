@@ -26,14 +26,13 @@ export type Team = {
   recruitment: Recruitment;
 }
 
-
-
 export class Log {
   id: number;
   title: string;
   map: string;
   played_at: Date;
   is_secondary: boolean;
+  demo_id?: number;
 
   constructor(data: Log) {
     this.id = data.id;
@@ -41,6 +40,7 @@ export class Log {
     this.map = data.map;
     this.played_at = new Date(data.played_at);
     this.is_secondary = data.is_secondary;
+    this.demo_id = data.demo_id;
   }
 }
 
@@ -51,8 +51,13 @@ export type Match = {
   tier: string;
 }
 
+export type LogMeta = {
+  demo_id?: number
+}
+
 export type MatchResponse = {
   match: Match;
+  log: LogMeta;
 }
 
 export type LogResponse = {

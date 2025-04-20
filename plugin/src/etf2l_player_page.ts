@@ -34,6 +34,7 @@ async function addPlayerStatus(recruitment: Recruitment) {
       .forEach((imgNode) => {
         if (recruitment.classes.includes(imgNode.title)) {
           imgNode.className = "invert-img";
+          imgNode.alt = "This player is looking for a team";
         }
       });
 }
@@ -62,18 +63,25 @@ async function addPlayersBans(bans: Ban[]) {
 function createBanEntryNode(ban: Ban): HTMLLIElement {
   const node = document.createElement("li");
 
-  let banCommentHTML = `${ban.startDate.toLocaleDateString()} to ${ban.endDate.toLocaleDateString()}`;
-  if (ban.end - ban.start < 0) {
-    banCommentHTML = `<span style="text-decoration: line-through">${banCommentHTML}</span> reverted`;
-  }
+  const banHeader = document.createElement("b");
+  banHeader.innerText = ban.reason;
 
-  node.innerHTML = `<b>${ban.reason}</b>: ${banCommentHTML}`;
+  node.append(banHeader, ": ");
+
+  if (ban.end - ban.start > 0) {
+    node.append(ban.startDate.toLocaleDateString(), " to ", ban.endDate.toLocaleDateString());
+  } else {
+    const revertedBan = document.createElement("span");
+    revertedBan.innerText = ban.startDate.toLocaleDateString() + " to " + ban.endDate.toLocaleDateString();
+    revertedBan.setAttribute("style", "text-decoration: line-through");
+    node.append(revertedBan, " reverted");
+  }
 
   return node;
 }
 
 export async function updatePlayerPage(showLft: boolean, showBans: boolean) {
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
   const playerId = getPlayerID();
 
   let players: Player[];

@@ -1,6 +1,7 @@
 import { Team } from "./api/types";
 import { getSettingValue } from "./web-extension/settings";
-import { getTeam, NoRecruitmentInfo } from "./api/get_team";
+import { getTeam } from "./api/get_team";
+import { NoRecruitmentInfo } from "./api/error"
 
 const playerRe = RegExp("https://etf2l.org/teams/(\\d+)/");
 
@@ -14,7 +15,7 @@ function getTeamID(): string {
 }
 
 export async function addTeamStatus() {
-  const apiBaseUrl = await getSettingValue("apiBaseURL");
+  const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
   const playerId = getTeamID();
 
   let teamStatus: Team;
@@ -37,9 +38,19 @@ export async function addTeamStatus() {
     classesString = teamStatus.recruitment.classes.join(", ");
   }
 
-  const node = document.createElement("tr");
-  node.innerHTML = `
-        <td>LFP</td>
-        <td><a href=${teamStatus.recruitment.url}>${classesString}</a></td>`;
-  document.querySelector(".teaminfo > tbody").appendChild(node);
+  const row = document.createElement("tr");
+
+  const headerCell = document.createElement("td");
+  headerCell.innerText = "LFP";
+
+  const linkCell = document.createElement("td");
+  const link = document.createElement("a");
+
+  link.href = teamStatus.recruitment.url;
+  link.innerText = classesString;
+  linkCell.appendChild(link);
+
+  row.append(headerCell, linkCell);
+
+  document.querySelector(".teaminfo > tbody").appendChild(row);
 }

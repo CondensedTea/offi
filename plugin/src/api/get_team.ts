@@ -1,19 +1,20 @@
-import {Team, TeamResponse} from "./types";
-
-export const NoRecruitmentInfo = new Error("this team doesn't have recruitment post");
+import { Team, TeamResponse } from "./types";
+import { NoRecruitmentInfo, APIError } from "./error";
+import {requestHeaders} from "./api";
 
 export async function getTeam(apiBaseUrl: string, teamId: string): Promise<Team> {
   const getTeamURL = new URL(apiBaseUrl + `/team/${teamId}`);
 
-  const res = await fetch(getTeamURL);
-  if (!res.ok) {
-    throw new Error("offi api returned error: " + res.statusText);
+  const res = await fetch(getTeamURL, {
+    headers: requestHeaders,
+  });
+  if (res.status === 404) {
+    throw NoRecruitmentInfo;
+  } else if (res.status !== 200) {
+    throw await APIError.fromResponse(res);
   }
 
   const response = (await res.json()) as TeamResponse;
-  if (response.team === null || !response.team.recruitment) {
-    throw NoRecruitmentInfo;
-  }
 
   return response.team;
 }
