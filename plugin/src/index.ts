@@ -16,7 +16,7 @@ async function main() {
     return await addLogLinks();
   }
 
-  if (url.match(`https://logs.tf/\\d+`)) {
+  if (url.match("https://logs.tf/\\d+")) {
     const replaceNames = getSettingValue("replaceNamesInLogs") as boolean;
     const linkMatchpages = getSettingValue("linkMatchepagesOnLogs") as boolean;
 

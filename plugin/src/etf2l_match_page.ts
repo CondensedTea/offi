@@ -85,7 +85,7 @@ function buildLogList(log: Log): Node {
   if (log.demo_id) {
     const demosLink = document.createElement("a");
     const demosLogo = document.createElement("img");
-    demosLogo.className = "demostf-logo small";
+    demosLogo.className = "demostf-logo logo-small";
     demosLink.append(demosLogo);
     demosLink.href = "https://demos.tf/" + log.demo_id;
     logItem.append(demosLink);

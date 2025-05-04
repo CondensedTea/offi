@@ -1,6 +1,6 @@
 import { Log, LogResponse } from "./types";
-import {APIError, NoLogsError} from "./error";
-import {requestHeaders} from "./api";
+import { APIError, NoLogsError } from "./error";
+import { requestHeaders } from "./api";
 
 export async function getLogs(apiBaseUrl: string, matchId: number): Promise<Log[]> {
   const getMatchURL = new URL(apiBaseUrl + `/match/${matchId}`);

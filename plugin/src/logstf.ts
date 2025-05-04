@@ -59,7 +59,7 @@ export async function addMatchLink() {
 
   if (res.log.demo_id) {
     const demoLogo = document.createElement("img");
-    demoLogo.className = "demostf-logo medium";
+    demoLogo.className = "demostf-logo logo-medium";
 
     const demoLink = document.createElement("a");
     demoLink.href = `https://demos.tf/${res.log.demo_id}`;

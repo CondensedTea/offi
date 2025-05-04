@@ -1,6 +1,6 @@
 import { Player, PlayersResponse } from "./types";
 import { APIError } from "./error";
-import {requestHeaders} from "./api";
+import { requestHeaders } from "./api";
 
 export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitmentStatus: boolean = false): Promise<Player[]> {
   const playersURL = new URL(apiBaseUrl + "/players");
