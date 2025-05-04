@@ -44,7 +44,7 @@ func (c *Client) FindDemo(ctx context.Context, req FindDemoRequest) (Demo, error
 	query := url.Values{}
 	query.Set("players", playerIDsBuilder.String())
 	query.Set("after", strconv.FormatInt(req.PlayedAt.Unix(), 10))
-	query.Set("before", strconv.FormatInt(req.PlayedAt.Add(time.Minute).Unix(), 10)) // window of 1 minute for uploading demo
+	query.Set("before", strconv.FormatInt(req.PlayedAt.Add(2*time.Minute).Unix(), 10)) // window of 2 minutes for uploading demo
 
 	reqURL.RawQuery = query.Encode()
 
@@ -57,6 +57,7 @@ func (c *Client) FindDemo(ctx context.Context, req FindDemoRequest) (Demo, error
 	if err != nil {
 		return Demo{}, fmt.Errorf("doing request: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return Demo{}, fmt.Errorf("api returned non-200 status code: %d", resp.StatusCode)

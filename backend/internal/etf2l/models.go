@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"offi/internal/cache"
 	"strconv"
-
-	"github.com/samber/lo"
 )
 
 type Steam struct {
@@ -102,17 +100,18 @@ type PlayerResponse struct {
 
 // ToCache converts a Player to a cache.Player
 func (p Player) ToCache() cache.Player {
-	cacheBans := lo.Map(p.Bans, func(b Ban, _ int) cache.PlayerBan {
-		return cache.PlayerBan{
-			Start:  b.Start,
-			End:    b.End,
-			Reason: b.Reason,
+	var bans = make([]cache.PlayerBan, len(p.Bans))
+	for i, v := range p.Bans {
+		bans[i] = cache.PlayerBan{
+			Start:  v.Start,
+			End:    v.End,
+			Reason: v.Reason,
 		}
-	})
+	}
 
 	return cache.Player{
 		ID:      p.ID,
-		Bans:    cacheBans,
+		Bans:    bans,
 		SteamID: strconv.Itoa(p.Steam.ID64),
 		Name:    p.Name,
 	}

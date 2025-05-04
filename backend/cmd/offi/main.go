@@ -25,8 +25,12 @@ func main() {
 		Commands: []*cli.Command{
 			serveCommand,
 			crawlCommand,
+			linkCommand,
 		},
 	}
 
-	_ = cmd.Run(context.Background(), os.Args)
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
 }

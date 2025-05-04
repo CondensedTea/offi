@@ -11,6 +11,7 @@ import (
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/logstf"
+	"offi/internal/rgl"
 	"time"
 
 	"errors"
@@ -22,14 +23,15 @@ type Cache interface {
 	SetLogError(ctx context.Context, matchId int, err error) error
 	CheckLogError(ctx context.Context, matchId int) error
 
-	GetPlayer(ctx context.Context, playerID int) (cache.Player, error)
-	SetPlayer(ctx context.Context, playerID int, player cache.Player) error
+	GetPlayer(ctx context.Context, league string, playerID int64) (cache.Player, error)
+	GetPlayers(ctx context.Context, league string, playerIDs []int64) (map[int64]*cache.Player, error)
+	SetPlayer(ctx context.Context, league string, playerID int64, player cache.Player) error
 }
 
 type database interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 
-	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int) (db.Recruitment, error)
+	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int64) (db.Recruitment, error)
 
 	SaveLog(ctx context.Context, tx pgx.Tx, log db.Log) error
 	MatchExists(ctx context.Context, mathcID int) (bool, error)
@@ -38,6 +40,10 @@ type database interface {
 	SaveMatchTx(ctx context.Context, tx pgx.Tx, match db.Match) error
 	SaveMatch(ctx context.Context, match db.Match) error
 	UpdateDemoIDForLog(ctx context.Context, logID int, demoID int) error
+}
+
+type rglClient interface {
+	GetPlayers(ctx context.Context, playerIDs []int64) ([]rgl.Player, error)
 }
 
 type demostfClient interface {
@@ -50,17 +56,19 @@ type Service struct {
 	cache Cache
 	db    database
 	etf2l *etf2l.Client
+	rgl   rglClient
 	logs  *logstf.Client
 	demos demostfClient
 
 	resolveDemoQueue chan resolveDemoRequest
 }
 
-func NewService(ctx context.Context, cache Cache, db database, etf2lClient *etf2l.Client, logs *logstf.Client, demo demostfClient) *Service {
+func NewService(ctx context.Context, cache Cache, db database, etf2lClient *etf2l.Client, rgl rglClient, logs *logstf.Client, demo demostfClient) *Service {
 	s := &Service{
 		cache:            cache,
 		db:               db,
 		etf2l:            etf2lClient,
+		rgl:              rgl,
 		logs:             logs,
 		demos:            demo,
 		resolveDemoQueue: make(chan resolveDemoRequest, 3),

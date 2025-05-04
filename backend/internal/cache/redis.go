@@ -10,6 +10,11 @@ import (
 
 var ErrCached = errors.New("cached error, retry later")
 
+const (
+	LeagueRGL   = "rgl"
+	LeagueETF2L = "etf2l"
+)
+
 type Redis struct {
 	client *redis.Client
 

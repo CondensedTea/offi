@@ -49,6 +49,17 @@ func (c *Client) UpdateDemoIDForLog(ctx context.Context, logID int, demoID int) 
 	return nil
 }
 
+func (*Client) UpdateDemoIDForLogTx(ctx context.Context, tx pgx.Tx, logID int, demoID int) error {
+	const query = `update logs set demo_id = $1 where log_id = $2`
+
+	_, err := tx.Exec(ctx, query, demoID, logID)
+	if err != nil {
+		return fmt.Errorf("executing query: %w", err)
+	}
+
+	return nil
+}
+
 func (c *Client) GetLogsByMatchID(ctx context.Context, matchID int) ([]Log, error) {
 	const query = `select log_id, match_id, title, map, played_at, is_secondary, demo_id from logs where match_id = $1`
 

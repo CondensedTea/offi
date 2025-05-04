@@ -2,11 +2,8 @@ package etf2l
 
 import (
 	"net/http"
-	info "offi/internal/build_info"
-	"offi/internal/tracing"
 	"time"
 
-	"github.com/go-chi/transport"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/time/rate"
@@ -19,19 +16,11 @@ type Client struct {
 	tracer     trace.Tracer
 }
 
-func New() *Client {
+func New(rt http.RoundTripper) *Client {
 	return &Client{
-		apiURL: "https://api-v2.etf2l.org",
-		httpClient: &http.Client{
-			Transport: transport.Chain(
-				http.DefaultTransport,
-				transport.Retry(http.DefaultTransport, 3),
-				tracing.OTelHTTPTransport,
-				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
-			),
-			Timeout: 5 * time.Second,
-		},
-		limiter: rate.NewLimiter(rate.Every(time.Second), 6),
-		tracer:  otel.Tracer("etf2l"),
+		apiURL:     "https://api-v2.etf2l.org",
+		httpClient: &http.Client{Transport: rt},
+		limiter:    rate.NewLimiter(rate.Every(time.Second), 6),
+		tracer:     otel.Tracer("etf2l"),
 	}
 }

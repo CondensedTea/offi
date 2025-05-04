@@ -50,7 +50,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		switch elem[0] {
 		case '/': // Prefix: "/"
-			origElem := elem
+
 			if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 				elem = elem[l:]
 			} else {
@@ -61,8 +61,62 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "api/v1/"
+
+				if l := len("api/v1/"); len(elem) >= l && elem[0:l] == "api/v1/" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case 'e': // Prefix: "etf2l/players"
+
+					if l := len("etf2l/players"); len(elem) >= l && elem[0:l] == "etf2l/players" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleGetETF2LPlayersRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET")
+						}
+
+						return
+					}
+
+				case 'r': // Prefix: "rgl/players"
+
+					if l := len("rgl/players"); len(elem) >= l && elem[0:l] == "rgl/players" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleGetRGLPlayersRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET")
+						}
+
+						return
+					}
+
+				}
+
 			case 'l': // Prefix: "log/"
-				origElem := elem
+
 				if l := len("log/"); len(elem) >= l && elem[0:l] == "log/" {
 					elem = elem[l:]
 				} else {
@@ -70,7 +124,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 
 				// Param: "log_id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -88,9 +146,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				elem = origElem
 			case 'm': // Prefix: "match/"
-				origElem := elem
+
 				if l := len("match/"); len(elem) >= l && elem[0:l] == "match/" {
 					elem = elem[l:]
 				} else {
@@ -98,7 +155,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 
 				// Param: "match_id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -116,9 +177,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				elem = origElem
 			case 'p': // Prefix: "players"
-				origElem := elem
+
 				if l := len("players"); len(elem) >= l && elem[0:l] == "players" {
 					elem = elem[l:]
 				} else {
@@ -137,9 +197,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				elem = origElem
 			case 't': // Prefix: "team/"
-				origElem := elem
+
 				if l := len("team/"); len(elem) >= l && elem[0:l] == "team/" {
 					elem = elem[l:]
 				} else {
@@ -147,7 +206,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 
 				// Param: "id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -165,10 +228,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				elem = origElem
 			}
 
-			elem = origElem
 		}
 	}
 	s.notFound(w, r)
@@ -250,7 +311,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 		}
 		switch elem[0] {
 		case '/': // Prefix: "/"
-			origElem := elem
+
 			if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 				elem = elem[l:]
 			} else {
@@ -261,8 +322,70 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
+			case 'a': // Prefix: "api/v1/"
+
+				if l := len("api/v1/"); len(elem) >= l && elem[0:l] == "api/v1/" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case 'e': // Prefix: "etf2l/players"
+
+					if l := len("etf2l/players"); len(elem) >= l && elem[0:l] == "etf2l/players" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = GetETF2LPlayersOperation
+							r.summary = "Get players' details from ETF2L"
+							r.operationID = "GetETF2LPlayers"
+							r.pathPattern = "/api/v1/etf2l/players"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+
+				case 'r': // Prefix: "rgl/players"
+
+					if l := len("rgl/players"); len(elem) >= l && elem[0:l] == "rgl/players" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = GetRGLPlayersOperation
+							r.summary = "Get players' details from RGL"
+							r.operationID = "GetRGLPlayers"
+							r.pathPattern = "/api/v1/rgl/players"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+
+				}
+
 			case 'l': // Prefix: "log/"
-				origElem := elem
+
 				if l := len("log/"); len(elem) >= l && elem[0:l] == "log/" {
 					elem = elem[l:]
 				} else {
@@ -270,7 +393,11 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				}
 
 				// Param: "log_id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -290,9 +417,8 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-				elem = origElem
 			case 'm': // Prefix: "match/"
-				origElem := elem
+
 				if l := len("match/"); len(elem) >= l && elem[0:l] == "match/" {
 					elem = elem[l:]
 				} else {
@@ -300,7 +426,11 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				}
 
 				// Param: "match_id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -320,9 +450,8 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-				elem = origElem
 			case 'p': // Prefix: "players"
-				origElem := elem
+
 				if l := len("players"); len(elem) >= l && elem[0:l] == "players" {
 					elem = elem[l:]
 				} else {
@@ -345,9 +474,8 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-				elem = origElem
 			case 't': // Prefix: "team/"
-				origElem := elem
+
 				if l := len("team/"); len(elem) >= l && elem[0:l] == "team/" {
 					elem = elem[l:]
 				} else {
@@ -355,7 +483,11 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				}
 
 				// Param: "id"
-				// Leaf parameter
+				// Leaf parameter, slashes are prohibited
+				idx := strings.IndexByte(elem, '/')
+				if idx >= 0 {
+					break
+				}
 				args[0] = elem
 				elem = ""
 
@@ -375,10 +507,8 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-				elem = origElem
 			}
 
-			elem = origElem
 		}
 	}
 	return r, false

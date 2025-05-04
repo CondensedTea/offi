@@ -2,10 +2,7 @@ package demostf
 
 import (
 	"net/http"
-	info "offi/internal/build_info"
-	"offi/internal/tracing"
 
-	"github.com/go-chi/transport"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -15,15 +12,9 @@ type Client struct {
 	tracer trace.Tracer
 }
 
-func NewClient() *Client {
+func NewClient(rt http.RoundTripper) *Client {
 	return &Client{
-		client: &http.Client{
-			Transport: transport.Chain(
-				http.DefaultTransport,
-				tracing.OTelHTTPTransport,
-				transport.SetHeader("User-Agent", "offi-backend/"+info.Version),
-			),
-		},
+		client: &http.Client{Transport: rt},
 		tracer: otel.Tracer("demostf"),
 	}
 }

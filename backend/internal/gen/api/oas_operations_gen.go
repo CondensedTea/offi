@@ -6,8 +6,10 @@ package api
 type OperationName = string
 
 const (
+	GetETF2LPlayersOperation OperationName = "GetETF2LPlayers"
 	GetLogsForMatchOperation OperationName = "GetLogsForMatch"
 	GetMatchForLogOperation  OperationName = "GetMatchForLog"
 	GetPlayersOperation      OperationName = "GetPlayers"
+	GetRGLPlayersOperation   OperationName = "GetRGLPlayers"
 	GetTeamOperation         OperationName = "GetTeam"
 )

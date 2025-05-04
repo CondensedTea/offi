@@ -8,12 +8,10 @@ import (
 	"net/url"
 	"offi/internal/closer"
 	"os"
-	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -133,35 +131,9 @@ func InjectTracing(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		var labeler otelhttp.Labeler
-
-		version, platform := getVersionFromRequest(r)
-
-		labeler.Add(
-			attribute.String("extension.version", version),
-			attribute.String("extension.platform", platform),
-		)
-		ctx = otelhttp.ContextWithLabeler(ctx, &labeler)
-
 		otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(w.Header()))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func getVersionFromRequest(r *http.Request) (version, platform string) {
-	const unknown = "unknown"
-
-	versionHeader := r.Header.Get("X-Offi-Version")
-	if versionHeader == "" {
-		return unknown, unknown
-	}
-
-	res := strings.SplitN(versionHeader, "/", 2)
-	if len(res) != 2 {
-		return versionHeader, unknown
-	}
-
-	return res[1], res[0]
 }
 
 func OTelHTTPTransport(next http.RoundTripper) http.RoundTripper {

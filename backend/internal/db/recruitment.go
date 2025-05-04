@@ -60,7 +60,7 @@ func (c *Client) CleanupOldRecruitments(ctx context.Context, postType Post) (int
 	return res.RowsAffected(), nil
 }
 
-func (c *Client) GetLastRecruitmentForAuthor(ctx context.Context, postType Post, authorID int) (Recruitment, error) {
+func (c *Client) GetLastRecruitmentForAuthor(ctx context.Context, postType Post, authorID int64) (Recruitment, error) {
 	const query = `
 		select
 			recruitment_id,

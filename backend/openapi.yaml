@@ -1,7 +1,6 @@
 openapi: 3.1.0
 info:
   title: Offi backend API
-  version: 1.0.0
 paths:
   /match/{match_id}:
     get:
@@ -48,9 +47,6 @@ paths:
             application/json:
               schema:
                 type: object
-                required:
-                  - match
-                  - log
                 properties:
                   match:
                     $ref: '#/components/schemas/Match'
@@ -59,6 +55,9 @@ paths:
                     properties:
                       demo_id:
                         type: integer
+                required:
+                  - match
+                  - log
         '404':
           description: 'Log does not exists'
           $ref: '#/components/responses/Error'
@@ -87,11 +86,13 @@ paths:
                 required:
                   - team
         '404':
-            description: 'Team does not exists'
+          description: 'Team does not exists'
+          $ref: '#/components/responses/Error'
         default:
           $ref: '#/components/responses/Error'
   /players:
     get:
+      deprecated: true
       summary: Get players by Steam IDs
       operationId: GetPlayers
       parameters:
@@ -105,6 +106,7 @@ paths:
             maxItems: 20
             items:
               type: integer
+              minimum: 1
         - name: with_recruitment_status
           in: query
           default: false
@@ -122,6 +124,73 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Player'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/etf2l/players:
+    get:
+      summary: Get players' details from ETF2L
+      operationId: GetETF2LPlayers
+      parameters:
+        - name: id
+          in: query
+          explode: false
+          style: form
+          required: true
+          schema:
+            type: array
+            maxItems: 20
+            items:
+              type: integer
+              format: int64
+              minimum: 1
+        - name: with_recruitment_status
+          in: query
+          default: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of resolved players
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ETF2LPlayer'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/rgl/players:
+    get:
+      summary: Get players' details from RGL
+      operationId: GetRGLPlayers
+      parameters:
+        - name: id
+          in: query
+          explode: false
+          style: form
+          required: true
+          schema:
+            type: array
+            maxItems: 20
+            items:
+              type: integer
+              format: int64
+              minimum: 1
+      responses:
+        '200':
+          description: List of resolved players
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RGLPlayer'
         default:
           $ref: '#/components/responses/Error'
 components:
@@ -172,6 +241,7 @@ components:
       required:
         - recruitment
     Player:
+      deprecated: true
       type: object
       properties:
         id:
@@ -191,6 +261,40 @@ components:
         - steam_id
         - name
         - bans
+    ETF2LPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        steam_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        bans:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerBan'
+        recruitment:
+          $ref: '#/components/schemas/RecruitmentInfo'
+      required:
+        - id
+        - steam_id
+        - name
+        - bans
+    RGLPlayer:
+      type: object
+      properties:
+        steam_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+      required:
+        - id
+        - steam_id
+        - name
     GameClass:
       type: string
       enum:

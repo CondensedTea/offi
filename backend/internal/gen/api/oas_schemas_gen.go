@@ -13,6 +13,65 @@ func (s *ErrorStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
+// Ref: #/components/schemas/ETF2LPlayer
+type ETF2LPlayer struct {
+	ID          int64              `json:"id"`
+	SteamID     int64              `json:"steam_id"`
+	Name        string             `json:"name"`
+	Bans        []PlayerBan        `json:"bans"`
+	Recruitment OptRecruitmentInfo `json:"recruitment"`
+}
+
+// GetID returns the value of ID.
+func (s *ETF2LPlayer) GetID() int64 {
+	return s.ID
+}
+
+// GetSteamID returns the value of SteamID.
+func (s *ETF2LPlayer) GetSteamID() int64 {
+	return s.SteamID
+}
+
+// GetName returns the value of Name.
+func (s *ETF2LPlayer) GetName() string {
+	return s.Name
+}
+
+// GetBans returns the value of Bans.
+func (s *ETF2LPlayer) GetBans() []PlayerBan {
+	return s.Bans
+}
+
+// GetRecruitment returns the value of Recruitment.
+func (s *ETF2LPlayer) GetRecruitment() OptRecruitmentInfo {
+	return s.Recruitment
+}
+
+// SetID sets the value of ID.
+func (s *ETF2LPlayer) SetID(val int64) {
+	s.ID = val
+}
+
+// SetSteamID sets the value of SteamID.
+func (s *ETF2LPlayer) SetSteamID(val int64) {
+	s.SteamID = val
+}
+
+// SetName sets the value of Name.
+func (s *ETF2LPlayer) SetName(val string) {
+	s.Name = val
+}
+
+// SetBans sets the value of Bans.
+func (s *ETF2LPlayer) SetBans(val []PlayerBan) {
+	s.Bans = val
+}
+
+// SetRecruitment sets the value of Recruitment.
+func (s *ETF2LPlayer) SetRecruitment(val OptRecruitmentInfo) {
+	s.Recruitment = val
+}
+
 // Ref: #/components/schemas/Error
 type Error struct {
 	Error string `json:"error"`
@@ -148,6 +207,20 @@ func (s *GameClass) UnmarshalText(data []byte) error {
 	}
 }
 
+type GetETF2LPlayersOK struct {
+	Players []ETF2LPlayer `json:"players"`
+}
+
+// GetPlayers returns the value of Players.
+func (s *GetETF2LPlayersOK) GetPlayers() []ETF2LPlayer {
+	return s.Players
+}
+
+// SetPlayers sets the value of Players.
+func (s *GetETF2LPlayersOK) SetPlayers(val []ETF2LPlayer) {
+	s.Players = val
+}
+
 type GetLogsForMatchOK struct {
 	Logs []Log `json:"logs"`
 }
@@ -216,6 +289,20 @@ func (s *GetPlayersOK) GetPlayers() []Player {
 
 // SetPlayers sets the value of Players.
 func (s *GetPlayersOK) SetPlayers(val []Player) {
+	s.Players = val
+}
+
+type GetRGLPlayersOK struct {
+	Players []RGLPlayer `json:"players"`
+}
+
+// GetPlayers returns the value of Players.
+func (s *GetRGLPlayersOK) GetPlayers() []RGLPlayer {
+	return s.Players
+}
+
+// SetPlayers sets the value of Players.
+func (s *GetRGLPlayersOK) SetPlayers(val []RGLPlayer) {
 	s.Players = val
 }
 
@@ -496,6 +583,7 @@ func (o OptRecruitmentInfo) Or(d RecruitmentInfo) RecruitmentInfo {
 	return d
 }
 
+// Deprecated: schema marks this type as deprecated.
 // Ref: #/components/schemas/Player
 type Player struct {
 	ID          int                `json:"id"`
@@ -590,6 +678,32 @@ func (s *PlayerBan) SetEnd(val int) {
 // SetReason sets the value of Reason.
 func (s *PlayerBan) SetReason(val string) {
 	s.Reason = val
+}
+
+// Ref: #/components/schemas/RGLPlayer
+type RGLPlayer struct {
+	SteamID int64  `json:"steam_id"`
+	Name    string `json:"name"`
+}
+
+// GetSteamID returns the value of SteamID.
+func (s *RGLPlayer) GetSteamID() int64 {
+	return s.SteamID
+}
+
+// GetName returns the value of Name.
+func (s *RGLPlayer) GetName() string {
+	return s.Name
+}
+
+// SetSteamID sets the value of SteamID.
+func (s *RGLPlayer) SetSteamID(val int64) {
+	s.SteamID = val
+}
+
+// SetName sets the value of Name.
+func (s *RGLPlayer) SetName(val string) {
+	s.Name = val
 }
 
 // Ref: #/components/schemas/RecruitmentInfo

@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// GetETF2LPlayers implements GetETF2LPlayers operation.
+	//
+	// Get players' details from ETF2L.
+	//
+	// GET /api/v1/etf2l/players
+	GetETF2LPlayers(ctx context.Context, params GetETF2LPlayersParams) (*GetETF2LPlayersOK, error)
 	// GetLogsForMatch implements GetLogsForMatch operation.
 	//
 	// Get logs associated with ETF2L match.
@@ -24,8 +30,16 @@ type Handler interface {
 	//
 	// Get players by Steam IDs.
 	//
+	// Deprecated: schema marks this operation as deprecated.
+	//
 	// GET /players
 	GetPlayers(ctx context.Context, params GetPlayersParams) (*GetPlayersOK, error)
+	// GetRGLPlayers implements GetRGLPlayers operation.
+	//
+	// Get players' details from RGL.
+	//
+	// GET /api/v1/rgl/players
+	GetRGLPlayers(ctx context.Context, params GetRGLPlayersParams) (*GetRGLPlayersOK, error)
 	// GetTeam implements GetTeam operation.
 	//
 	// Get team details.

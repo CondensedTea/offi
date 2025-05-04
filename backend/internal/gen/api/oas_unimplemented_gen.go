@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// GetETF2LPlayers implements GetETF2LPlayers operation.
+//
+// Get players' details from ETF2L.
+//
+// GET /api/v1/etf2l/players
+func (UnimplementedHandler) GetETF2LPlayers(ctx context.Context, params GetETF2LPlayersParams) (r *GetETF2LPlayersOK, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetLogsForMatch implements GetLogsForMatch operation.
 //
 // Get logs associated with ETF2L match.
@@ -35,8 +44,19 @@ func (UnimplementedHandler) GetMatchForLog(ctx context.Context, params GetMatchF
 //
 // Get players by Steam IDs.
 //
+// Deprecated: schema marks this operation as deprecated.
+//
 // GET /players
 func (UnimplementedHandler) GetPlayers(ctx context.Context, params GetPlayersParams) (r *GetPlayersOK, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetRGLPlayers implements GetRGLPlayers operation.
+//
+// Get players' details from RGL.
+//
+// GET /api/v1/rgl/players
+func (UnimplementedHandler) GetRGLPlayers(ctx context.Context, params GetRGLPlayersParams) (r *GetRGLPlayersOK, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

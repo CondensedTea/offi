@@ -3,6 +3,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -14,6 +15,165 @@ import (
 	"github.com/ogen-go/ogen/uri"
 	"github.com/ogen-go/ogen/validate"
 )
+
+// GetETF2LPlayersParams is parameters of GetETF2LPlayers operation.
+type GetETF2LPlayersParams struct {
+	ID                    []int64
+	WithRecruitmentStatus OptBool
+}
+
+func unpackGetETF2LPlayersParams(packed middleware.Parameters) (params GetETF2LPlayersParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "id",
+			In:   "query",
+		}
+		params.ID = packed[key].([]int64)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "with_recruitment_status",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.WithRecruitmentStatus = v.(OptBool)
+		}
+	}
+	return params
+}
+
+func decodeGetETF2LPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (params GetETF2LPlayersParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: id.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "id",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotIDVal int64
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToInt64(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotIDVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.ID = append(params.ID, paramsDotIDVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if params.ID == nil {
+					return errors.New("nil is invalid value")
+				}
+				if err := (validate.Array{
+					MinLength:    0,
+					MinLengthSet: false,
+					MaxLength:    20,
+					MaxLengthSet: true,
+				}).ValidateLength(len(params.ID)); err != nil {
+					return errors.Wrap(err, "array")
+				}
+				var failures []validate.FieldError
+				for i, elem := range params.ID {
+					if err := func() error {
+						if err := (validate.Int{
+							MinSet:        true,
+							Min:           1,
+							MaxSet:        false,
+							Max:           0,
+							MinExclusive:  false,
+							MaxExclusive:  false,
+							MultipleOfSet: false,
+							MultipleOf:    0,
+						}).Validate(int64(elem)); err != nil {
+							return errors.Wrap(err, "int")
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "id",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: with_recruitment_status.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "with_recruitment_status",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotWithRecruitmentStatusVal bool
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToBool(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotWithRecruitmentStatusVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.WithRecruitmentStatus.SetTo(paramsDotWithRecruitmentStatusVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "with_recruitment_status",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
 
 // GetLogsForMatchParams is parameters of GetLogsForMatch operation.
 type GetLogsForMatchParams struct {
@@ -220,12 +380,38 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 				}).ValidateLength(len(params.ID)); err != nil {
 					return errors.Wrap(err, "array")
 				}
+				var failures []validate.FieldError
+				for i, elem := range params.ID {
+					if err := func() error {
+						if err := (validate.Int{
+							MinSet:        true,
+							Min:           1,
+							MaxSet:        false,
+							Max:           0,
+							MinExclusive:  false,
+							MaxExclusive:  false,
+							MultipleOfSet: false,
+							MultipleOf:    0,
+						}).Validate(int64(elem)); err != nil {
+							return errors.Wrap(err, "int")
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
 				return nil
 			}(); err != nil {
 				return err
 			}
 		} else {
-			return validate.ErrFieldRequired
+			return err
 		}
 		return nil
 	}(); err != nil {
@@ -272,6 +458,114 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "with_recruitment_status",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetRGLPlayersParams is parameters of GetRGLPlayers operation.
+type GetRGLPlayersParams struct {
+	ID []int64
+}
+
+func unpackGetRGLPlayersParams(packed middleware.Parameters) (params GetRGLPlayersParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "id",
+			In:   "query",
+		}
+		params.ID = packed[key].([]int64)
+	}
+	return params
+}
+
+func decodeGetRGLPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (params GetRGLPlayersParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: id.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "id",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotIDVal int64
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToInt64(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotIDVal = c
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.ID = append(params.ID, paramsDotIDVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				if params.ID == nil {
+					return errors.New("nil is invalid value")
+				}
+				if err := (validate.Array{
+					MinLength:    0,
+					MinLengthSet: false,
+					MaxLength:    20,
+					MaxLengthSet: true,
+				}).ValidateLength(len(params.ID)); err != nil {
+					return errors.Wrap(err, "array")
+				}
+				var failures []validate.FieldError
+				for i, elem := range params.ID {
+					if err := func() error {
+						if err := (validate.Int{
+							MinSet:        true,
+							Min:           1,
+							MaxSet:        false,
+							Max:           0,
+							MinExclusive:  false,
+							MaxExclusive:  false,
+							MultipleOfSet: false,
+							MultipleOf:    0,
+						}).Validate(int64(elem)); err != nil {
+							return errors.Wrap(err, "int")
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "id",
 			In:   "query",
 			Err:  err,
 		}

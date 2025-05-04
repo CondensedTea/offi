@@ -12,7 +12,9 @@ import (
 	"offi/internal/demostf"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	internalHTTP "offi/internal/http"
 	"offi/internal/logstf"
+	"offi/internal/rgl"
 	"offi/internal/service"
 	"offi/internal/tracing"
 	"os"
@@ -48,9 +50,14 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 
 	tracing.Init(ctx)
 
-	etf2lClient := etf2l.New()
+	defaultTransport := internalHTTP.Transport(false)
+	retryTransport := internalHTTP.Transport(true)
 
-	logsClient := logstf.NewClient()
+	etf2lClient := etf2l.New(retryTransport)
+	rglClient := rgl.NewClient(defaultTransport)
+
+	logsClient := logstf.NewClient(defaultTransport)
+	demosClient := demostf.NewClient(defaultTransport)
 
 	cacheClient, err := cache.New(os.Getenv("REDIS_URL"))
 	if err != nil {
@@ -62,15 +69,13 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 		return fmt.Errorf("failed to init database client: %w", err)
 	}
 
-	demosClient := demostf.NewClient()
-
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{"https://logs.tf", "https://etf2l.org", "https://steamcommunity.com"},
 		AllowedMethods: []string{http.MethodGet},
 		AllowedHeaders: []string{"Content-Type", "X-Offi-Version"},
 	})
 
-	srv := service.NewService(ctx, cacheClient, dbClient, etf2lClient, logsClient, demosClient)
+	srv := service.NewService(ctx, cacheClient, dbClient, etf2lClient, rglClient, logsClient, demosClient)
 
 	handler, err := gen.NewServer(srv, gen.WithMethodNotAllowed(notAllowedWithCORS(corsHandler)))
 	if err != nil {

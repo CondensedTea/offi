@@ -29,13 +29,13 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 	var players []gen.Player
 
 	for _, playerID := range playerIDs {
-		player, err := s.cache.GetPlayer(ctx, playerID)
+		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, int64(playerID))
 		switch {
 		case errors.Is(err, redis.Nil):
 			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
-				if cacheErr := s.cache.SetPlayer(ctx, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
+				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, int64(playerID), cache.Player{DoesntExists: true}); cacheErr != nil {
 					return nil, fmt.Errorf("failed to save unknown player to cache: %v", cacheErr)
 				}
 				continue
@@ -44,7 +44,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			}
 
 			player = etf2lPlayer.ToCache()
-			if cacheErr := s.cache.SetPlayer(ctx, playerID, player); cacheErr != nil {
+			if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, int64(playerID), player); cacheErr != nil {
 				return nil, fmt.Errorf("failed to save player to cache: %v", cacheErr)
 			}
 		case err != nil:
@@ -72,7 +72,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 		}
 
 		if withRecruitmentStatus {
-			apiPlayer.Recruitment, err = s.getRecruitmentStatusForPlayer(ctx, playerID)
+			apiPlayer.Recruitment, err = s.getRecruitmentStatusForPlayer(ctx, int64(playerID))
 			if err != nil {
 				return nil, err
 			}
@@ -84,7 +84,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 	return players, nil
 }
 
-func (s *Service) getRecruitmentStatusForPlayer(ctx context.Context, playerID int) (gen.OptRecruitmentInfo, error) {
+func (s *Service) getRecruitmentStatusForPlayer(ctx context.Context, playerID int64) (gen.OptRecruitmentInfo, error) {
 	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Player, playerID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -13,6 +13,20 @@ import (
 	ht "github.com/ogen-go/ogen/http"
 )
 
+func encodeGetETF2LPlayersResponse(response *GetETF2LPlayersOK, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+	span.SetStatus(codes.Ok, http.StatusText(200))
+
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
 func encodeGetLogsForMatchResponse(response GetLogsForMatchRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *GetLogsForMatchOK:
@@ -104,6 +118,20 @@ func encodeGetMatchForLogResponse(response GetMatchForLogRes, w http.ResponseWri
 }
 
 func encodeGetPlayersResponse(response *GetPlayersOK, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+	span.SetStatus(codes.Ok, http.StatusText(200))
+
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
+func encodeGetRGLPlayersResponse(response *GetRGLPlayersOK, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 	span.SetStatus(codes.Ok, http.StatusText(200))

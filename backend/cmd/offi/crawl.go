@@ -6,6 +6,7 @@ import (
 	"offi/internal/crawler"
 	"offi/internal/db"
 	"offi/internal/etf2l"
+	internalHTTP "offi/internal/http"
 	"os"
 
 	"github.com/urfave/cli/v3"
@@ -25,8 +26,7 @@ func crawlAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to init db client: %w", err)
 	}
 
-	// etf2l client
-	etf2lClient := etf2l.New()
+	etf2lClient := etf2l.New(internalHTTP.Transport(true))
 
 	c := crawler.NewCrawler(etf2lClient, dbClient)
 

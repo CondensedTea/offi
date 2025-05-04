@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) GetTeam(ctx context.Context, p api.GetTeamParams) (api.GetTeamRes, error) {
-	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Team, p.ID)
+	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Team, int64(p.ID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return &api.GetTeamNotFound{}, nil
