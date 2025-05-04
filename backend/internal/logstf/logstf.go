@@ -41,7 +41,7 @@ func (c *Client) SearchLogs(ctx context.Context, players []int, maps []string, p
 
 	resp, err := c.getLogsWithPlayers(ctx, players)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %v", err)
+		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %w", err)
 	}
 	matchLogs, secondaryLogs := filterLogs(maps, resp.Logs, playedAt)
 
@@ -71,7 +71,7 @@ func (c *Client) getLogsWithPlayers(ctx context.Context, players []int) (*Respon
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, http.NoBody)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
 	resp, err := c.client.Do(req)
@@ -86,7 +86,7 @@ func (c *Client) getLogsWithPlayers(ctx context.Context, players []int) (*Respon
 
 	var r Response
 	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return nil, fmt.Errorf("decoding response: %v", err)
+		return nil, fmt.Errorf("decoding response: %w", err)
 	}
 	return &r, nil
 }
@@ -168,7 +168,7 @@ func (c *Client) GetLog(ctx context.Context, id int) (Log, error) {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return Log{}, fmt.Errorf("failed to get log from logs.tf api: %v", err)
+		return Log{}, fmt.Errorf("failed to get log from logs.tf api: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -182,7 +182,7 @@ func (c *Client) GetLog(ctx context.Context, id int) (Log, error) {
 
 	var r response
 	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return Log{}, fmt.Errorf("decoding response: %v", err)
+		return Log{}, fmt.Errorf("decoding response: %w", err)
 	}
 
 	r.Info.ID = id

@@ -36,19 +36,19 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int, withRecruitme
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
 				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, int64(playerID), cache.Player{DoesntExists: true}); cacheErr != nil {
-					return nil, fmt.Errorf("failed to save unknown player to cache: %v", cacheErr)
+					return nil, fmt.Errorf("failed to save unknown player to cache: %w", cacheErr)
 				}
 				continue
 			case err != nil:
-				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, err)
+				return nil, fmt.Errorf("failed to get player %d from etf2l: %w", playerID, err)
 			}
 
 			player = etf2lPlayer.ToCache()
 			if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, int64(playerID), player); cacheErr != nil {
-				return nil, fmt.Errorf("failed to save player to cache: %v", cacheErr)
+				return nil, fmt.Errorf("failed to save player to cache: %w", cacheErr)
 			}
 		case err != nil:
-			return nil, fmt.Errorf("failed to get player from cache: %v", err)
+			return nil, fmt.Errorf("failed to get player from cache: %w", err)
 		}
 
 		if player.DoesntExists {
@@ -91,7 +91,7 @@ func (s *Service) getRecruitmentStatusForPlayer(ctx context.Context, playerID in
 			return gen.OptRecruitmentInfo{Set: false}, nil
 		}
 
-		return gen.OptRecruitmentInfo{}, fmt.Errorf("failed to get recruitments for player %d: %v", playerID, err)
+		return gen.OptRecruitmentInfo{}, fmt.Errorf("failed to get recruitments for player %d: %w", playerID, err)
 	}
 
 	return gen.NewOptRecruitmentInfo(gen.RecruitmentInfo{

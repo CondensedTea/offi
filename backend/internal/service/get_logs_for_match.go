@@ -105,7 +105,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 			Tier:        match.Tier,
 			CompletedAt: match.SubmittedAt,
 		}); err != nil {
-			return nil, fmt.Errorf("failed to save match %d: %v", matchID, err)
+			return nil, fmt.Errorf("failed to save match %d: %w", matchID, err)
 		}
 
 		return []db.Log{}, nil
@@ -113,7 +113,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 
 	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, match.PlayerSteamIDs, match.Maps, match.SubmittedAt)
 	if err != nil {
-		return nil, fmt.Errorf("failed to search logs: %v", err)
+		return nil, fmt.Errorf("failed to search logs: %w", err)
 	}
 
 	logs := make([]db.Log, 0, len(matchLogs)+len(secondaryLogs))
@@ -152,7 +152,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 
 	for _, log := range logs {
 		if err = s.db.SaveLog(ctx, tx, log); err != nil {
-			return nil, fmt.Errorf("failed to save log %d: %v", log.LogID, err)
+			return nil, fmt.Errorf("failed to save log %d: %w", log.LogID, err)
 		}
 	}
 
@@ -164,7 +164,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 		CompletedAt: match.SubmittedAt,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to save match %d: %v", matchID, err)
+		return nil, fmt.Errorf("failed to save match %d: %w", matchID, err)
 	}
 
 	if err = tx.Commit(ctx); err != nil {

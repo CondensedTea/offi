@@ -88,7 +88,7 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get match from etf2l api: %v", err)
+		return nil, fmt.Errorf("failed to get match from etf2l api: %w", err)
 	}
 	defer resp.Body.Close()
 

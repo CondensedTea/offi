@@ -34,19 +34,19 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
 				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
-					return nil, fmt.Errorf("failed to save unknown player to cache: %v", cacheErr)
+					return nil, fmt.Errorf("failed to save unknown player to cache: %w", cacheErr)
 				}
 				continue
 			case err != nil:
-				return nil, fmt.Errorf("failed to get player %d from etf2l: %v", playerID, err)
+				return nil, fmt.Errorf("failed to get player %d from etf2l: %w", playerID, err)
 			}
 
 			player = etf2lPlayer.ToCache()
 			if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, player); cacheErr != nil {
-				return nil, fmt.Errorf("failed to save player to cache: %v", cacheErr)
+				return nil, fmt.Errorf("failed to save player to cache: %w", cacheErr)
 			}
 		case err != nil:
-			return nil, fmt.Errorf("failed to get player from cache: %v", err)
+			return nil, fmt.Errorf("failed to get player from cache: %w", err)
 		}
 
 		if player.DoesntExists {
@@ -64,7 +64,7 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 
 		steamID64, err := strconv.ParseInt(player.SteamID, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse steam ID %s: %v", player.SteamID, err)
+			return nil, fmt.Errorf("failed to parse steam ID %s: %w", player.SteamID, err)
 		}
 
 		apiPlayer := gen.ETF2LPlayer{
