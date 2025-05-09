@@ -15,7 +15,7 @@ func (s *ErrorStatusCode) Error() string {
 
 // Ref: #/components/schemas/ETF2LPlayer
 type ETF2LPlayer struct {
-	ID          int64              `json:"id"`
+	ID          int                `json:"id"`
 	SteamID     int64              `json:"steam_id"`
 	Name        string             `json:"name"`
 	Bans        []PlayerBan        `json:"bans"`
@@ -23,7 +23,7 @@ type ETF2LPlayer struct {
 }
 
 // GetID returns the value of ID.
-func (s *ETF2LPlayer) GetID() int64 {
+func (s *ETF2LPlayer) GetID() int {
 	return s.ID
 }
 
@@ -48,7 +48,7 @@ func (s *ETF2LPlayer) GetRecruitment() OptRecruitmentInfo {
 }
 
 // SetID sets the value of ID.
-func (s *ETF2LPlayer) SetID(val int64) {
+func (s *ETF2LPlayer) SetID(val int) {
 	s.ID = val
 }
 
@@ -115,6 +115,7 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 
 func (*ErrorStatusCode) getLogsForMatchRes() {}
 func (*ErrorStatusCode) getMatchForLogRes()  {}
+func (*ErrorStatusCode) getTeamRes()         {}
 
 // Ref: #/components/schemas/GameClass
 type GameClass string
@@ -305,11 +306,6 @@ func (s *GetRGLPlayersOK) GetPlayers() []RGLPlayer {
 func (s *GetRGLPlayersOK) SetPlayers(val []RGLPlayer) {
 	s.Players = val
 }
-
-// GetTeamNotFound is response for GetTeam operation.
-type GetTeamNotFound struct{}
-
-func (*GetTeamNotFound) getTeamRes() {}
 
 type GetTeamOK struct {
 	Team Team `json:"team"`
@@ -587,7 +583,7 @@ func (o OptRecruitmentInfo) Or(d RecruitmentInfo) RecruitmentInfo {
 // Ref: #/components/schemas/Player
 type Player struct {
 	ID          int                `json:"id"`
-	SteamID     string             `json:"steam_id"`
+	SteamID     int64              `json:"steam_id"`
 	Name        string             `json:"name"`
 	Bans        []PlayerBan        `json:"bans"`
 	Recruitment OptRecruitmentInfo `json:"recruitment"`
@@ -599,7 +595,7 @@ func (s *Player) GetID() int {
 }
 
 // GetSteamID returns the value of SteamID.
-func (s *Player) GetSteamID() string {
+func (s *Player) GetSteamID() int64 {
 	return s.SteamID
 }
 
@@ -624,7 +620,7 @@ func (s *Player) SetID(val int) {
 }
 
 // SetSteamID sets the value of SteamID.
-func (s *Player) SetSteamID(val string) {
+func (s *Player) SetSteamID(val int64) {
 	s.SteamID = val
 }
 

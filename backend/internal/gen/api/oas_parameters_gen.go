@@ -3,7 +3,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -62,7 +61,7 @@ func decodeGetETF2LPlayersParams(args [0]string, argsEscaped bool, r *http.Reque
 							return err
 						}
 
-						c, err := conv.ToInt64(val)
+						c, err := conv.ToStringInt64(val)
 						if err != nil {
 							return err
 						}
@@ -89,32 +88,6 @@ func decodeGetETF2LPlayersParams(args [0]string, argsEscaped bool, r *http.Reque
 					MaxLengthSet: true,
 				}).ValidateLength(len(params.ID)); err != nil {
 					return errors.Wrap(err, "array")
-				}
-				var failures []validate.FieldError
-				for i, elem := range params.ID {
-					if err := func() error {
-						if err := (validate.Int{
-							MinSet:        true,
-							Min:           1,
-							MaxSet:        false,
-							Max:           0,
-							MinExclusive:  false,
-							MaxExclusive:  false,
-							MultipleOfSet: false,
-							MultipleOf:    0,
-						}).Validate(int64(elem)); err != nil {
-							return errors.Wrap(err, "int")
-						}
-						return nil
-					}(); err != nil {
-						failures = append(failures, validate.FieldError{
-							Name:  fmt.Sprintf("[%d]", i),
-							Error: err,
-						})
-					}
-				}
-				if len(failures) > 0 {
-					return &validate.Error{Fields: failures}
 				}
 				return nil
 			}(); err != nil {
@@ -308,7 +281,7 @@ func decodeGetMatchForLogParams(args [1]string, argsEscaped bool, r *http.Reques
 
 // GetPlayersParams is parameters of GetPlayers operation.
 type GetPlayersParams struct {
-	ID                    []int
+	ID                    []int64
 	WithRecruitmentStatus OptBool
 }
 
@@ -318,7 +291,7 @@ func unpackGetPlayersParams(packed middleware.Parameters) (params GetPlayersPara
 			Name: "id",
 			In:   "query",
 		}
-		params.ID = packed[key].([]int)
+		params.ID = packed[key].([]int64)
 	}
 	{
 		key := middleware.ParameterKey{
@@ -345,14 +318,14 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
 				return d.DecodeArray(func(d uri.Decoder) error {
-					var paramsDotIDVal int
+					var paramsDotIDVal int64
 					if err := func() error {
 						val, err := d.DecodeValue()
 						if err != nil {
 							return err
 						}
 
-						c, err := conv.ToInt(val)
+						c, err := conv.ToStringInt64(val)
 						if err != nil {
 							return err
 						}
@@ -379,32 +352,6 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 					MaxLengthSet: true,
 				}).ValidateLength(len(params.ID)); err != nil {
 					return errors.Wrap(err, "array")
-				}
-				var failures []validate.FieldError
-				for i, elem := range params.ID {
-					if err := func() error {
-						if err := (validate.Int{
-							MinSet:        true,
-							Min:           1,
-							MaxSet:        false,
-							Max:           0,
-							MinExclusive:  false,
-							MaxExclusive:  false,
-							MultipleOfSet: false,
-							MultipleOf:    0,
-						}).Validate(int64(elem)); err != nil {
-							return errors.Wrap(err, "int")
-						}
-						return nil
-					}(); err != nil {
-						failures = append(failures, validate.FieldError{
-							Name:  fmt.Sprintf("[%d]", i),
-							Error: err,
-						})
-					}
-				}
-				if len(failures) > 0 {
-					return &validate.Error{Fields: failures}
 				}
 				return nil
 			}(); err != nil {
@@ -501,7 +448,7 @@ func decodeGetRGLPlayersParams(args [0]string, argsEscaped bool, r *http.Request
 							return err
 						}
 
-						c, err := conv.ToInt64(val)
+						c, err := conv.ToStringInt64(val)
 						if err != nil {
 							return err
 						}
@@ -528,32 +475,6 @@ func decodeGetRGLPlayersParams(args [0]string, argsEscaped bool, r *http.Request
 					MaxLengthSet: true,
 				}).ValidateLength(len(params.ID)); err != nil {
 					return errors.Wrap(err, "array")
-				}
-				var failures []validate.FieldError
-				for i, elem := range params.ID {
-					if err := func() error {
-						if err := (validate.Int{
-							MinSet:        true,
-							Min:           1,
-							MaxSet:        false,
-							Max:           0,
-							MinExclusive:  false,
-							MaxExclusive:  false,
-							MultipleOfSet: false,
-							MultipleOf:    0,
-						}).Validate(int64(elem)); err != nil {
-							return errors.Wrap(err, "int")
-						}
-						return nil
-					}(); err != nil {
-						failures = append(failures, validate.FieldError{
-							Name:  fmt.Sprintf("[%d]", i),
-							Error: err,
-						})
-					}
-				}
-				if len(failures) > 0 {
-					return &validate.Error{Fields: failures}
 				}
 				return nil
 			}(); err != nil {

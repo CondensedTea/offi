@@ -24,11 +24,11 @@ func (s *ETF2LPlayer) Encode(e *jx.Encoder) {
 func (s *ETF2LPlayer) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("id")
-		e.Int64(s.ID)
+		e.Int(s.ID)
 	}
 	{
 		e.FieldStart("steam_id")
-		e.Int64(s.SteamID)
+		json.EncodeStringInt64(e, s.SteamID)
 	}
 	{
 		e.FieldStart("name")
@@ -70,8 +70,8 @@ func (s *ETF2LPlayer) Decode(d *jx.Decoder) error {
 		case "id":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Int64()
-				s.ID = int64(v)
+				v, err := d.Int()
+				s.ID = int(v)
 				if err != nil {
 					return err
 				}
@@ -82,8 +82,8 @@ func (s *ETF2LPlayer) Decode(d *jx.Decoder) error {
 		case "steam_id":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Int64()
-				s.SteamID = int64(v)
+				v, err := json.DecodeStringInt64(d)
+				s.SteamID = v
 				if err != nil {
 					return err
 				}
@@ -1310,7 +1310,7 @@ func (s *Player) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("steam_id")
-		e.Str(s.SteamID)
+		json.EncodeStringInt64(e, s.SteamID)
 	}
 	{
 		e.FieldStart("name")
@@ -1364,8 +1364,8 @@ func (s *Player) Decode(d *jx.Decoder) error {
 		case "steam_id":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Str()
-				s.SteamID = string(v)
+				v, err := json.DecodeStringInt64(d)
+				s.SteamID = v
 				if err != nil {
 					return err
 				}
@@ -1610,7 +1610,7 @@ func (s *RGLPlayer) Encode(e *jx.Encoder) {
 func (s *RGLPlayer) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("steam_id")
-		e.Int64(s.SteamID)
+		json.EncodeStringInt64(e, s.SteamID)
 	}
 	{
 		e.FieldStart("name")
@@ -1635,8 +1635,8 @@ func (s *RGLPlayer) Decode(d *jx.Decoder) error {
 		case "steam_id":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Int64()
-				s.SteamID = int64(v)
+				v, err := json.DecodeStringInt64(d)
+				s.SteamID = v
 				if err != nil {
 					return err
 				}

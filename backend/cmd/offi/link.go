@@ -73,9 +73,9 @@ func linkAction(ctx context.Context, cmd *cli.Command) error {
 		}
 
 		demo, err := demosTfClient.FindDemo(ctx, demostf.FindDemoRequest{
-			PlayerIDs: match.PlayerSteamIDs,
-			Map:       log.Map,
-			PlayedAt:  time.Unix(log.Date, 0),
+			PlayerSteamIDs: match.PlayerSteamIDs,
+			Map:            log.Map,
+			PlayedAt:       time.Unix(log.Date, 0),
 		})
 		if err != nil {
 			if errors.Is(err, demostf.ErrNotFound) {

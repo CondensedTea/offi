@@ -7,7 +7,6 @@ import (
 	"offi/internal/cache"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
-	"strconv"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -30,7 +29,7 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, playerID)
 		switch {
 		case errors.Is(err, redis.Nil):
-			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, int(playerID))
+			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
 				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
@@ -62,14 +61,9 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 			}
 		}
 
-		steamID64, err := strconv.ParseInt(player.SteamID, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse steam ID %s: %w", player.SteamID, err)
-		}
-
 		apiPlayer := gen.ETF2LPlayer{
-			ID:      int64(player.ID),
-			SteamID: steamID64,
+			ID:      player.ID,
+			SteamID: player.SteamID,
 			Name:    player.Name,
 			Bans:    bans,
 		}

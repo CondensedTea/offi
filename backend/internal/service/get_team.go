@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"offi/internal/db"
 	"offi/internal/gen/api"
 	"unsafe"
@@ -15,7 +16,7 @@ func (s *Service) GetTeam(ctx context.Context, p api.GetTeamParams) (api.GetTeam
 	recruitment, err := s.db.GetLastRecruitmentForAuthor(ctx, db.Team, int64(p.ID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &api.GetTeamNotFound{}, nil
+			return &api.ErrorStatusCode{StatusCode: http.StatusNotFound, Response: api.Error{Error: "team not found"}}, nil
 		}
 
 		return nil, fmt.Errorf("getting recruitments from db: %w", err)

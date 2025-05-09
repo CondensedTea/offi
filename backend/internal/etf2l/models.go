@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"offi/internal/cache"
-	"strconv"
 )
 
 type Steam struct {
@@ -88,7 +87,7 @@ type Ban struct {
 type Player struct {
 	ID    int `json:"id"`
 	Steam struct {
-		ID64 int `json:"id64,string"`
+		ID64 int64 `json:"id64,string"`
 	} `json:"steam"`
 	Name string `json:"name"`
 	Bans []Ban  `json:"bans"`
@@ -112,7 +111,7 @@ func (p Player) ToCache() cache.Player {
 	return cache.Player{
 		ID:      p.ID,
 		Bans:    bans,
-		SteamID: strconv.Itoa(p.Steam.ID64),
+		SteamID: p.Steam.ID64,
 		Name:    p.Name,
 	}
 }

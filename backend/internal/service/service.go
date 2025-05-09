@@ -103,7 +103,7 @@ func (s *Service) NewError(ctx context.Context, err error) (r *gen.ErrorStatusCo
 
 type resolveDemoRequest struct {
 	logID          int
-	playerSteamIDs []int
+	playerSteamIDs []int64
 	playedAt       time.Time
 	mapName        string
 }
@@ -132,9 +132,9 @@ func (s *Service) startDemoResolver(ctx context.Context) {
 
 func (s *Service) resolveDemo(ctx context.Context, req resolveDemoRequest) error {
 	demo, err := s.demos.FindDemo(ctx, demostf.FindDemoRequest{
-		PlayerIDs: req.playerSteamIDs,
-		PlayedAt:  req.playedAt,
-		Map:       req.mapName,
+		PlayerSteamIDs: req.playerSteamIDs,
+		PlayedAt:       req.playedAt,
+		Map:            req.mapName,
 	})
 	if err != nil {
 		if errors.Is(err, demostf.ErrNotFound) {

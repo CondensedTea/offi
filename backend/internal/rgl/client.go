@@ -25,7 +25,7 @@ func NewClient(rt http.RoundTripper) *Client {
 }
 
 type Player struct {
-	SteamID string `json:"steamId"`
+	SteamID int64  `json:"steamId,string"`
 	Name    string `json:"name"`
 }
 

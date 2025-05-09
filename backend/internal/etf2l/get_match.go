@@ -55,7 +55,7 @@ type match struct {
 }
 
 type Match struct {
-	PlayerSteamIDs []int
+	PlayerSteamIDs []int64
 	Maps           []string
 	SubmittedAt    time.Time
 
@@ -111,7 +111,7 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 	}
 
 	// etf2l returns duplicate players in the match response
-	var playerIDSet = make(map[int]struct{})
+	var playerIDSet = make(map[int64]struct{})
 	for _, player := range matchResponse.Match.Players {
 		if player.Steam.ID64 == 0 {
 			// Special case for matches restored after Great Data loss of 2020 (?)
@@ -121,7 +121,7 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 		playerIDSet[player.Steam.ID64] = struct{}{}
 	}
 
-	var playerIDs = make([]int, 0, len(playerIDSet))
+	var playerIDs = make([]int64, 0, len(playerIDSet))
 	for k := range playerIDSet {
 		playerIDs = append(playerIDs, k)
 	}

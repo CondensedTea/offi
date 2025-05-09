@@ -61,7 +61,17 @@ func (*Client) UpdateDemoIDForLogTx(ctx context.Context, tx pgx.Tx, logID int, d
 }
 
 func (c *Client) GetLogsByMatchID(ctx context.Context, matchID int) ([]Log, error) {
-	const query = `select log_id, match_id, title, map, played_at, is_secondary, demo_id from logs where match_id = $1`
+	const query = `
+		select
+			log_id,
+			match_id,
+			title,
+			map,
+			played_at,
+			is_secondary,
+			demo_id
+		from logs where match_id = $1
+		order by played_at`
 
 	rows, err := c.pool.Query(ctx, query, matchID)
 	if err != nil {

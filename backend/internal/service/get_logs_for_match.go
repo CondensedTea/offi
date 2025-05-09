@@ -97,7 +97,7 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 	}
 
 	if len(match.PlayerSteamIDs) > maxPlayers {
-		// logs.tf does not allow searching for more than 18 players, so we save only save the match
+		// logs.tf does not allow searching for more than 18 players, so we don't search logs and only save the match
 		if err = s.db.SaveMatch(ctx, db.Match{
 			MatchID:     matchID,
 			Competition: match.Competition,

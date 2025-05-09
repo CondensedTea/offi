@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"offi/internal/cache"
 	gen "offi/internal/gen/api"
-	"strconv"
 )
 
 func (s *Service) GetRGLPlayers(ctx context.Context, p gen.GetRGLPlayersParams) (r *gen.GetRGLPlayersOK, _ error) {
@@ -21,9 +20,8 @@ func (s *Service) GetRGLPlayers(ctx context.Context, p gen.GetRGLPlayersParams) 
 		if player == nil {
 			playersToResolve = append(playersToResolve, playerID)
 		} else {
-			steamID, _ := strconv.ParseInt(player.SteamID, 10, 64)
 			players = append(players, gen.RGLPlayer{
-				SteamID: steamID,
+				SteamID: player.SteamID,
 				Name:    player.Name,
 			})
 		}
@@ -35,17 +33,15 @@ func (s *Service) GetRGLPlayers(ctx context.Context, p gen.GetRGLPlayersParams) 
 	}
 
 	for _, player := range resolvedPlayers {
-		steamID, _ := strconv.ParseInt(player.SteamID, 10, 64)
-
-		if err = s.cache.SetPlayer(ctx, cache.LeagueRGL, steamID, cache.Player{
+		if err = s.cache.SetPlayer(ctx, cache.LeagueRGL, player.SteamID, cache.Player{
 			SteamID: player.SteamID,
 			Name:    player.Name,
 		}); err != nil {
-			return nil, fmt.Errorf("saving player %d to cache: %w", steamID, err)
+			return nil, fmt.Errorf("saving player %d to cache: %w", player.SteamID, err)
 		}
 
 		players = append(players, gen.RGLPlayer{
-			SteamID: steamID,
+			SteamID: player.SteamID,
 			Name:    player.Name,
 		})
 

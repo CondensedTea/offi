@@ -15,9 +15,9 @@ import (
 var ErrNotFound = errors.New("demo not found")
 
 type FindDemoRequest struct {
-	PlayerIDs []int
-	Map       string
-	PlayedAt  time.Time
+	PlayerSteamIDs []int64
+	Map            string
+	PlayedAt       time.Time
 }
 type Demo struct {
 	ID int
@@ -34,11 +34,11 @@ func (c *Client) FindDemo(ctx context.Context, req FindDemoRequest) (Demo, error
 	}
 
 	var playerIDsBuilder strings.Builder
-	for _, playerID := range req.PlayerIDs {
+	for _, playerID := range req.PlayerSteamIDs {
 		if playerIDsBuilder.Len() > 0 {
 			playerIDsBuilder.WriteRune(',')
 		}
-		playerIDsBuilder.WriteString(strconv.Itoa(playerID))
+		playerIDsBuilder.WriteString(strconv.FormatInt(playerID, 10))
 	}
 
 	query := url.Values{}

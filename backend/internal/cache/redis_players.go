@@ -10,7 +10,7 @@ import (
 type Player struct {
 	DoesntExists bool `json:"doesnt_exists"`
 
-	SteamID string `json:"steam_id,omitempty"`
+	SteamID int64  `json:"steam_id,omitempty"`
 	Name    string `json:"name,omitempty"`
 
 	// Only for ETF2L

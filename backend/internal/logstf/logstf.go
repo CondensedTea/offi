@@ -35,7 +35,7 @@ func NewClient(rt http.RoundTripper) *Client {
 	}
 }
 
-func (c *Client) SearchLogs(ctx context.Context, players []int, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+func (c *Client) SearchLogs(ctx context.Context, players []int64, maps []string, playedAt time.Time) ([]Log, []Log, error) {
 	ctx, span := c.tracer.Start(ctx, "logstf.SearchLogs")
 	defer span.End()
 
@@ -55,13 +55,13 @@ func (c *Client) SearchLogs(ctx context.Context, players []int, maps []string, p
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func (c *Client) getLogsWithPlayers(ctx context.Context, players []int) (*Response, error) {
+func (c *Client) getLogsWithPlayers(ctx context.Context, players []int64) (*Response, error) {
 	var b strings.Builder
 	for _, steamID := range players {
 		if b.Len() > 0 {
 			b.WriteString(",")
 		}
-		b.WriteString(strconv.Itoa(steamID))
+		b.WriteString(strconv.FormatInt(steamID, 10))
 	}
 
 	// TODO: use undocumented format parameter:
