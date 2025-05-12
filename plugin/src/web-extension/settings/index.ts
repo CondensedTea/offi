@@ -16,6 +16,7 @@ export interface InterfaceSettingsItem {
   children?: InterfaceSettings;
   // for any type
   value?: ConfigValue;
+  enumValues?: string[];
   defaultValue?: ConfigValue;
   // when type is `range'
   min?: number;

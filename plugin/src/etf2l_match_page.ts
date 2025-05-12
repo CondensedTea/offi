@@ -45,7 +45,7 @@ export async function addLogLinks(): Promise<void> {
   try {
     logs = await getLogs(apiBaseUrl, matchId);
   } catch (e) {
-    if (e === NoLogsError || e.status === 425) {
+    if (e === NoLogsError) {
       return;
     }
     console.error("could not get logs: " + e.toString());
@@ -54,28 +54,29 @@ export async function addLogLinks(): Promise<void> {
 
   const primaryLogs: Log[] = [];
   const secondaryLogs: Log[] = [];
+
   logs.forEach((log) => {
     if (log.is_secondary) {
-      secondaryLogs.unshift(log);
+      secondaryLogs.push(log);
     } else {
-      primaryLogs.unshift(log);
+      primaryLogs.push(log);
     }
   });
 
   if (secondaryLogs.length > 0) {
-    const OtherLogList = document.createElement("ul");
+    const secondaryLogListNode = document.createElement("ul");
 
-    OtherLogList.append(...secondaryLogs.map(buildLogList))
+    secondaryLogListNode.append(...secondaryLogs.map(buildLogList))
 
-    createLogHeader(OtherLogList, false);
+    createLogHeader(secondaryLogListNode, false);
   }
 
   if (primaryLogs.length > 0) {
-    const PrimaryLogList = document.createElement("ul");
+    const primaryLogListNode = document.createElement("ul");
 
-    PrimaryLogList.append(...primaryLogs.map(buildLogList))
+    primaryLogListNode.append(...primaryLogs.map(buildLogList))
 
-    createLogHeader(PrimaryLogList, true);
+    createLogHeader(primaryLogListNode, true);
   }
 }
 

@@ -2,7 +2,7 @@ import { MatchResponse, Player } from "./api/types";
 import { getSettingValue } from "./web-extension/settings";
 import { getMatch } from "./api/get_match";
 import { getPlayers } from "./api/get_players";
-import { NoLogsError } from "./api/error";
+import { MatchNotFound } from "./api/error";
 
 const matchRe = RegExp("https://logs.tf/(\\d+)");
 
@@ -31,7 +31,7 @@ export async function addMatchLink() {
   try {
     res = await getMatch(apiBaseUrl, matchId);
   } catch (e) {
-    if (e === NoLogsError) {
+    if (e === MatchNotFound) {
       return;
     }
 
@@ -74,21 +74,22 @@ export async function addMatchLink() {
 
 export async function replacePlayerNames() {
   const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
+  const league = (getSettingValue<string>("league") as string).toLowerCase();
 
   const playerNodes = document.querySelectorAll("[id^=player_]");
 
   const steamPlayerNames: Map<string, string> = new Map();
 
   const playerIDs = Array.from(playerNodes).map((node) => {
-    const steamId = node.id.replace("player_", "");
+    const steamID = node.id.replace("player_", "");
     const oldName = node.querySelector(".log-player-name a").textContent;
 
-    steamPlayerNames.set(steamId, oldName);
+    steamPlayerNames.set(steamID, oldName);
 
-    return steamId;
+    return steamID;
   });
 
-  const players = await getPlayers(apiBaseUrl, playerIDs);
+  const players = await getPlayers(apiBaseUrl, league, playerIDs);
 
   const steamIDToETF2LID = new Map<string, string>();
   players.map((player) => {

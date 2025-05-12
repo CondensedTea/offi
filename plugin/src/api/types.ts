@@ -22,7 +22,7 @@ export type Player = {
 }
 
 export type Team = {
-  ID: number;
+  id: number;
   recruitment: Recruitment;
 }
 
@@ -34,13 +34,13 @@ export class Log {
   is_secondary: boolean;
   demo_id?: number;
 
-  constructor(data: Log) {
-    this.id = data.id;
-    this.title = data.title;
-    this.map = data.map;
-    this.played_at = new Date(data.played_at);
-    this.is_secondary = data.is_secondary;
-    this.demo_id = data.demo_id;
+  constructor(data: object) {
+    this.id = data["id"];
+    this.title = data["title"];
+    this.map = data["map"];
+    this.played_at = new Date(data["played_at"]);
+    this.is_secondary = data["is_secondary"];
+    this.demo_id = data["demo_id"];
   }
 }
 

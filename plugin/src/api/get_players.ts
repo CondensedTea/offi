@@ -2,14 +2,12 @@ import { Player, PlayersResponse } from "./types";
 import { APIError } from "./error";
 import { requestHeaders } from "./api";
 
-export async function getPlayers(apiBaseUrl: string, ids: string[], withRecruitmentStatus: boolean = false): Promise<Player[]> {
-  const playersURL = new URL(apiBaseUrl + "/players");
+export async function getPlayers(apiBaseUrl: string, league: string, steamIDs: string[]): Promise<Player[]> {
+  if (!["etf2l", "rgl"].includes(league)) throw new Error("Invalid league: " + league);
 
-  const idsString = ids.join(",");
+  const playersURL = new URL(apiBaseUrl + `/api/v1/${league}/players`);
 
-  playersURL.searchParams.append("id", idsString);
-
-  if (withRecruitmentStatus) playersURL.searchParams.append("with_recruitment_status", "true");
+  playersURL.searchParams.append("id", steamIDs.join(","));
 
   const res = await fetch(playersURL.toString(), {
     headers: requestHeaders,

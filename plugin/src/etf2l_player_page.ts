@@ -1,6 +1,6 @@
 import { Player, Recruitment, Ban } from "./api/types";
 import { getSettingValue } from "./web-extension/settings";
-import { getPlayers } from "./api/get_players";
+import { getEtf2lPlayer } from "./api/get_etf2l_player";
 
 const playerRe = RegExp("https://etf2l.org/forum/user/(\\d+)/");
 
@@ -82,22 +82,15 @@ function createBanEntryNode(ban: Ban): HTMLLIElement {
 
 export async function updatePlayerPage(showLft: boolean, showBans: boolean) {
   const apiBaseUrl = getSettingValue<string>("apiBaseURL") as string;
-  const playerId = getPlayerID();
+  const playerID = getPlayerID();
 
-  let players: Player[];
-
+  let player: Player;
   try {
-    players = await getPlayers(apiBaseUrl, [playerId], true);
+    player = await getEtf2lPlayer(apiBaseUrl, playerID, true);
   } catch (e) {
     console.error("failed to get player status: ", e.toString());
+    return
   }
-
-  if (players.length != 1) {
-    console.error("api returned more than 1 player");
-    return;
-  }
-
-  const player = players[0];
 
   if (showLft && player.recruitment != null) {
     await addPlayerStatus(player.recruitment);

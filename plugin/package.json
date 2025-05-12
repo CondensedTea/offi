@@ -1,24 +1,21 @@
 {
   "name": "offi",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "scripts": {
     "lint": "eslint src/*.ts src/api/*.ts",
     "build_ff": "parcel build firefox_manifest.json --dist-dir build/firefox --no-optimize --no-content-hash",
     "build_c": "parcel build chrome_manifest.json --dist-dir build/chrome --no-optimize --no-scope-hoist --no-content-hash"
   },
   "dependencies": {
-    "@parcel/config-webextension": "2.13.2",
-    "@parcel/core": "2.13.2",
-    "parcel": "2.13.2",
-    "parcel-namer-rewrite": "^2.10.3-rc.2",
-    "regenerator-runtime": "^0.13.9",
-    "webextension-polyfill": "^0.12.0"
+    "webextension-polyfill": "0.12.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
-    "@parcel/optimizer-data-url": "2.13.2",
-    "@parcel/transformer-inline-string": "2.13.2",
-    "@parcel/transformer-typescript-tsc": "2.13.2",
+    "@parcel/config-webextension": "2.14.4",
+    "@parcel/core": "2.14.4",
+    "@parcel/optimizer-data-url": "2.14.4",
+    "@parcel/transformer-inline-string": "2.14.4",
+    "@parcel/transformer-typescript-tsc": "2.14.4",
     "@types/node": "^22.9.3",
     "@types/webextension-polyfill": "^0.12.1",
     "@typescript-eslint/eslint-plugin": "8.24.0",
@@ -26,6 +23,8 @@
     "eslint": "^9.15.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-promise": "^6.0.0",
+    "parcel": "2.14.4",
+    "parcel-namer-rewrite": "^2.10.3-rc.2",
     "process": "^0.11.10",
     "svgo": "^3",
     "typescript": "^5.7.2",

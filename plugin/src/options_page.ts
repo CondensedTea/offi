@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   for (const [key, item] of Object.entries(settingsValues)) {
     const labelEl = document.createElement("label");
     const inputEl = document.createElement("input");
+    const selectEl = document.createElement("select");
     const textEl = document.createElement("div");
     textEl.className = "item-label";
 
@@ -36,9 +37,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           await setSettingValue(key, inputEl.value);
         });
         break;
+      case "enum":
+        textEl.textContent = item.label;
+
+        item.enumValues?.forEach((value) => {
+          const optionEl = document.createElement("option");
+          optionEl.value = value;
+          optionEl.textContent = value;
+          selectEl.appendChild(optionEl);
+        });
+        selectEl.value = item.value as string;
+        selectEl.addEventListener("change", async () => {
+          await setSettingValue(key, selectEl.value);
+        });
+        break;
     }
 
-    labelEl.appendChild(inputEl);
+    if (item.type === "enum") {
+      labelEl.appendChild(selectEl);
+    } else {
+      labelEl.appendChild(inputEl);
+    }
+
     labelEl.appendChild(textEl);
     optionsContainer.appendChild(labelEl);
   }
