@@ -118,7 +118,6 @@ func NewMiddleware[R Route, S Server[R]](finder S) func(http.Handler) http.Handl
 	return func(next http.Handler) http.Handler {
 		return otelhttp.NewHandler(next, "",
 			otelhttp.WithServerName("offi"),
-			otelhttp.WithPublicEndpoint(),
 			otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
 				route, ok := finder.FindPath(r.Method, r.URL)
 				if !ok {
