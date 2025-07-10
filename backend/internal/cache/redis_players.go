@@ -58,7 +58,7 @@ func (r Redis) GetPlayers(ctx context.Context, league string, playerIDs []int64)
 		} else {
 			var player Player
 			if err = json.Unmarshal([]byte(result.(string)), &player); err != nil {
-				return nil, fmt.Errorf("unmarshalling player: %w", err)
+				return nil, fmt.Errorf("unmarshaling player: %w", err)
 			}
 
 			players[playerIDs[i]] = &player

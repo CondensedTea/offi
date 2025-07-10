@@ -54,7 +54,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	retryTransport := internalHTTP.Transport(true)
 
 	etf2lClient := etf2l.New(retryTransport)
-	rglClient := rgl.NewClient(defaultTransport)
+	rglClient := rgl.NewClient(retryTransport)
 
 	logsClient := logstf.NewClient(defaultTransport)
 	demosClient := demostf.NewClient(defaultTransport)

@@ -7,20 +7,25 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/time/rate"
 )
 
 type Client struct {
-	client *http.Client
-	tracer trace.Tracer
+	client  *http.Client
+	limiter *rate.Limiter
+	tracer  trace.Tracer
 }
 
 func NewClient(rt http.RoundTripper) *Client {
 	return &Client{
-		client: &http.Client{Transport: rt},
-		tracer: otel.Tracer("rgl"),
+		client:  &http.Client{Transport: rt},
+		limiter: rate.NewLimiter(rate.Every(time.Second), 5),
+		tracer:  otel.Tracer("rgl"),
 	}
 }
 
@@ -33,6 +38,14 @@ func (c *Client) GetPlayers(ctx context.Context, playerIDs []int64) ([]Player, e
 	ctx, span := c.tracer.Start(ctx, "rgl.GetPlayers")
 	defer span.End()
 
+	t := time.Now()
+
+	if err := c.limiter.Wait(ctx); err != nil {
+		return nil, err
+	}
+
+	span.SetAttributes(attribute.Float64("rate_limit_wait", float64(time.Since(t).Milliseconds())))
+
 	stringPlayerIDs := make([]string, len(playerIDs))
 	for i, id := range playerIDs {
 		stringPlayerIDs[i] = strconv.FormatInt(id, 10)
@@ -40,7 +53,7 @@ func (c *Client) GetPlayers(ctx context.Context, playerIDs []int64) ([]Player, e
 
 	reqBytes, err := json.Marshal(stringPlayerIDs)
 	if err != nil {
-		return nil, fmt.Errorf("marshalling player IDs: %w", err)
+		return nil, fmt.Errorf("marshaling player IDs: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.rgl.gg/v0/profile/getmany", bytes.NewReader(reqBytes))

@@ -63,6 +63,7 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 }
 
 func (s *Service) getLogsForMatch(ctx context.Context, matchID int) (logs []db.Log, err error) {
+	// TODO: use cache for storing information that match exists
 	exists, err := s.db.MatchExists(ctx, matchID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get match %d from cache: %w", matchID, err)

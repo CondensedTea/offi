@@ -26,6 +26,10 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 	var players []gen.ETF2LPlayer
 
 	for _, playerID := range playerIDs {
+		if playerID == 0 {
+			continue
+		}
+
 		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, playerID)
 		switch {
 		case errors.Is(err, redis.Nil):

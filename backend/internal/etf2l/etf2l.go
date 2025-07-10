@@ -20,7 +20,7 @@ func New(rt http.RoundTripper) *Client {
 	return &Client{
 		apiURL:     "https://api-v2.etf2l.org",
 		httpClient: &http.Client{Transport: rt},
-		limiter:    rate.NewLimiter(rate.Every(time.Second), 6),
+		limiter:    rate.NewLimiter(rate.Every(time.Second), 5),
 		tracer:     otel.Tracer("etf2l"),
 	}
 }

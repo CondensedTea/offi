@@ -29,6 +29,10 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int64, withRecruit
 	var players []gen.Player
 
 	for _, playerID := range playerIDs {
+		if playerID == 0 {
+			continue
+		}
+
 		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, playerID)
 		switch {
 		case errors.Is(err, redis.Nil):
