@@ -10,14 +10,14 @@ import (
 )
 
 func (r Client) SaveMatchExists(ctx context.Context, matchID int) error {
-	err := r.client.Set(ctx, strconv.Itoa(matchID), 1, 7*24*time.Hour).Err()
-	if errors.Is(err, redis.Nil) {
-		return nil
-	}
-
-	return err
+	return r.client.Set(ctx, strconv.Itoa(matchID), 1, 7*24*time.Hour).Err()
 }
 
 func (r Client) MatchExists(ctx context.Context, matchID int) (bool, error) {
-	return r.client.Get(ctx, strconv.Itoa(matchID)).Bool()
+	res, err := r.client.Get(ctx, strconv.Itoa(matchID)).Result()
+	if errors.Is(err, redis.Nil) {
+		return false, nil
+	}
+
+	return strconv.ParseBool(res)
 }
