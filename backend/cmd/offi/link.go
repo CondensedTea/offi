@@ -54,7 +54,7 @@ func linkAction(ctx context.Context, cmd *cli.Command) error {
 
 		log, err := logstfClient.GetLog(ctx, id)
 		if err != nil {
-			return fmt.Errorf("fetching log %d: %w", logID, err)
+			return fmt.Errorf("fetching log %q: %w", logID, err)
 		}
 
 		if err = dbClient.SaveLog(ctx, tx, db.Log{

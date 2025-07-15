@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"offi/internal/cache"
 	"offi/internal/closer"
 	"offi/internal/db"
 	"offi/internal/demostf"
@@ -14,6 +13,7 @@ import (
 	gen "offi/internal/gen/api"
 	internalHTTP "offi/internal/http"
 	"offi/internal/logstf"
+	"offi/internal/redis"
 	"offi/internal/rgl"
 	"offi/internal/service"
 	"offi/internal/tracing"
@@ -59,7 +59,7 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	logsClient := logstf.NewClient(defaultTransport)
 	demosClient := demostf.NewClient(defaultTransport)
 
-	cacheClient, err := cache.New(os.Getenv("REDIS_URL"))
+	cacheClient, err := redis.NewClient(os.Getenv("REDIS_URL"))
 	if err != nil {
 		return fmt.Errorf("failed to init redis client: %w", err)
 	}

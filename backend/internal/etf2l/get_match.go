@@ -19,14 +19,14 @@ var (
 
 type Competition struct {
 	Category string `json:"category"`
-	Id       int    `json:"id"`
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Type     string `json:"type"`
-	Url      string `json:"url"`
+	URL      string `json:"url"`
 }
 
 type Division struct {
-	Id           int    `json:"id"`
+	ID           int    `json:"id"`
 	Name         string `json:"name"`
 	SkillContrib int    `json:"skill_contrib"`
 	Tier         int    `json:"tier"`
@@ -43,7 +43,7 @@ type match struct {
 	Competition Competition `json:"competition"`
 	Defaultwin  bool        `json:"defaultwin"`
 	Division    Division    `json:"division"`
-	Id          int         `json:"id"`
+	ID          int         `json:"id"`
 	Maps        []string    `json:"maps"`
 	Round       string      `json:"round"`
 	ScheduledAt int         `json:"time"`
@@ -127,7 +127,7 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 	}
 
 	return &Match{
-		ID:             matchResponse.Match.Id,
+		ID:             matchResponse.Match.ID,
 		PlayerSteamIDs: playerIDs,
 		Maps:           matchResponse.Match.Maps,
 		SubmittedAt:    time.Unix(int64(matchResponse.Match.SubmittedAt), 0),

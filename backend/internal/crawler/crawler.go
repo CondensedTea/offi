@@ -54,7 +54,7 @@ func (c *Crawler) crawlTeamRecruitments() error {
 	for i, p := range posts {
 		recruitmentID, err := p.RecruitmentID()
 		if err != nil {
-			return fmt.Errorf("parsing recrutiment ID: %w", err)
+			return fmt.Errorf("parsing recruitment ID: %w", err)
 		}
 
 		teamID, err := p.AuthorID(etf2l.TeamPost)

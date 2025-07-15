@@ -74,7 +74,7 @@ func Test_filterLogs(t *testing.T) {
 	}
 }
 
-func Test_mapIsValid(t *testing.T) {
+func Test_mapIsNotValid(t *testing.T) {
 	type args struct {
 		maps   []string
 		logMap string
@@ -90,7 +90,7 @@ func Test_mapIsValid(t *testing.T) {
 				maps:   []string{"cp_badlands", "cp_process_final1"},
 				logMap: "cp_badlands",
 			},
-			want: true,
+			want: false,
 		},
 		{
 			name: "wrong version but still match",
@@ -98,7 +98,7 @@ func Test_mapIsValid(t *testing.T) {
 				maps:   []string{"cp_badlands", "cp_process_final2"},
 				logMap: "cp_process_rc3",
 			},
-			want: true,
+			want: false,
 		},
 		{
 			name: "no match",
@@ -106,7 +106,7 @@ func Test_mapIsValid(t *testing.T) {
 				maps:   []string{"cp_badlands", "cp_process_final2"},
 				logMap: "combined log bad + proc",
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {

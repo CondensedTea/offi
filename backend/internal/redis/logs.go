@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (r Redis) SetLogError(ctx context.Context, matchID int, err error) error {
+func (r Client) SetLogError(ctx context.Context, matchID int, err error) error {
 	const errorCacheDuration = 3 * time.Hour
 
 	if !r.enableErrorCaching {
@@ -20,7 +20,7 @@ func (r Redis) SetLogError(ctx context.Context, matchID int, err error) error {
 	return r.client.Set(ctx, match, err.Error(), errorCacheDuration).Err()
 }
 
-func (r Redis) CheckLogError(ctx context.Context, matchID int) error {
+func (r Client) CheckLogError(ctx context.Context, matchID int) error {
 	if !r.enableErrorCaching {
 		return nil
 	}

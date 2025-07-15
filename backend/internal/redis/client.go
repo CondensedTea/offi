@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"errors"
@@ -11,17 +11,19 @@ import (
 var ErrCached = errors.New("cached error, retry later")
 
 const (
-	LeagueRGL   = "rgl"
+	// LeagueRGL represents the rgl.gg league.
+	LeagueRGL = "rgl"
+	// LeagueETF2L represents the etf2l.org league.
 	LeagueETF2L = "etf2l"
 )
 
-type Redis struct {
+type Client struct {
 	client *redis.Client
 
 	enableErrorCaching bool
 }
 
-func New(url string) (*Redis, error) {
+func NewClient(url string) (*Client, error) {
 	opts, err := redis.ParseURL(url)
 	if err != nil {
 		return nil, err
@@ -33,11 +35,7 @@ func New(url string) (*Redis, error) {
 		return nil, err
 	}
 
-	if err = redisotel.InstrumentMetrics(client); err != nil {
-		return nil, err
-	}
-
 	_, disableErrCaching := os.LookupEnv("DISABLE_ERROR_CACHING")
 
-	return &Redis{client: client, enableErrorCaching: !disableErrCaching}, nil
+	return &Client{client: client, enableErrorCaching: !disableErrCaching}, nil
 }

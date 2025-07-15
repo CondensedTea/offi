@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"offi/internal/cache"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/redis"
 
-	"github.com/redis/go-redis/v9"
+	goRedis "github.com/redis/go-redis/v9"
 )
 
 func (s *Service) GetETF2LPlayers(ctx context.Context, p gen.GetETF2LPlayersParams) (r *gen.GetETF2LPlayersOK, _ error) {
@@ -30,13 +30,13 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 			continue
 		}
 
-		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, playerID)
+		player, err := s.cache.GetPlayer(ctx, redis.LeagueETF2L, playerID)
 		switch {
-		case errors.Is(err, redis.Nil):
+		case errors.Is(err, goRedis.Nil):
 			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
-				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
+				if cacheErr := s.cache.SetPlayer(ctx, redis.LeagueETF2L, playerID, redis.Player{DoesntExists: true}); cacheErr != nil {
 					return nil, fmt.Errorf("failed to save unknown player to cache: %w", cacheErr)
 				}
 				continue
@@ -45,7 +45,7 @@ func (s *Service) getETF2LPlayers(ctx context.Context, playerIDs []int64, withRe
 			}
 
 			player = etf2lPlayer.ToCache()
-			if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, player); cacheErr != nil {
+			if cacheErr := s.cache.SetPlayer(ctx, redis.LeagueETF2L, playerID, player); cacheErr != nil {
 				return nil, fmt.Errorf("failed to save player to cache: %w", cacheErr)
 			}
 		case err != nil:

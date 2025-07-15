@@ -11,8 +11,11 @@ import (
 type Post uint
 
 const (
+	// Unknown represents an unexpected or unrecognized post type.
 	Unknown Post = iota
+	// Team represents a recruitment post for a team.
 	Team
+	// Player represents a recruitment post for a player.
 	Player
 )
 

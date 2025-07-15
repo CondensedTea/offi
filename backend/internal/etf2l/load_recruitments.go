@@ -11,8 +11,10 @@ import (
 type postType string
 
 const (
+	// PlayerPost represents a recruitment post for ETF2L players.
 	PlayerPost = "player"
-	TeamPost   = "team"
+	// TeamPost represents a recruitment post for ETF2L teams.
+	TeamPost = "team"
 )
 
 func (c Client) LoadRecruitmentPosts(ctx context.Context, postType postType, lastID int) ([]Recruitment, error) {
@@ -53,7 +55,7 @@ func (c Client) LoadRecruitmentPosts(ctx context.Context, postType postType, las
 		for _, recruitment := range response.Recruitments.Data {
 			id, err := recruitment.RecruitmentID()
 			if err != nil {
-				return nil, fmt.Errorf("parsing recuritment ID: %w", err)
+				return nil, fmt.Errorf("parsing recruitment ID: %w", err)
 			}
 			if id > lastID {
 				entries = append(entries, recruitment)
@@ -67,9 +69,9 @@ func (c Client) LoadRecruitmentPosts(ctx context.Context, postType postType, las
 
 		if response.Recruitments.NextPageURL == "" || id <= lastID {
 			break
-		} else {
-			url = response.Recruitments.NextPageURL
 		}
+
+		url = response.Recruitments.NextPageURL
 	}
 	return entries, nil
 }

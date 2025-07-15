@@ -43,7 +43,7 @@ func Retry(baseTransport http.RoundTripper, maxRetries int) func(http.RoundTripp
 						case <-req.Context().Done():
 							timer.Stop()
 							err = req.Context().Err()
-							break
+							return
 						case <-timer.C:
 						}
 

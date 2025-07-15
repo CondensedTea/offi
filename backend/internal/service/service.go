@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"offi/internal/cache"
 	"offi/internal/db"
 	"offi/internal/demostf"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
 	"offi/internal/logstf"
+	"offi/internal/redis"
 	"offi/internal/rgl"
 	"time"
 
@@ -19,13 +19,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Cache interface {
-	SetLogError(ctx context.Context, matchId int, err error) error
-	CheckLogError(ctx context.Context, matchId int) error
+type cache interface {
+	SetLogError(ctx context.Context, matchID int, err error) error
+	CheckLogError(ctx context.Context, matchID int) error
 
-	GetPlayer(ctx context.Context, league string, playerID int64) (cache.Player, error)
-	GetPlayers(ctx context.Context, league string, playerIDs []int64) (map[int64]*cache.Player, error)
-	SetPlayer(ctx context.Context, league string, playerID int64, player cache.Player) error
+	GetPlayer(ctx context.Context, league string, playerID int64) (redis.Player, error)
+	GetPlayers(ctx context.Context, league string, playerIDs []int64) (map[int64]*redis.Player, error)
+	SetPlayer(ctx context.Context, league string, playerID int64, player redis.Player) error
+
+	SaveMatchExists(ctx context.Context, matchID int) error
+	MatchExists(ctx context.Context, matchID int) (bool, error)
 }
 
 type database interface {
@@ -34,7 +37,7 @@ type database interface {
 	GetLastRecruitmentForAuthor(ctx context.Context, postType db.Post, authorID int64) (db.Recruitment, error)
 
 	SaveLog(ctx context.Context, tx pgx.Tx, log db.Log) error
-	MatchExists(ctx context.Context, mathcID int) (bool, error)
+	MatchExists(ctx context.Context, matchID int) (bool, error)
 	GetLogsByMatchID(ctx context.Context, matchID int) ([]db.Log, error)
 	GetMatchByLogID(ctx context.Context, logID int) (db.Match, error)
 	SaveMatchTx(ctx context.Context, tx pgx.Tx, match db.Match) error
@@ -53,7 +56,7 @@ type demostfClient interface {
 type Service struct {
 	gen.UnimplementedHandler
 
-	cache Cache
+	cache cache
 	db    database
 	etf2l *etf2l.Client
 	rgl   rglClient
@@ -63,7 +66,7 @@ type Service struct {
 	resolveDemoQueue chan resolveDemoRequest
 }
 
-func NewService(ctx context.Context, cache Cache, db database, etf2lClient *etf2l.Client, rgl rglClient, logs *logstf.Client, demo demostfClient) *Service {
+func NewService(ctx context.Context, cache cache, db database, etf2lClient *etf2l.Client, rgl rglClient, logs *logstf.Client, demo demostfClient) *Service {
 	s := &Service{
 		cache:            cache,
 		db:               db,

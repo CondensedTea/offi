@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"offi/internal/cache"
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/redis"
 	"unsafe"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/redis/go-redis/v9"
+	goRedis "github.com/redis/go-redis/v9"
 )
 
 func (s *Service) GetPlayers(ctx context.Context, p gen.GetPlayersParams) (r *gen.GetPlayersOK, _ error) {
@@ -33,13 +33,13 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int64, withRecruit
 			continue
 		}
 
-		player, err := s.cache.GetPlayer(ctx, cache.LeagueETF2L, playerID)
+		player, err := s.cache.GetPlayer(ctx, redis.LeagueETF2L, playerID)
 		switch {
-		case errors.Is(err, redis.Nil):
+		case errors.Is(err, goRedis.Nil):
 			etf2lPlayer, err := s.etf2l.GetPlayer(ctx, playerID)
 			switch {
 			case errors.Is(err, etf2l.ErrPlayerNotFound):
-				if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, cache.Player{DoesntExists: true}); cacheErr != nil {
+				if cacheErr := s.cache.SetPlayer(ctx, redis.LeagueETF2L, playerID, redis.Player{DoesntExists: true}); cacheErr != nil {
 					return nil, fmt.Errorf("failed to save unknown player to cache: %w", cacheErr)
 				}
 				continue
@@ -48,7 +48,7 @@ func (s *Service) getPlayers(ctx context.Context, playerIDs []int64, withRecruit
 			}
 
 			player = etf2lPlayer.ToCache()
-			if cacheErr := s.cache.SetPlayer(ctx, cache.LeagueETF2L, playerID, player); cacheErr != nil {
+			if cacheErr := s.cache.SetPlayer(ctx, redis.LeagueETF2L, playerID, player); cacheErr != nil {
 				return nil, fmt.Errorf("failed to save player to cache: %w", cacheErr)
 			}
 		case err != nil:
@@ -101,7 +101,7 @@ func (s *Service) getRecruitmentStatusForPlayer(ctx context.Context, playerID in
 	return gen.NewOptRecruitmentInfo(gen.RecruitmentInfo{
 		Skill:    recruitment.SkillLevel,
 		URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
-		Classes:  *(*[]gen.GameClass)(unsafe.Pointer(&recruitment.Classes)),
+		Classes:  *(*[]gen.GameClass)(unsafe.Pointer(&recruitment.Classes)), //nolint:gosec
 		GameMode: recruitment.TeamType,
 	}), nil
 }

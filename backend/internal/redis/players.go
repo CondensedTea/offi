@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -32,7 +32,7 @@ func (p *Player) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, &p)
 }
 
-func (r Redis) GetPlayer(ctx context.Context, league string, playerID int64) (Player, error) {
+func (r Client) GetPlayer(ctx context.Context, league string, playerID int64) (Player, error) {
 	key := fmt.Sprintf("%s-player-%d", league, playerID)
 
 	var player Player
@@ -40,7 +40,7 @@ func (r Redis) GetPlayer(ctx context.Context, league string, playerID int64) (Pl
 	return player, err
 }
 
-func (r Redis) GetPlayers(ctx context.Context, league string, playerIDs []int64) (map[int64]*Player, error) {
+func (r Client) GetPlayers(ctx context.Context, league string, playerIDs []int64) (map[int64]*Player, error) {
 	keys := make([]string, len(playerIDs))
 	for i, p := range playerIDs {
 		keys[i] = fmt.Sprintf("%s-player-%d", league, p)
@@ -68,7 +68,7 @@ func (r Redis) GetPlayers(ctx context.Context, league string, playerIDs []int64)
 	return players, nil
 }
 
-func (r Redis) SetPlayer(ctx context.Context, league string, playerID int64, player Player) error {
+func (r Client) SetPlayer(ctx context.Context, league string, playerID int64, player Player) error {
 	const (
 		knownPlayerExpiration   = 5 * 24 * time.Hour
 		unknownPlayerExpiration = 10 * 24 * time.Hour

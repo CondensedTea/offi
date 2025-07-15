@@ -1,0 +1,55 @@
+version: "2"
+run:
+  concurrency: 8
+  issues-exit-code: 1
+  tests: true
+linters:
+  default: none
+  enable:
+    - errcheck
+    - goconst
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unused
+  settings:
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+  exclusions:
+    generated: lax
+    rules:
+      - path: (.+)\.go$
+        text: G104
+      - path: (.+)\.go$
+        text: exported func .* returns unexported type .*, which can be annoying to use
+      - path: (.+)\.go$
+        text: should have a package comment
+      - path: (.+)\.go$
+        text: don't use an underscore in package name
+      - path: (.+)\.go$
+        text: Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Rollback|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked
+      - path: (.+)\.go$
+        text: should check returned error before deferring
+      - path: (.+)\.go$
+        text: BindPFlags|BindEnv
+      - path: (.+)\.go$
+        text: should have comment or be unexported
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

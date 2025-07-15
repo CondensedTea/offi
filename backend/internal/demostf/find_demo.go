@@ -65,7 +65,7 @@ func (c *Client) FindDemo(ctx context.Context, req FindDemoRequest) (Demo, error
 
 	var r []Demo
 	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return Demo{}, fmt.Errorf("decoding reponse: %w", err)
+		return Demo{}, fmt.Errorf("decoding response: %w", err)
 	}
 
 	if len(r) == 0 {

@@ -27,7 +27,7 @@ func (s *Service) GetTeam(ctx context.Context, p api.GetTeamParams) (api.GetTeam
 			Recruitment: api.RecruitmentInfo{
 				Skill:    recruitment.SkillLevel,
 				URL:      fmt.Sprintf("https://etf2l.org/recruitment/%d/", recruitment.RecruitmentID),
-				Classes:  *(*[]api.GameClass)(unsafe.Pointer(&recruitment.Classes)),
+				Classes:  *(*[]api.GameClass)(unsafe.Pointer(&recruitment.Classes)), //nolint:gosec
 				GameMode: recruitment.TeamType,
 			},
 		},

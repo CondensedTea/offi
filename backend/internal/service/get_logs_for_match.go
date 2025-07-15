@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"offi/internal/cache"
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/redis"
 	"time"
 )
 
@@ -20,7 +20,7 @@ const maxPlayers = 18
 func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatchParams) (r gen.GetLogsForMatchRes, _ error) {
 	logs, err := s.getLogsForMatch(ctx, params.MatchID)
 	if err != nil {
-		if errors.Is(err, cache.ErrCached) {
+		if errors.Is(err, redis.ErrCached) {
 			return &gen.ErrorStatusCode{
 				StatusCode: http.StatusTooEarly,
 				Response:   gen.Error{Error: err.Error()},
@@ -63,16 +63,15 @@ func (s *Service) GetLogsForMatch(ctx context.Context, params gen.GetLogsForMatc
 }
 
 func (s *Service) getLogsForMatch(ctx context.Context, matchID int) (logs []db.Log, err error) {
-	// TODO: use cache for storing information that match exists
-	exists, err := s.db.MatchExists(ctx, matchID)
+	exists, err := s.matchExists(ctx, matchID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get match %d from cache: %w", matchID, err)
+		return nil, err
 	}
 
 	if !exists {
 		if err = s.cache.CheckLogError(ctx, matchID); err != nil {
 			return nil, err
-		}
+		} // TODO: store together with match exists?
 		logs, err = s.saveNewMatch(ctx, matchID)
 		if err != nil {
 			if cacheErr := s.cache.SetLogError(ctx, matchID, err); cacheErr != nil {
@@ -89,6 +88,30 @@ func (s *Service) getLogsForMatch(ctx context.Context, matchID int) (logs []db.L
 	}
 
 	return logs, nil
+}
+
+func (s *Service) matchExists(ctx context.Context, matchID int) (bool, error) {
+	existsCached, err := s.cache.MatchExists(ctx, matchID)
+	if err != nil {
+		return false, fmt.Errorf("checking if match %d exists in cache: %w", matchID, err)
+	}
+
+	if existsCached {
+		return true, nil
+	}
+
+	exists, err := s.db.MatchExists(ctx, matchID)
+	if err != nil {
+		return false, fmt.Errorf("check if match %d exists in db: %w", matchID, err)
+	}
+
+	if exists {
+		if err = s.cache.SaveMatchExists(ctx, matchID); err != nil {
+			return false, fmt.Errorf("saving match exists in cache: %w", err)
+		}
+	}
+
+	return exists, nil
 }
 
 func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, error) {
@@ -170,6 +193,10 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 
 	if err = tx.Commit(ctx); err != nil {
 		return nil, err
+	}
+
+	if err = s.cache.SaveMatchExists(ctx, matchID); err != nil {
+		return nil, fmt.Errorf("failed to save match exists in cache: %w", err)
 	}
 
 	go func() {

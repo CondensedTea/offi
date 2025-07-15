@@ -3,11 +3,11 @@ package etf2l
 import (
 	"errors"
 	"fmt"
-	"offi/internal/cache"
+	"offi/internal/redis"
 )
 
 type Steam struct {
-	Id64 string `json:"id64"`
+	ID64 string `json:"id64"`
 }
 
 type URLs struct {
@@ -98,17 +98,17 @@ type PlayerResponse struct {
 }
 
 // ToCache converts a Player to a cache.Player
-func (p Player) ToCache() cache.Player {
-	var bans = make([]cache.PlayerBan, len(p.Bans))
+func (p Player) ToCache() redis.Player {
+	var bans = make([]redis.PlayerBan, len(p.Bans))
 	for i, v := range p.Bans {
-		bans[i] = cache.PlayerBan{
+		bans[i] = redis.PlayerBan{
 			Start:  v.Start,
 			End:    v.End,
 			Reason: v.Reason,
 		}
 	}
 
-	return cache.Player{
+	return redis.Player{
 		ID:      p.ID,
 		Bans:    bans,
 		SteamID: p.Steam.ID64,

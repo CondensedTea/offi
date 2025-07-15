@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"offi/internal/cache"
 	gen "offi/internal/gen/api"
+	"offi/internal/redis"
 )
 
 func (s *Service) GetRGLPlayers(ctx context.Context, p gen.GetRGLPlayersParams) (r *gen.GetRGLPlayersOK, _ error) {
 	var players []gen.RGLPlayer
 
-	cachePlayers, err := s.cache.GetPlayers(ctx, cache.LeagueRGL, p.ID)
+	cachePlayers, err := s.cache.GetPlayers(ctx, redis.LeagueRGL, p.ID)
 	if err != nil {
 		return nil, fmt.Errorf("getting players from cache: %w", err)
 	}
@@ -33,7 +33,7 @@ func (s *Service) GetRGLPlayers(ctx context.Context, p gen.GetRGLPlayersParams) 
 	}
 
 	for _, player := range resolvedPlayers {
-		if err = s.cache.SetPlayer(ctx, cache.LeagueRGL, player.SteamID, cache.Player{
+		if err = s.cache.SetPlayer(ctx, redis.LeagueRGL, player.SteamID, redis.Player{
 			SteamID: player.SteamID,
 			Name:    player.Name,
 		}); err != nil {
