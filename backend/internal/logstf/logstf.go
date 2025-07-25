@@ -15,7 +15,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-var logger = slog.With("component", "logs-tf")
+var logger = slog.With("component", "logstf")
 
 const (
 	matchPlayedOffset = 3 * 24 * time.Hour
@@ -35,15 +35,31 @@ func NewClient(rt http.RoundTripper) *Client {
 	}
 }
 
-func (c *Client) SearchLogs(ctx context.Context, players []int64, maps []string, playedAt time.Time) ([]Log, []Log, error) {
+type Format uint
+
+const (
+	FormatUnknown Format = iota
+	Format6v6
+	Format9v9
+	Format2v2
+)
+
+type SearchLogsRequest struct {
+	PlayerIDs []int64
+	Maps      []string
+	Format    Format
+	PlayedAt  time.Time
+}
+
+func (c *Client) SearchLogs(ctx context.Context, params SearchLogsRequest) ([]Log, []Log, error) {
 	ctx, span := c.tracer.Start(ctx, "logstf.SearchLogs")
 	defer span.End()
 
-	resp, err := c.getLogsWithPlayers(ctx, players)
+	resp, err := c.getLogsWithPlayers(ctx, params.PlayerIDs, params.Format)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get players from logs.tf api: %w", err)
 	}
-	matchLogs, secondaryLogs := filterLogs(maps, resp.Logs, playedAt)
+	matchLogs, secondaryLogs := filterLogs(params.Maps, resp.Logs, params.PlayedAt)
 
 	span.SetAttributes(
 		attribute.Int("total_logs_count", len(resp.Logs)),
@@ -55,7 +71,7 @@ func (c *Client) SearchLogs(ctx context.Context, players []int64, maps []string,
 }
 
 // getLogsWithPlayers gets logs with given players from logs.tf API
-func (c *Client) getLogsWithPlayers(ctx context.Context, players []int64) (*Response, error) {
+func (c *Client) getLogsWithPlayers(ctx context.Context, players []int64, format Format) (*Response, error) {
 	var b strings.Builder
 	for _, steamID := range players {
 		if b.Len() > 0 {
@@ -64,10 +80,13 @@ func (c *Client) getLogsWithPlayers(ctx context.Context, players []int64) (*Resp
 		b.WriteString(strconv.FormatInt(steamID, 10))
 	}
 
-	// TODO: use undocumented format parameter:
-	// https://github.com/alevoska/logstf-web/blob/master/pylogstf/controllers/api.py#L156-L165
+	u := "https://logs.tf/api/v1/log?player=" + b.String()
 
-	u := fmt.Sprintf("https://logs.tf/api/v1/log?player=%s", b.String())
+	if format != FormatUnknown {
+		// [format] applies additional filtering to the query, speeds up API call:
+		// https://github.com/alevoska/logstf-web/blob/master/pylogstf/controllers/api.py#L156-L165
+		u += "&format=" + format.String()
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, http.NoBody)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"offi/internal/db"
 	"offi/internal/etf2l"
 	gen "offi/internal/gen/api"
+	"offi/internal/logstf"
 	"offi/internal/redis"
 	"time"
 )
@@ -120,8 +121,11 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 		return nil, fmt.Errorf("failed to get etf2l match: %w", err)
 	}
 
-	if len(match.PlayerSteamIDs) > maxPlayers {
+	if len(match.PlayerSteamIDs) > maxPlayers || match.CompetitionType == "1v1" {
 		// logs.tf does not allow searching for more than 18 players, so we don't search logs and only save the match
+		// TODO: api-v2 returns `team_id: null` for mercs. It is can be used to search logs without 19th/20th player.
+
+		// There is no logs for MGE matches so we skip them altogether
 		if err = s.db.SaveMatch(ctx, db.Match{
 			MatchID:     matchID,
 			Competition: match.Competition,
@@ -135,13 +139,27 @@ func (s *Service) saveNewMatch(ctx context.Context, matchID int) ([]db.Log, erro
 		return []db.Log{}, nil
 	}
 
-	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, match.PlayerSteamIDs, match.Maps, match.SubmittedAt)
+	var format logstf.Format
+	switch match.CompetitionType {
+	case "Highlander":
+		format = logstf.Format9v9
+	case "6v6":
+		format = logstf.Format6v6
+	default:
+		format = logstf.FormatUnknown
+	}
+
+	matchLogs, secondaryLogs, err := s.logs.SearchLogs(ctx, logstf.SearchLogsRequest{
+		PlayerIDs: match.PlayerSteamIDs,
+		Maps:      match.Maps,
+		Format:    format,
+		PlayedAt:  match.SubmittedAt,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to search logs: %w", err)
 	}
 
 	logs := make([]db.Log, 0, len(matchLogs)+len(secondaryLogs))
-
 	for _, log := range matchLogs {
 		logs = append(logs, db.Log{
 			MatchID:     matchID,

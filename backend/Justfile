@@ -7,6 +7,7 @@ deps:
     GOBIN="$(pwd)/bin" go install github.com/ogen-go/ogen/cmd/ogen@v1.14.0
     GOBIN="$(pwd)/bin" go install github.com/pressly/goose/v3/cmd/goose@v3.24.1
     GOBIN="$(pwd)/bin" go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.2.2
+    GOBIN="$(pwd)/bin" go install github.com/dmarkham/enumer@v1.5.11
 
 build:
     CGO_ENABLED=0 go build -ldflags="-X 'offi/internal/build_info.Version=dev'" -o bin/offi ./cmd/offi
