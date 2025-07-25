@@ -19,9 +19,9 @@ type Player struct {
 }
 
 type PlayerBan struct {
-	Start  int    `json:"start"`
-	End    int    `json:"end"`
-	Reason string `json:"reason"`
+	Start  int    `json:"start,omitempty"`
+	End    int    `json:"end,omitempty"`
+	Reason string `json:"reason,omitempty"`
 }
 
 func (p Player) MarshalBinary() (data []byte, err error) {

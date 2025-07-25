@@ -41,7 +41,7 @@ func Init(ctx context.Context) {
 		return
 	}
 
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_DISABLE_METRICS"); !ok {
+	if _, ok = os.LookupEnv("OTEL_EXPORTER_DISABLE_METRICS"); !ok {
 		if err = initMeterProvider(ctx, res, otlpEndpoint); err != nil {
 			log.Fatal(err)
 		}

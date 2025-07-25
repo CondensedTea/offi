@@ -3,10 +3,15 @@ services:
     build: .
     environment:
       - "REDIS_URL=redis://cache:6379/1"
+      - "POSTGRES_URL=postgres://postgres:postgres@postgres:5432/offi?sslmode=disable"
+      - "OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317"
+      - "OTEL_EXPORTER_DISABLE_METRICS=1"
     ports:
-      - "127.0.0.1:8085:8080"
-    links:
+      - "127.0.0.1:8080:8080"
+    depends_on:
       - cache
+      - postgres
+      - jaeger
   cache:
     image: redis:8-alpine
     restart: unless-stopped
@@ -23,6 +28,10 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "127.0.0.1:5432:5432"
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.8.0
+    ports:
+      - "127.0.0.1:16686:16686"
 volumes:
   cache:
     driver: local

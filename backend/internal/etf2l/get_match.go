@@ -18,18 +18,12 @@ var (
 )
 
 type Competition struct {
-	Category string `json:"category"`
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Type     string `json:"type"`
-	URL      string `json:"url"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 type Division struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	SkillContrib int    `json:"skill_contrib"`
-	Tier         int    `json:"tier"`
+	Name string `json:"name"`
 }
 
 type MapResult struct {
@@ -46,11 +40,9 @@ type match struct {
 	ID          int         `json:"id"`
 	Maps        []string    `json:"maps"`
 	Round       string      `json:"round"`
-	ScheduledAt int         `json:"time"`
 	SubmittedAt int         `json:"submitted"`
 	Week        int         `json:"week"`
 	Players     []Player    `json:"players"`
-	ByeWeek     bool        `json:"bye_week"`
 	MapResults  []MapResult `json:"map_results"`
 }
 
@@ -59,10 +51,11 @@ type Match struct {
 	Maps           []string
 	SubmittedAt    time.Time
 
-	ID          int
-	Competition string
-	Tier        string
-	Stage       string
+	ID              int
+	Competition     string
+	CompetitionType string
+	Tier            string
+	Stage           string
 }
 
 type MatchResponse struct {
@@ -127,12 +120,13 @@ func (c Client) GetMatch(ctx context.Context, id int) (*Match, error) {
 	}
 
 	return &Match{
-		ID:             matchResponse.Match.ID,
-		PlayerSteamIDs: playerIDs,
-		Maps:           matchResponse.Match.Maps,
-		SubmittedAt:    time.Unix(int64(matchResponse.Match.SubmittedAt), 0),
-		Competition:    matchResponse.Match.Competition.Name,
-		Tier:           matchResponse.Match.Division.Name,
-		Stage:          matchResponse.Match.Round,
+		ID:              matchResponse.Match.ID,
+		PlayerSteamIDs:  playerIDs,
+		Maps:            matchResponse.Match.Maps,
+		SubmittedAt:     time.Unix(int64(matchResponse.Match.SubmittedAt), 0),
+		Competition:     matchResponse.Match.Competition.Name,
+		CompetitionType: matchResponse.Match.Competition.Type,
+		Tier:            matchResponse.Match.Division.Name,
+		Stage:           matchResponse.Match.Round,
 	}, nil
 }

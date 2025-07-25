@@ -85,7 +85,6 @@ func serveAction(ctx context.Context, _ *cli.Command) error {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Recoverer)
-	router.Use(debugMw)
 	router.Use(corsHandler.Handler)
 	router.Use(tracing.NewMiddleware(handler))
 	router.Use(tracing.InjectTracing)
@@ -129,14 +128,4 @@ func notAllowedWithCORS(handler *cors.Cors) func(w http.ResponseWriter, r *http.
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	}
-}
-
-var debugMw = func(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if flag := r.URL.Query().Get("debug"); flag != "" {
-			slog.WarnContext(r.Context(), "http request debug", "headers", r.Header)
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
