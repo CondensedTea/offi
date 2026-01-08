@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ogen-go/ogen/otelogen"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -95,6 +96,7 @@ func initMeterProvider(ctx context.Context, res *resource.Resource, endpoint str
 	meterProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(5*time.Second))),
 		sdkmetric.WithResource(res),
+		sdkmetric.WithView(ogenHistogramBucketView()),
 	)
 	otel.SetMeterProvider(meterProvider)
 
@@ -140,4 +142,18 @@ func InjectTracing(next http.Handler) http.Handler {
 
 func OTelHTTPTransport(next http.RoundTripper) http.RoundTripper {
 	return otelhttp.NewTransport(next)
+}
+
+func ogenHistogramBucketView() sdkmetric.View {
+	return sdkmetric.NewView(
+		sdkmetric.Instrument{
+			Name: otelogen.ServerDuration,
+			Kind: sdkmetric.InstrumentKindHistogram,
+		},
+		sdkmetric.Stream{
+			Aggregation: sdkmetric.AggregationExplicitBucketHistogram{
+				Boundaries: []float64{10, 50, 100, 250, 500, 1000, 2500, 5000, 7500, 10000},
+			},
+		},
+	)
 }

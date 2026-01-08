@@ -8,16 +8,15 @@ import (
 	"time"
 
 	"github.com/go-faster/errors"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/metric"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-	"go.opentelemetry.io/otel/trace"
-
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/otelogen"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type codeRecorder struct {
@@ -28,6 +27,10 @@ type codeRecorder struct {
 func (c *codeRecorder) WriteHeader(status int) {
 	c.status = status
 	c.ResponseWriter.WriteHeader(status)
+}
+
+func (c *codeRecorder) Unwrap() http.ResponseWriter {
+	return c.ResponseWriter
 }
 
 // handleGetETF2LPlayersRequest handles GetETF2LPlayers operation.
@@ -86,7 +89,7 @@ func (s *Server) handleGetETF2LPlayersRequest(args [0]string, argsEscaped bool, 
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -115,6 +118,8 @@ func (s *Server) handleGetETF2LPlayersRequest(args [0]string, argsEscaped bool, 
 		return
 	}
 
+	var rawBody []byte
+
 	var response *GetETF2LPlayersOK
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -123,6 +128,7 @@ func (s *Server) handleGetETF2LPlayersRequest(args [0]string, argsEscaped bool, 
 			OperationSummary: "Get players' details from ETF2L",
 			OperationID:      "GetETF2LPlayers",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "id",
@@ -239,7 +245,7 @@ func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, 
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -268,6 +274,8 @@ func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, 
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetLogsForMatchRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -276,6 +284,7 @@ func (s *Server) handleGetLogsForMatchRequest(args [1]string, argsEscaped bool, 
 			OperationSummary: "Get logs associated with ETF2L match",
 			OperationID:      "GetLogsForMatch",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "match_id",
@@ -388,7 +397,7 @@ func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -417,6 +426,8 @@ func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetMatchForLogRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -425,6 +436,7 @@ func (s *Server) handleGetMatchForLogRequest(args [1]string, argsEscaped bool, w
 			OperationSummary: "Get logs associated with given ETF2L match ID",
 			OperationID:      "GetMatchForLog",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "log_id",
@@ -539,7 +551,7 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -568,6 +580,8 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 		return
 	}
 
+	var rawBody []byte
+
 	var response *GetPlayersOK
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -576,6 +590,7 @@ func (s *Server) handleGetPlayersRequest(args [0]string, argsEscaped bool, w htt
 			OperationSummary: "Get players by Steam IDs",
 			OperationID:      "GetPlayers",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "id",
@@ -692,7 +707,7 @@ func (s *Server) handleGetRGLPlayersRequest(args [0]string, argsEscaped bool, w 
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -721,6 +736,8 @@ func (s *Server) handleGetRGLPlayersRequest(args [0]string, argsEscaped bool, w 
 		return
 	}
 
+	var rawBody []byte
+
 	var response *GetRGLPlayersOK
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -729,6 +746,7 @@ func (s *Server) handleGetRGLPlayersRequest(args [0]string, argsEscaped bool, w 
 			OperationSummary: "Get players' details from RGL",
 			OperationID:      "GetRGLPlayers",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "id",
@@ -841,7 +859,7 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -870,6 +888,8 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetTeamRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -878,6 +898,7 @@ func (s *Server) handleGetTeamRequest(args [1]string, argsEscaped bool, w http.R
 			OperationSummary: "Get team details",
 			OperationID:      "GetTeam",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "id",

@@ -38,9 +38,13 @@ func NewClient(rt http.RoundTripper) *Client {
 type Format uint
 
 const (
+	// FormatUnknown represents logs without known format
 	FormatUnknown Format = iota
+	// Format6v6 represents 6s logs
 	Format6v6
+	// Format9v9 represents HL logs
 	Format9v9
+	// Format2v2 represents ultiduo logs
 	Format2v2
 )
 

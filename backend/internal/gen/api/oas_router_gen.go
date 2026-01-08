@@ -237,12 +237,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Route is route object.
 type Route struct {
-	name        string
-	summary     string
-	operationID string
-	pathPattern string
-	count       int
-	args        [1]string
+	name           string
+	summary        string
+	operationID    string
+	operationGroup string
+	pathPattern    string
+	count          int
+	args           [1]string
 }
 
 // Name returns ogen operation name.
@@ -260,6 +261,11 @@ func (r Route) Summary() string {
 // OperationID returns OpenAPI operationId.
 func (r Route) OperationID() string {
 	return r.operationID
+}
+
+// OperationGroup returns the x-ogen-operation-group value.
+func (r Route) OperationGroup() string {
+	return r.operationGroup
 }
 
 // PathPattern returns OpenAPI path.
@@ -349,6 +355,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.name = GetETF2LPlayersOperation
 							r.summary = "Get players' details from ETF2L"
 							r.operationID = "GetETF2LPlayers"
+							r.operationGroup = ""
 							r.pathPattern = "/api/v1/etf2l/players"
 							r.args = args
 							r.count = 0
@@ -373,6 +380,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.name = GetRGLPlayersOperation
 							r.summary = "Get players' details from RGL"
 							r.operationID = "GetRGLPlayers"
+							r.operationGroup = ""
 							r.pathPattern = "/api/v1/rgl/players"
 							r.args = args
 							r.count = 0
@@ -408,6 +416,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetMatchForLogOperation
 						r.summary = "Get logs associated with given ETF2L match ID"
 						r.operationID = "GetMatchForLog"
+						r.operationGroup = ""
 						r.pathPattern = "/log/{log_id}"
 						r.args = args
 						r.count = 1
@@ -441,6 +450,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetLogsForMatchOperation
 						r.summary = "Get logs associated with ETF2L match"
 						r.operationID = "GetLogsForMatch"
+						r.operationGroup = ""
 						r.pathPattern = "/match/{match_id}"
 						r.args = args
 						r.count = 1
@@ -465,6 +475,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetPlayersOperation
 						r.summary = "Get players by Steam IDs"
 						r.operationID = "GetPlayers"
+						r.operationGroup = ""
 						r.pathPattern = "/players"
 						r.args = args
 						r.count = 0
@@ -498,6 +509,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = GetTeamOperation
 						r.summary = "Get team details"
 						r.operationID = "GetTeam"
+						r.operationGroup = ""
 						r.pathPattern = "/team/{id}"
 						r.args = args
 						r.count = 1

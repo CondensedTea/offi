@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/go-faster/errors"
@@ -33,5 +34,12 @@ func (r Client) CheckLogError(ctx context.Context, matchID int) error {
 		}
 		return err
 	}
-	return fmt.Errorf("%w: %v", ErrCached, val)
+
+	cachedErrorTTL, err := r.client.TTL(ctx, match).Result()
+	if err != nil {
+		slog.Error("ttl lookup didn't find any keys after cached error was found", "component", "redis")
+		return nil
+	}
+
+	return fmt.Errorf("%w in %s: %v", ErrCached, cachedErrorTTL, val)
 }

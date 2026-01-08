@@ -2,13 +2,14 @@ package redis
 
 import (
 	"errors"
+	"offi/internal/closer"
 	"os"
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
-var ErrCached = errors.New("cached error, retry later")
+var ErrCached = errors.New("cached error, retry")
 
 const (
 	// LeagueRGL represents the rgl.gg league.
@@ -30,6 +31,8 @@ func NewClient(url string) (*Client, error) {
 	}
 
 	client := redis.NewClient(opts)
+
+	closer.Add(client.Close)
 
 	if err = redisotel.InstrumentTracing(client); err != nil {
 		return nil, err

@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"github.com/go-faster/errors"
-
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
@@ -17,8 +16,8 @@ import (
 
 // GetETF2LPlayersParams is parameters of GetETF2LPlayers operation.
 type GetETF2LPlayersParams struct {
-	ID                    []int64
-	WithRecruitmentStatus OptBool
+	ID                    []int64 `json:",omitempty"`
+	WithRecruitmentStatus OptBool `json:",omitempty,omitzero"`
 }
 
 func unpackGetETF2LPlayersParams(packed middleware.Parameters) (params GetETF2LPlayersParams) {
@@ -281,8 +280,8 @@ func decodeGetMatchForLogParams(args [1]string, argsEscaped bool, r *http.Reques
 
 // GetPlayersParams is parameters of GetPlayers operation.
 type GetPlayersParams struct {
-	ID                    []int64
-	WithRecruitmentStatus OptBool
+	ID                    []int64 `json:",omitempty"`
+	WithRecruitmentStatus OptBool `json:",omitempty,omitzero"`
 }
 
 func unpackGetPlayersParams(packed middleware.Parameters) (params GetPlayersParams) {
@@ -414,7 +413,7 @@ func decodeGetPlayersParams(args [0]string, argsEscaped bool, r *http.Request) (
 
 // GetRGLPlayersParams is parameters of GetRGLPlayers operation.
 type GetRGLPlayersParams struct {
-	ID []int64
+	ID []int64 `json:",omitempty"`
 }
 
 func unpackGetRGLPlayersParams(packed middleware.Parameters) (params GetRGLPlayersParams) {
